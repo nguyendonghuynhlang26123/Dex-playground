@@ -66,7 +66,7 @@ function App() {
     if (notifications && notifications.length > 0) {
       notifications.forEach((n) => {
         if (n.type === 'walletConnected') toast.info(`Wallet connect`);
-        if (n.type === 'transactionSucceed') toast.info(n.transactionName);
+        if (n.type === 'transactionSucceed') toast.success(n.transactionName);
         else {
           console.log('Notification: ', n);
         }
@@ -90,6 +90,8 @@ function App() {
         <>
           <hr />
           <Token address={one} title="Token ONE" />
+          <hr />
+          <Token address={two} title="Token TWO" />
           <hr />
           <Swap />
         </>

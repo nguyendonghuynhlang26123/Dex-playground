@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 
 export const TransactionButton = ({ onClick, label, className, state }) => {
   const [isLoading, setLoading] = useState(false);
@@ -6,6 +7,11 @@ export const TransactionButton = ({ onClick, label, className, state }) => {
   useEffect(() => {
     if (!state || state.status === 'None' || state.status === 'Success') {
       setLoading(false);
+      return;
+    }
+    if (state.status === 'Exception') {
+      setLoading(false);
+      toast.warning(state.errorMessage);
       return;
     }
     setLoading(true);
