@@ -1,0 +1,64 @@
+{
+  "name": "@dex/react-app",
+  "version": "1.0.0",
+  "homepage": "./",
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "dependencies": {
+    "@apollo/client": "^3.5.10",
+    "@ethersproject/contracts": "^5.6.0",
+    "@ethersproject/providers": "^5.6.0",
+    "@ethersproject/units": "^5.6.0",
+    "@testing-library/dom": "^8.11.3",
+    "@testing-library/jest-dom": "^5.16.2",
+    "@testing-library/react": "^12.1.4",
+    "@testing-library/user-event": "^13.5.0",
+    "@types/react": "^17.0.40",
+    "@dex/contracts": "^1.0.0",
+    "@uniswap/sdk": "^3.0.2",
+    "@uniswap/v2-core": "^1.0.1",
+    "@uniswap/v2-periphery": "^1.1.0-beta.0",
+    "@usedapp/core": "^0.12.1",
+    "graphql": "^16.3.0",
+    "ipfs-deploy": "^11.2.0",
+    "react": "17.0.2",
+    "react-dom": "17.0.2",
+    "react-icons": "^4.3.1",
+    "react-scripts": "4.0.3",
+    "react-toastify": "^8.2.0",
+    "styled-components": "^5.3.3"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "npm run watch:css && react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "watch:css": "postcss src/assets/styles/tailwind.css -o src/assets/styles/index.css",
+    "watch": "chokidar \"./src/**/*.jsx\" -c \"npm run watch:css\"",
+    "dev": "concurrently \"npm run watch\" \"npm run start\""
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.4",
+    "chokidar-cli": "^3.0.0",
+    "concurrently": "^7.0.0",
+    "postcss": "^8.4.12",
+    "postcss-cli": "^9.1.0",
+    "tailwindcss": "^3.0.23"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "name": "@dex/monorepo",
+  "version": "1.0.0",
+  "keywords": [
+    "uniswap",
+    "ethereum",
+    "react",
+    "workspaces",
+    "yarn"
+  ],
+  "private": true,
+  "scripts": {
+    "react-app:build": "yarn workspace @dex/react-app build",
+    "react-app:eject": "yarn workspace @dex/react-app eject",
+    "react-app:ipfs": "yarn workspace @dex/react-app ipfs",
+    "react-app:start": "yarn workspace @dex/react-app start",
+    "react-app:test": "yarn workspace @dex/react-app test"
+  },
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ]
+  }
+}
