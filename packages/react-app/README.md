@@ -1,6 +1,4 @@
-# @uniswap-v2-app/react-app
-
-This package is a fork of the default app built with [Create React App](https://github.com/facebook/create-react-app).
+# @dex/react-app
 
 ## Available Scripts
 
