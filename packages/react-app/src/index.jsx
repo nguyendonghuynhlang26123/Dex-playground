@@ -7,15 +7,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import App from './App';
-import { envConfig } from './common/config';
-
-const config = {
-  readOnlyChainId: Rinkeby.chainId,
-  readOnlyUrls: {
-    [Rinkeby.chainId]: 'https://rinkeby.infura.io/v3/' + envConfig.infuraKey,
-  },
-  networks: [Rinkeby],
-};
+import { networkConfig } from './common/config';
 
 // This is the official Uniswap v2 subgraph. You can replace it with your own, if you need to.
 // See all subgraphs: https://thegraph.com/explorer/
@@ -26,7 +18,7 @@ const client = new ApolloClient({
 
 ReactDOM.render(
   <React.StrictMode>
-    <DAppProvider config={config}>
+    <DAppProvider config={networkConfig}>
       <ApolloProvider client={client}>
         <App />
         <ToastContainer

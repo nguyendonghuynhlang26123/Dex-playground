@@ -7,9 +7,11 @@ import { toast } from 'react-toastify';
 import { Token } from './components/Token';
 import { prettyNum } from './common/utils';
 import { addresses } from '@dex/contracts';
+import { Liquidity } from './components/Liquidity';
+import { envConfig } from './common/config';
 
 function WalletButton() {
-  const { account, activateBrowserWallet, deactivate, error } = useEthers();
+  const { account, chainId, activateBrowserWallet, deactivate, error } = useEthers();
 
   useEffect(() => {
     if (error) {
@@ -17,6 +19,12 @@ function WalletButton() {
       alert(error.message);
     }
   }, [error]);
+
+  useEffect(() => {
+    if (chainId && !envConfig.allowNetworks.includes(chainId)) {
+      toast.error('Not support this chain, please switch to Rinkeby network');
+    }
+  }, [chainId]);
   return account ? (
     <button
       className="hover:bg-red-200 hover:font-bold border border-red-500 text-red-500 rounded px-2 py-1 my-2 "
@@ -66,7 +74,7 @@ function App() {
     if (notifications && notifications.length > 0) {
       notifications.forEach((n) => {
         if (n.type === 'walletConnected') toast.info(`Wallet connect`);
-        if (n.type === 'transactionSucceed') toast.success(n.transactionName);
+        else if (n.type === 'transactionSucceed') toast.success(n.transactionName);
         else {
           console.log('Notification: ', n);
         }
@@ -93,7 +101,9 @@ function App() {
           <hr />
           <Token address={two} title="Token TWO" />
           <hr />
-          <Swap />
+          <Swap token1Address={one} token2Address={two} />
+          <hr />
+          <Liquidity />
         </>
       )}
     </div>

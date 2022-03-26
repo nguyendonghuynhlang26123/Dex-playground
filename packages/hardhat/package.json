@@ -26,9 +26,7 @@
     "solhint": "^3.3.7",
     "solidity-coverage": "^0.7.20"
   },
-  "dependencies": {
-    "@openzeppelin/contracts": "^4.5.0"
-  },
+  "dependencies": {},
   "scripts": {
     "deploy": "npx hardhat run scripts/deploy.js --network rinkeby --emoji",
     "compile": "npx hardhat clean && npx hardhat --emoji compile"

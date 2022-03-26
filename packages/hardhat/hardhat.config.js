@@ -41,8 +41,8 @@ module.exports = {
   abiExporter: {
     path: "../contracts/src/abis",
     runOnCompile: true,
-    clear: true,
     flat: true,
     pretty: true,
+    only: ["UniswapV2Router02", "Token", "UniswapV2Factory", "UniswapV2Pair"],
   },
 };
