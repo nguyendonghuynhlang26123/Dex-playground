@@ -109,9 +109,9 @@ function App() {
           <Token address={two} title="Token TWO" />
           <hr />
           {swapReversed ? (
-            <Swap token1Address={two} token2Address={one} swapPosition={swapPositionBtn} />
+            <Swap token0Address={two} token1Address={one} swapPosition={swapPositionBtn} />
           ) : (
-            <Swap token1Address={one} token2Address={two} swapPosition={swapPositionBtn} />
+            <Swap token0Address={one} token1Address={two} swapPosition={swapPositionBtn} />
           )}
           <hr />
           <Liquidity />

@@ -9,7 +9,7 @@ export const Liquidity = () => {
   const { account } = useEthers();
   const mintedLiquidity = useTokenBalance(addresses[4].pair, account);
   const { symbol, totalSupply } = useToken(addresses[4].pair) ?? {};
-  const { active, r0, r1, timestamp } = useLiquidityReserve(addresses[4].pair);
+  const { active, r0, r1, timestamp } = useLiquidityReserve(addresses[4].pair, addresses[4].two, addresses[4].one);
 
   const calculateShare = (minted, total) => {
     return minted.mul(100).div(total); //Ceil;
