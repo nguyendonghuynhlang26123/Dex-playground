@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
-export const TransactionButton = ({ onClick, label, className, state }) => {
+export const TransactionButton = ({ onClick, label, className, state, disabled = false }) => {
   const [isLoading, setLoading] = useState(false);
   const [loadingLabel, setLoadingLabel] = useState('');
   useEffect(() => {
@@ -41,7 +41,11 @@ export const TransactionButton = ({ onClick, label, className, state }) => {
       {loadingLabel}
     </button>
   ) : (
-    <button className={`bg-blue-500 text-white hover:bg-blue-300 rounded px-2 py-1.5 ${className}`} onClick={onClick}>
+    <button
+      className={`bg-blue-500 text-white hover:bg-blue-300 ease-in-out duration-300 rounded px-2 py-1.5 ${className} disabled:opacity-40`}
+      onClick={onClick}
+      disabled={disabled}
+    >
       {label}
     </button>
   );

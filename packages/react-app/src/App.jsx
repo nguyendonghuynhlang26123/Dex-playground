@@ -48,6 +48,7 @@ function WalletButton() {
 
 function App() {
   const [rendered, setRendered] = useState('');
+  const [swapReversed, setSwapReversed] = useState(false);
   const ens = useLookupAddress();
   const { account, error, active } = useEthers();
   const balance = useEtherBalance(account);
@@ -81,6 +82,12 @@ function App() {
       });
     }
   }, [notifications]);
+
+  const swapPositionBtn = (ev) => {
+    ev.preventDefault();
+    setSwapReversed((prv) => !prv);
+  };
+
   return (
     <div className="w-[560px] mx-auto px-4 my-4">
       <div className="flex items-start justify-between">
@@ -101,7 +108,11 @@ function App() {
           <hr />
           <Token address={two} title="Token TWO" />
           <hr />
-          <Swap token1Address={one} token2Address={two} />
+          {swapReversed ? (
+            <Swap token1Address={two} token2Address={one} swapPosition={swapPositionBtn} />
+          ) : (
+            <Swap token1Address={one} token2Address={two} swapPosition={swapPositionBtn} />
+          )}
           <hr />
           <Liquidity />
         </>
