@@ -42,7 +42,7 @@ export const Swap = ({ token0Address, token1Address, swapPosition }) => {
   //Swapping states
   const routerContract = getContract(abis.router, addresses[4].router, library);
   const [[input0, input1], setInput] = useState(['', '']);
-  const [[output1, output2], setOutput] = useState(['', '']);
+  const [[output0, output1], setOutput] = useState(['', '']);
   const debouncedValue0 = useDebounce(input0, 1000);
   const debouncedValue1 = useDebounce(input1, 1000);
   const [exchangePrice, setExchangePrice] = useState(0);
@@ -52,7 +52,7 @@ export const Swap = ({ token0Address, token1Address, swapPosition }) => {
   const { state: outputSwapState, send: swapWithOutput } = useSwapHook('swapTokensForExactTokens');
   const swapState = useMemo(() => {
     if (inputSwapState.status !== 'None') return inputSwapState;
-    if (outputSwapState.status !== 'None') return inputSwapState;
+    if (outputSwapState.status !== 'None') return outputSwapState;
     return inputSwapState;
   }, [inputSwapState, outputSwapState]);
 
@@ -119,15 +119,21 @@ export const Swap = ({ token0Address, token1Address, swapPosition }) => {
       ev.preventDefault();
       if (input0) {
         const amountIn = parseEther(input0);
-        const amountOutMin = BigNumber.from(output2)
+        const amountOutMin = BigNumber.from(output1)
           .mul(100 - envConfig.slippage)
           .div(100);
         const deadline = Math.floor(Date.now() / 1000) + envConfig.deadline;
         swapWithInput(amountIn, amountOutMin, [token0Address, token1Address], account, deadline);
-      } else if (input1) swapWithOutput(formatEther(input1), r0, r1);
-      else toast.warn('Enter amount before swap');
+      } else if (input1) {
+        const amountOut = parseEther(input1);
+        const amountInMax = BigNumber.from(output0)
+          .mul(100 + envConfig.slippage)
+          .div(100);
+        const deadline = Math.floor(Date.now() / 1000) + envConfig.deadline;
+        swapWithOutput(amountOut, amountInMax, [token0Address, token1Address], account, deadline);
+      } else toast.warn('Enter amount before swap');
     },
-    [input0, input1, output1, output2, r0, r1]
+    [account, input0, input1, output0, output1, swapWithInput, swapWithOutput, token0Address, token1Address]
   );
 
   return active && token0 && token1 ? (
@@ -142,7 +148,7 @@ export const Swap = ({ token0Address, token1Address, swapPosition }) => {
         </label>
         <input
           className="border border-gray-400 rounded flex-grow px-2 py-1"
-          value={output1 ? prettyNum(output1, 18) : input0}
+          value={output0 ? prettyNum(output0, 18) : input0}
           onChange={token1InputHandle}
         />
       </div>
@@ -159,7 +165,7 @@ export const Swap = ({ token0Address, token1Address, swapPosition }) => {
         </label>
         <input
           className="border border-gray-400 rounded flex-grow px-2 py-1"
-          value={output2 ? prettyNum(output2, 18) : input1}
+          value={output1 ? prettyNum(output1, 18) : input1}
           onChange={token2InputHandle}
         />
       </div>
