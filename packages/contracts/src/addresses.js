@@ -18,6 +18,6 @@ export default {
     ...commonContracts,
     one: '0xE347Cd0934E878B236DcCF82fe419A92404Da229',
     two: '0xE73bcbaF9ff36D66C5b7805c8c64D389FD7fdb75',
-    'pair': '0xF49266Fbc2b1f4785CA1f56AD55f63fa9d3300F2',
+    pair: '0xF49266Fbc2b1f4785CA1f56AD55f63fa9d3300F2',
   },
 };
