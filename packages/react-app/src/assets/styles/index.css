@@ -470,6 +470,9 @@ Ensure the default browser behavior of the `hidden` attribute.
 .w-32 {
   width: 8rem;
 }
+.w-48 {
+  width: 12rem;
+}
 .w-24 {
   width: 6rem;
 }

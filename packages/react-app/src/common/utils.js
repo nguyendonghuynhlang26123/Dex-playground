@@ -9,7 +9,7 @@ export const truncate = (str, maxDecimalDigits) => {
   }
   return str;
 };
-export const prettyNum = (b, unit) => truncate(formatUnits(b, unit), 4);
+export const prettyNum = (b, unit, digits = 4) => truncate(formatUnits(b, unit), digits);
 export const getContract = (abi, address, provider = undefined) => {
   const contractInterface = new utils.Interface(abi);
   return new Contract(address, contractInterface, provider);
