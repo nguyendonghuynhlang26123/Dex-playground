@@ -1,8 +1,7 @@
 import { useEthers, useToken, useTokenBalance, useContractFunction } from '@usedapp/core';
 import React, { useEffect, useState } from 'react';
-import { getContract, prettyNum } from '../../common/utils';
+import { eighteenDigits, getContract, prettyNum } from '../../common/utils';
 import { abis, addresses } from '@dex/contracts';
-import { parseEther } from '@ethersproject/units';
 import { TransactionButton } from '../common';
 
 export const Token = ({ title, address }) => {
@@ -15,6 +14,15 @@ export const Token = ({ title, address }) => {
 
   const onInput = (ev) => {
     setInput(ev.target.value);
+  };
+
+  const mintTokenTxSubmit = (input) => {
+    if (input) {
+      const actualInput = eighteenDigits(input);
+      send(actualInput);
+    } else {
+      alert('Invalid input');
+    }
   };
 
   return token ? (
@@ -44,11 +52,7 @@ export const Token = ({ title, address }) => {
         />
         <TransactionButton
           onClick={() => {
-            if (userInput) {
-              send(parseEther(userInput));
-            } else {
-              alert('Invalid input');
-            }
+            mintTokenTxSubmit(userInput);
           }}
           className="w-24"
           state={state}

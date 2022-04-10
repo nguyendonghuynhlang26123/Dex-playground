@@ -1,4 +1,4 @@
-import { formatUnits } from '@ethersproject/units';
+import { formatUnits, parseEther } from '@ethersproject/units';
 import { Contract } from '@ethersproject/contracts';
 
 import { utils } from 'ethers';
@@ -13,4 +13,8 @@ export const prettyNum = (b, unit, digits = 4) => truncate(formatUnits(b, unit),
 export const getContract = (abi, address, provider = undefined) => {
   const contractInterface = new utils.Interface(abi);
   return new Contract(address, contractInterface, provider);
+};
+
+export const eighteenDigits = (value) => {
+  return parseEther(value);
 };
