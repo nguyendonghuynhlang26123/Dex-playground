@@ -55,13 +55,15 @@ export const useSwapInputHandle = ({ r0, r1, routerContract, debounceTime = 1000
 
   useEffect(() => {
     if (r0 && r1) getAmountOut(1).then((value) => setCurrentRate(prettyNum(value)));
-  }, [r0, r1, getAmountOut]);
+  }, [r0, r1]);
 
   const token0InputProps = React.useMemo(() => {
     return {
       value: output0 ? prettyNum(output0, 18) : input0,
       onChange: (ev) => {
-        setInput((prvState) => [ev.target.value, prvState[1]]);
+        const value = ev.target.value;
+        if (isNaN(value)) return;
+        setInput((prvState) => [value, prvState[1]]);
         setOutput(['', '']);
         setSwapBy(0);
       },
@@ -72,7 +74,9 @@ export const useSwapInputHandle = ({ r0, r1, routerContract, debounceTime = 1000
     return {
       value: output1 ? prettyNum(output1, 18) : input1,
       onChange: (ev) => {
-        setInput((prvState) => [prvState[0], ev.target.value]);
+        const value = ev.target.value;
+        if (isNaN(value)) return;
+        setInput((prvState) => [prvState[1], value]);
         setOutput(['', '']);
         setSwapBy(1);
       },

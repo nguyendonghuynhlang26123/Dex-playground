@@ -17,27 +17,15 @@ export const useLiquidityInputHandle = ({ r0, r1, routerContract, debounceTime =
   const [currentRate, setCurrentRate] = useState(0);
   const [swapBy, setSwapBy] = useState(null);
 
-  const getAmountIn = useCallback(
-    async (amountOut) => {
-      if (r0 && r1) {
-        return await routerContract.getAmountIn(parseEther(amountOut.toString()), r0, r1);
-      }
-    },
-    [r0, r1, routerContract]
-  );
-  const getAmountOut = useCallback(
-    async (amountIn) => {
-      if (r0 && r1) {
-        return await routerContract.getAmountOut(parseEther(amountIn.toString()), r0, r1);
-      }
-      return undefined;
-    },
-    [r0, r1, routerContract]
-  );
+  const quoteFn = async (value, reserveA, reserveB) => {
+    const valueWithDigits = parseEther(value.toString());
+    console.log('log ~ file: useLiquidityInputHandle.jsx ~ line 22 ~ quoteFn ~ valueWithDigits', valueWithDigits);
+    return await routerContract.quote(valueWithDigits, reserveA, reserveB);
+  };
 
   useEffect(() => {
     if (debouncedValue0 && !isNaN(debouncedValue0)) {
-      getAmountOut(debouncedValue0).then((data) => {
+      quoteFn(debouncedValue0, r0, r1).then((data) => {
         setInput((prv) => [prv[0], '']);
         setOutput((prvState) => [prvState[0], data.toString()]);
       });
@@ -46,7 +34,7 @@ export const useLiquidityInputHandle = ({ r0, r1, routerContract, debounceTime =
 
   useEffect(() => {
     if (debouncedValue1 && !isNaN(debouncedValue1)) {
-      getAmountIn(debouncedValue1).then((data) => {
+      quoteFn(debouncedValue1, r1, r0).then((data) => {
         setInput((prv) => ['', prv[1]]);
         setOutput((prvState) => [data.toString(), prvState[1]]);
       });
@@ -54,14 +42,16 @@ export const useLiquidityInputHandle = ({ r0, r1, routerContract, debounceTime =
   }, [debouncedValue1, r0, r1]);
 
   useEffect(() => {
-    if (r0 && r1) getAmountOut(1).then((value) => setCurrentRate(prettyNum(value)));
-  }, [r0, r1, getAmountOut]);
+    if (r0 && r1) quoteFn(1, r0, r1).then((value) => setCurrentRate(prettyNum(value)));
+  }, [r0, r1]);
 
   const token0InputProps = React.useMemo(() => {
     return {
       value: output0 ? prettyNum(output0, 18) : input0,
       onChange: (ev) => {
-        setInput((prvState) => [ev.target.value, prvState[1]]);
+        const value = ev.target.value;
+        if (isNaN(value)) return;
+        setInput((prvState) => [value, prvState[1]]);
         setOutput(['', '']);
         setSwapBy(0);
       },
@@ -72,7 +62,9 @@ export const useLiquidityInputHandle = ({ r0, r1, routerContract, debounceTime =
     return {
       value: output1 ? prettyNum(output1, 18) : input1,
       onChange: (ev) => {
-        setInput((prvState) => [prvState[1], ev.target.value]);
+        const value = ev.target.value;
+        if (isNaN(value)) return;
+        setInput((prvState) => [prvState[1], value]);
         setOutput(['', '']);
         setSwapBy(1);
       },
@@ -82,7 +74,7 @@ export const useLiquidityInputHandle = ({ r0, r1, routerContract, debounceTime =
   return {
     price0: output0 ? BigNumber.from(output0) : input0 ? parseEther(input0) : '',
     price1: output1 ? BigNumber.from(output1) : input1 ? parseEther(input1) : '',
-    exchangePrice: currentRate,
+    liquidityRate: currentRate,
     token0InputProps,
     token1InputProps,
     swapBy,

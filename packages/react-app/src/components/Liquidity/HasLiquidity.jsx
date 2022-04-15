@@ -1,63 +1,27 @@
 import { abis, addresses } from '@dex/contracts';
 import { formatUnits } from '@ethersproject/units';
-import { useCall, useConfig, useDebouncePair, useEthers, useToken, useTokenBalance } from '@usedapp/core';
-import { BigNumber, FixedNumber } from 'ethers';
+import { useEthers, useToken, useTokenBalance } from '@usedapp/core';
+import { FixedNumber } from 'ethers';
 import React, { useCallback, useState, useEffect } from 'react';
 import { getContract, prettyNum } from '../../common/utils';
+import { useLiquidityInputHandle } from '../../hooks/useLiquidityInputHandle';
 import { TransactionButton } from '../common';
 
 export const HasLiquidity = ({ r0, r1 }) => {
-  const { account } = useEthers();
+  const { account, library } = useEthers();
   const mintedLiquidity = useTokenBalance(addresses[4].pair, account);
   const { symbol, totalSupply } = useToken(addresses[4].pair) ?? {};
-  const [[input0, input1], setInput] = useState(['', '']);
-  const [[output0, output1], setOutput] = useState(['', '']);
-  const [debouncedValue0, debouncedValue1] = useDebouncePair(input0, input1, 200);
 
-  useEffect(() => {
-    if (debouncedValue0 && !isNaN(debouncedValue0)) {
-      const expectedValue = quoteFn(BigNumber.from(debouncedValue0), false);
-      if (expectedValue !== -1) {
-        setInput((prv) => [prv[0], '']);
-        setOutput(['', expectedValue.toString()]);
-      }
-    }
-  }, [debouncedValue0, r0, r1]);
-
-  useEffect(() => {
-    if (debouncedValue1 && !isNaN(debouncedValue1)) {
-      const expectedValue = quoteFn(BigNumber.from(debouncedValue1), false);
-      if (expectedValue !== -1) {
-        setInput((prv) => ['', prv[1]]);
-        setOutput([expectedValue.toString(), '']);
-      }
-    }
-  }, [debouncedValue1, r0, r1]);
-
-  const quoteFn = useCallback(
-    (amount, reversed) => {
-      if (r0 && r1) {
-        let _r0 = FixedNumber.from(r0);
-        let _r1 = FixedNumber.from(r1);
-        let _amount = FixedNumber.from(formatUnits(amount, 18));
-        if (!reversed) return BigNumber.from(_r1.mulUnsafe(_amount).divUnsafe(_r0));
-        else return BigNumber.from(_r0.mulUnsafe(_amount).divUnsafe(_r1));
-      } else return -1;
-    },
-    [r0, r1]
-  );
+  const routerContract = getContract(abis.router, addresses[4].router, library);
+  const { price0, price1, token0InputProps, token1InputProps } = useLiquidityInputHandle({
+    r0,
+    r1,
+    routerContract,
+    debounceTime: 200,
+  });
 
   const calculateShare = (minted, total) => {
-    return minted.mul(100).div(total); //Ceil;
-  };
-
-  const handleChangeInput0 = (ev) => {
-    setInput((prvState) => [ev.target.value, prvState[1]]);
-    setOutput(['', '']);
-  };
-  const handleChangeInput1 = (ev) => {
-    setInput((prvState) => [prvState[0], ev.target.value]);
-    setOutput(['', '']);
+    return FixedNumber.from(minted.mul(100)).divUnsafe(FixedNumber.from(total)).ceiling(); //Ceil up ?;
   };
 
   return mintedLiquidity ? (
@@ -90,22 +54,10 @@ export const HasLiquidity = ({ r0, r1 }) => {
       )}
       <p className="font-bold mt-4 ">Add liquidity</p>
       <div className="flex flex-row w-full space-x-2 items-center">
-        <input
-          className=" w-48 border border-gray-300 rounded px-2 py-1 my-0.5"
-          type="number"
-          id="1"
-          value={output0 ? prettyNum(output0, 18, 6) : input0}
-          onChange={handleChangeInput0}
-        />
-        <input
-          className=" w-48 border border-gray-300 rounded px-2 py-1 my-0.5"
-          type="number"
-          id="2"
-          value={output1 ? prettyNum(output1, 18, 6) : input1}
-          onChange={handleChangeInput1}
-        />
-        <TransactionButton onClick={() => {}} className="w-24" state={undefined} label="Mint" />
+        <input {...token0InputProps} id="0" className="flex-1 w-48 border border-gray-300 rounded px-2 py-1 my-0.5" />
+        <input {...token1InputProps} id="1" className="flex-1 w-48 border border-gray-300 rounded px-2 py-1 my-0.5" />
       </div>
+      <TransactionButton onClick={() => {}} className="mt-2" state={undefined} label="Provide" />
     </div>
   ) : (
     <>Loading...</>
