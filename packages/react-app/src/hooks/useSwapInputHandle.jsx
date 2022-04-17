@@ -2,6 +2,7 @@ import { parseEther } from '@ethersproject/units';
 import { useDebounce } from '@usedapp/core';
 import { BigNumber } from 'ethers';
 import React, { useState, useCallback, useEffect } from 'react';
+import { UniswapUtils } from '../common/UniswapUtils';
 import { prettyNum } from '../common/utils';
 
 /**
@@ -9,7 +10,7 @@ import { prettyNum } from '../common/utils';
  * fetch token 2's estimate price. When input token 2, fetch token 1.
  *
  */
-export const useSwapInputHandle = ({ r0, r1, routerContract, debounceTime = 1000 }) => {
+export const useSwapInputHandle = ({ r0, r1, debounceTime = 100 }) => {
   const [[input0, input1], setInput] = useState(['', '']);
   const [[output0, output1], setOutput] = useState(['', '']);
   const debouncedValue0 = useDebounce(input0, debounceTime);
@@ -17,44 +18,30 @@ export const useSwapInputHandle = ({ r0, r1, routerContract, debounceTime = 1000
   const [currentRate, setCurrentRate] = useState(0);
   const [swapBy, setSwapBy] = useState(null);
 
-  const getAmountIn = useCallback(
-    async (amountOut) => {
-      if (r0 && r1) {
-        return await routerContract.getAmountIn(parseEther(amountOut.toString()), r0, r1);
-      }
-    },
-    [r0, r1, routerContract]
-  );
-  const getAmountOut = useCallback(
-    async (amountIn) => {
-      if (r0 && r1) {
-        return await routerContract.getAmountOut(parseEther(amountIn.toString()), r0, r1);
-      }
-      return undefined;
-    },
-    [r0, r1, routerContract]
-  );
-
   useEffect(() => {
     if (debouncedValue0 && !isNaN(debouncedValue0)) {
-      getAmountOut(debouncedValue0).then((data) => {
-        setInput((prv) => [prv[0], '']);
-        setOutput((prvState) => [prvState[0], data.toString()]);
-      });
+      const amountIn = parseEther(debouncedValue0.toString());
+      const data = UniswapUtils.getAmmountOut(amountIn, r0, r1);
+
+      setInput((prv) => [prv[0], '']);
+      setOutput((prvState) => [prvState[0], data.toString()]);
     }
   }, [debouncedValue0, r0, r1]);
 
   useEffect(() => {
     if (debouncedValue1 && !isNaN(debouncedValue1)) {
-      getAmountIn(debouncedValue1).then((data) => {
-        setInput((prv) => ['', prv[1]]);
-        setOutput((prvState) => [data.toString(), prvState[1]]);
-      });
+      const amountOut = parseEther(debouncedValue1.toString());
+      const data = UniswapUtils.getAmmountIn(amountOut, r0, r1);
+      setInput((prv) => ['', prv[1]]);
+      setOutput((prvState) => [data.toString(), prvState[1]]);
     }
   }, [debouncedValue1, r0, r1]);
 
   useEffect(() => {
-    if (r0 && r1) getAmountOut(1).then((value) => setCurrentRate(prettyNum(value)));
+    if (r0 && r1) {
+      const value = UniswapUtils.getAmmountOut(parseEther('1'), r0, r1);
+      setCurrentRate(prettyNum(value));
+    }
   }, [r0, r1]);
 
   const token0InputProps = React.useMemo(() => {
@@ -63,7 +50,7 @@ export const useSwapInputHandle = ({ r0, r1, routerContract, debounceTime = 1000
       onChange: (ev) => {
         const value = ev.target.value;
         if (isNaN(value)) return;
-        setInput((prvState) => [value, prvState[1]]);
+        setInput([value, '']);
         setOutput(['', '']);
         setSwapBy(0);
       },
@@ -76,7 +63,7 @@ export const useSwapInputHandle = ({ r0, r1, routerContract, debounceTime = 1000
       onChange: (ev) => {
         const value = ev.target.value;
         if (isNaN(value)) return;
-        setInput((prvState) => [prvState[1], value]);
+        setInput(['', value]);
         setOutput(['', '']);
         setSwapBy(1);
       },

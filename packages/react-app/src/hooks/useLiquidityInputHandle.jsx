@@ -2,6 +2,7 @@ import { parseEther } from '@ethersproject/units';
 import { useDebounce } from '@usedapp/core';
 import { BigNumber } from 'ethers';
 import React, { useState, useCallback, useEffect } from 'react';
+import { UniswapUtils } from '../common/UniswapUtils';
 import { prettyNum } from '../common/utils';
 
 /**
@@ -9,7 +10,7 @@ import { prettyNum } from '../common/utils';
  * fetch token 2's estimate price. When input token 2, fetch token 1.
  *
  */
-export const useLiquidityInputHandle = ({ r0, r1, routerContract, debounceTime = 1000 }) => {
+export const useLiquidityInputHandle = ({ r0, r1, debounceTime = 100 }) => {
   const [[input0, input1], setInput] = useState(['', '']);
   const [[output0, output1], setOutput] = useState(['', '']);
   const debouncedValue0 = useDebounce(input0, debounceTime);
@@ -17,32 +18,29 @@ export const useLiquidityInputHandle = ({ r0, r1, routerContract, debounceTime =
   const [currentRate, setCurrentRate] = useState(0);
   const [swapBy, setSwapBy] = useState(null);
 
-  const quoteFn = async (value, reserveA, reserveB) => {
-    const valueWithDigits = parseEther(value.toString());
-    console.log('log ~ file: useLiquidityInputHandle.jsx ~ line 22 ~ quoteFn ~ valueWithDigits', valueWithDigits);
-    return await routerContract.quote(valueWithDigits, reserveA, reserveB);
-  };
-
   useEffect(() => {
     if (debouncedValue0 && !isNaN(debouncedValue0)) {
-      quoteFn(debouncedValue0, r0, r1).then((data) => {
-        setInput((prv) => [prv[0], '']);
-        setOutput((prvState) => [prvState[0], data.toString()]);
-      });
+      const valueWithDigits = parseEther(debouncedValue0.toString());
+      const data = UniswapUtils.quote(valueWithDigits, r0, r1);
+      setInput((prv) => [prv[0], '']);
+      setOutput((prvState) => [prvState[0], data.toString()]);
     }
   }, [debouncedValue0, r0, r1]);
 
   useEffect(() => {
     if (debouncedValue1 && !isNaN(debouncedValue1)) {
-      quoteFn(debouncedValue1, r1, r0).then((data) => {
-        setInput((prv) => ['', prv[1]]);
-        setOutput((prvState) => [data.toString(), prvState[1]]);
-      });
+      const valueWithDigits = parseEther(debouncedValue1.toString());
+      const data = UniswapUtils.quote(valueWithDigits, r1, r0);
+      setInput((prv) => ['', prv[1]]);
+      setOutput((prvState) => [data.toString(), prvState[1]]);
     }
   }, [debouncedValue1, r0, r1]);
 
   useEffect(() => {
-    if (r0 && r1) quoteFn(1, r0, r1).then((value) => setCurrentRate(prettyNum(value)));
+    if (r0 && r1) {
+      const value = UniswapUtils.quote('1', r0, r1);
+      setCurrentRate(prettyNum(value));
+    }
   }, [r0, r1]);
 
   const token0InputProps = React.useMemo(() => {
@@ -51,7 +49,7 @@ export const useLiquidityInputHandle = ({ r0, r1, routerContract, debounceTime =
       onChange: (ev) => {
         const value = ev.target.value;
         if (isNaN(value)) return;
-        setInput((prvState) => [value, prvState[1]]);
+        setInput([value, '']);
         setOutput(['', '']);
         setSwapBy(0);
       },
@@ -64,7 +62,7 @@ export const useLiquidityInputHandle = ({ r0, r1, routerContract, debounceTime =
       onChange: (ev) => {
         const value = ev.target.value;
         if (isNaN(value)) return;
-        setInput((prvState) => [prvState[1], value]);
+        setInput(['', value]);
         setOutput(['', '']);
         setSwapBy(1);
       },

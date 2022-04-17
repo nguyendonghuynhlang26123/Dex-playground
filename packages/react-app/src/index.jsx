@@ -8,6 +8,7 @@ import ReactDOM from 'react-dom';
 
 import App from './App';
 import { networkConfig } from './common/config';
+import { BrowserRouter } from 'react-router-dom';
 
 // This is the official Uniswap v2 subgraph. You can replace it with your own, if you need to.
 // See all subgraphs: https://thegraph.com/explorer/
@@ -20,7 +21,9 @@ ReactDOM.render(
   <React.StrictMode>
     <DAppProvider config={networkConfig}>
       <ApolloProvider client={client}>
-        <App />
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
         <ToastContainer
           position="bottom-right"
           autoClose={5000}

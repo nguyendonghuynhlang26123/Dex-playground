@@ -18,3 +18,8 @@ export const getContract = (abi, address, provider = undefined) => {
 export const eighteenDigits = (value) => {
   return parseEther(value);
 };
+
+export const toInteger = (floatNumber) => {
+  const comps = floatNumber.toString().split('.');
+  return comps[0];
+};

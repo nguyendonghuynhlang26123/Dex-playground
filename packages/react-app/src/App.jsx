@@ -1,14 +1,15 @@
-import { shortenAddress, useCall, useEthers, useLookupAddress, useEtherBalance, useNotifications } from '@usedapp/core';
+import { shortenAddress, useEthers, useLookupAddress, useEtherBalance, useNotifications } from '@usedapp/core';
 import React, { useEffect, useState } from 'react';
 import { Swap } from './components/Swap';
 
-import { formatEther } from '@ethersproject/units';
 import { toast } from 'react-toastify';
-import { Token } from './components/Token';
 import { prettyNum } from './common/utils';
 import { addresses } from '@dex/contracts';
-import { Liquidity } from './components/Liquidity';
 import { envConfig } from './common/config';
+import { Link, Route, Routes, Navigate, useLocation } from 'react-router-dom';
+import TokensManagement from './pages/Tokens';
+import Swaps from './pages/Swap';
+import LiquidityPage from './pages/Liquidity';
 
 function WalletButton() {
   const { account, chainId, activateBrowserWallet, deactivate, error } = useEthers();
@@ -48,12 +49,12 @@ function WalletButton() {
 
 function App() {
   const [rendered, setRendered] = useState('');
-  const [swapReversed, setSwapReversed] = useState(false);
   const ens = useLookupAddress();
-  const { account, error, active } = useEthers();
+  const { account, error } = useEthers();
   const balance = useEtherBalance(account);
   const { notifications } = useNotifications();
-  const { one, two } = addresses['4'];
+  const { pathname } = useLocation();
+
   useEffect(() => {
     if (ens) {
       setRendered(ens);
@@ -82,15 +83,9 @@ function App() {
       });
     }
   }, [notifications]);
-
-  const swapPositionBtn = (ev) => {
-    ev.preventDefault();
-    setSwapReversed((prv) => !prv);
-  };
-
   return (
     <div className="w-[560px] mx-auto px-4 my-4">
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between my-2">
         {rendered ? (
           <div className="flex flex-col items-start">
             {account && <p>Account: {rendered}</p>}
@@ -101,22 +96,37 @@ function App() {
         )}
         <WalletButton />
       </div>
-      {active && (
-        <>
-          <hr />
-          <Token address={one} title="Token ONE" />
-          <hr />
-          <Token address={two} title="Token TWO" />
-          <hr />
-          {swapReversed ? (
-            <Swap token0Address={two} token1Address={one} swapPosition={swapPositionBtn} />
-          ) : (
-            <Swap token0Address={one} token1Address={two} swapPosition={swapPositionBtn} />
-          )}
-          <hr />
-          <Liquidity />
-        </>
-      )}
+      <hr />
+      <ul>
+        <li className="flex flex-row justify-center items-center space-x-2 my-2">
+          <Link className={`px-2 hover:underline ${pathname === '/token' && 'font-bold text-blue-500'}`} to="/token">
+            Token
+          </Link>
+          <Link className={`px-2 hover:underline ${pathname === '/swap' && 'font-bold text-blue-500'}`} to="/swap">
+            Swap
+          </Link>
+          <Link
+            className={`px-2 hover:underline ${pathname === '/liquidity' && 'font-bold text-blue-500'}`}
+            to="/liquidity"
+          >
+            Liquidity
+          </Link>
+          <Link
+            className={`px-2 hover:underline ${pathname === '/protocol' && 'font-bold text-blue-500'}`}
+            to="/protocol"
+          >
+            Protocol
+          </Link>
+        </li>
+      </ul>
+      <hr />
+
+      <Routes>
+        <Route path="token" element={<TokensManagement />} />
+        <Route path="swap" element={<Swaps />} />
+        <Route path="liquidity" element={<LiquidityPage />} />
+        <Route path="/" element={<Navigate to="/swap" />} />
+      </Routes>
     </div>
   );
 }
