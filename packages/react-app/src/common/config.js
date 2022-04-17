@@ -2,8 +2,8 @@ import { Rinkeby } from '@usedapp/core';
 
 export const envConfig = {
   infuraKey: process.env.REACT_APP_INFURA_KEY,
-  slippage: 10,
-  deadline: 30 * 60,
+  slippage: 0.1,
+  deadline: 30,
   allowNetworks: [Rinkeby.chainId],
 };
 

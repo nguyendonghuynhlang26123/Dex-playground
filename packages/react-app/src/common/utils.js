@@ -1,7 +1,7 @@
 import { formatUnits, parseEther } from '@ethersproject/units';
 import { Contract } from '@ethersproject/contracts';
 
-import { utils } from 'ethers';
+import { FixedNumber, utils } from 'ethers';
 export const truncate = (str, maxDecimalDigits) => {
   if (str.includes('.')) {
     const parts = str.split('.');

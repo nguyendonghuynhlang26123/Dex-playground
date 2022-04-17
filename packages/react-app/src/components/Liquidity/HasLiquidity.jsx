@@ -16,7 +16,6 @@ export const HasLiquidity = ({ r0, r1 }) => {
   const { price0, price1, token0InputProps, token1InputProps } = useLiquidityInputHandle({
     r0,
     r1,
-    routerContract,
     debounceTime: 200,
   });
 

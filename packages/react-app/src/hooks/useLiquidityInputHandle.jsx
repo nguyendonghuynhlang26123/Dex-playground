@@ -17,6 +17,7 @@ export const useLiquidityInputHandle = ({ r0, r1, debounceTime = 100 }) => {
   const debouncedValue1 = useDebounce(input1, debounceTime);
   const [currentRate, setCurrentRate] = useState(0);
   const [swapBy, setSwapBy] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (debouncedValue0 && !isNaN(debouncedValue0)) {

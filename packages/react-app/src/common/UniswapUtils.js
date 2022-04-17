@@ -1,6 +1,8 @@
+import { parseEther } from '@ethersproject/units';
 import { FixedNumber } from 'ethers';
 import { toInteger } from './utils';
 
+const fixNumbers = (...args) => args.map((a) => FixedNumber.from(a));
 export class UniswapUtils {
   static quote(amountA, rA, rB) {
     const fAmountA = FixedNumber.from(amountA);
@@ -27,5 +29,21 @@ export class UniswapUtils {
     const numerator = fAmountInWithFee.mulUnsafe(fROut);
     const denominator = fRIn.mulUnsafe(FixedNumber.from(1000)).addUnsafe(fAmountInWithFee);
     return toInteger(numerator.divUnsafe(denominator).floor());
+  }
+
+  static getRate(r0, r1) {
+    return this.getAmmountOut(parseEther('1'), r0, r1);
+  }
+
+  static calculatePriceImpact(inputPrice, outputPrice, reserve0, reserve1) {
+    const [fInput, fOutput, fR0, fR1] = fixNumbers(inputPrice, outputPrice, reserve0, reserve1);
+    const newR0 = fR0.addUnsafe(fInput);
+    const newR1 = fR1.subUnsafe(fOutput);
+
+    if (newR0 < 0 || newR1 < 0) throw new Error('Invalid input/output price that lead to negative reserve');
+    const currentRate = this.getRate(reserve0, reserve1);
+    const newRate = this.getRate(newR0, newR1);
+    const impacted = FixedNumber.from(newRate).divUnsafe(FixedNumber.from(currentRate));
+    return FixedNumber.from(1).subUnsafe(impacted).mulUnsafe(FixedNumber.from(100));
   }
 }
