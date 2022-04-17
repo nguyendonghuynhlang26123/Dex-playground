@@ -46,4 +46,16 @@ export class UniswapUtils {
     const impacted = FixedNumber.from(newRate).divUnsafe(FixedNumber.from(currentRate));
     return FixedNumber.from(1).subUnsafe(impacted).mulUnsafe(FixedNumber.from(100));
   }
+
+  static liquidityCanMint(deposit, reserve, totalLiquidity) {
+    const [fDeposit, fR, fSupply] = fixNumbers(deposit, reserve, totalLiquidity);
+    const toBeMinted = fSupply.mulUnsafe(fDeposit.divUnsafe(fR));
+    return toInteger(toBeMinted);
+  }
+
+  static percentShareExpect(deposit, reserve, totalLiquidity) {
+    const canMint = this.liquidityCanMint(deposit, reserve, totalLiquidity);
+    const [fMinted, fSupply] = fixNumbers(canMint, totalLiquidity);
+    return fMinted.mulUnsafe(FixedNumber.from(100)).divUnsafe(fSupply.addUnsafe(fMinted));
+  }
 }

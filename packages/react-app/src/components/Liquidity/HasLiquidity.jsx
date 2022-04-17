@@ -3,11 +3,12 @@ import { formatUnits } from '@ethersproject/units';
 import { useEthers, useToken, useTokenBalance } from '@usedapp/core';
 import { FixedNumber } from 'ethers';
 import React, { useCallback, useState, useEffect } from 'react';
+import { UniswapUtils } from '../../common/UniswapUtils';
 import { getContract, prettyNum } from '../../common/utils';
 import { useLiquidityInputHandle } from '../../hooks/useLiquidityInputHandle';
 import { TransactionButton } from '../common';
 
-export const HasLiquidity = ({ r0, r1 }) => {
+export const HasLiquidity = ({ r0, r1, token0Address, token1Address }) => {
   const { account, library } = useEthers();
   const mintedLiquidity = useTokenBalance(addresses[4].pair, account);
   const { symbol, totalSupply } = useToken(addresses[4].pair) ?? {};
@@ -19,9 +20,23 @@ export const HasLiquidity = ({ r0, r1 }) => {
     debounceTime: 200,
   });
 
+  //State management
+  const [error, setError] = useState(null);
+
   const calculateShare = (minted, total) => {
     return FixedNumber.from(minted.mul(100)).divUnsafe(FixedNumber.from(total)).ceiling(); //Ceil up ?;
   };
+
+  const provideLiquidity = () => {};
+
+  const percentShareExpected = useCallback(
+    (deposit) => {
+      return UniswapUtils.percentShareExpect(deposit, r0, totalSupply).round(2).toString();
+    },
+    [totalSupply, r0]
+  );
+
+  useEffect(() => {}, [price0, price1]);
 
   return mintedLiquidity ? (
     <div className="flex flex-col my-2">
@@ -56,7 +71,12 @@ export const HasLiquidity = ({ r0, r1 }) => {
         <input {...token0InputProps} id="0" className="flex-1 w-48 border border-gray-300 rounded px-2 py-1 my-0.5" />
         <input {...token1InputProps} id="1" className="flex-1 w-48 border border-gray-300 rounded px-2 py-1 my-0.5" />
       </div>
-      <TransactionButton onClick={() => {}} className="mt-2" state={undefined} label="Provide" />
+      {price0 && (
+        <p className="text-center">
+          <b>{percentShareExpected(price0)}</b> % Share of Pool
+        </p>
+      )}
+      <TransactionButton onClick={() => {}} className="mt-2" state={undefined} label="Supply" />
     </div>
   ) : (
     <>Loading...</>

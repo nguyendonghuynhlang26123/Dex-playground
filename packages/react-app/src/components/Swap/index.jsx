@@ -26,22 +26,23 @@ const FEE_PERCENT = 3; // 0.3
 export const Swap = ({ token0Address, token1Address, swapPosition }) => {
   const { library, account } = useEthers();
   const poolAddress = addresses[4].pair;
+  const routerAddress = addresses[4].router;
 
   //Token info
   const token0 = useToken(token0Address);
   const token1 = useToken(token1Address);
-  const token1Balance = useTokenBalance(token0Address, account);
-  const token2Balance = useTokenBalance(token1Address, account);
+  const token0Balance = useTokenBalance(token0Address, account);
+  const token1Balance = useTokenBalance(token1Address, account);
 
-  //Token allowance must be approved before swap
-  const allowance = useTokenAllowance(token0Address, account, poolAddress);
-  const { state: approvalState, approveToken } = useApprove(token0Address, poolAddress, 'Token Approved');
+  //User must approve the router to spend their money before transfer
+  const allowance = useTokenAllowance(token0Address, account, routerAddress);
+  const { state: approvalState, approveToken } = useApprove(token0Address, routerAddress, 'Token Approved');
 
   //Liquidity
   const { active, r0, r1 } = useLiquidityReserve(poolAddress, token0Address, token1Address);
 
   //Input handler
-  const routerContract = getContract(abis.router, addresses[4].router, library);
+  const routerContract = getContract(abis.router, routerAddress, library);
   const { price0, price1, token0InputProps, token1InputProps, exchangePrice, swapBy } = useSwapInputHandle({
     r0,
     r1,
@@ -64,12 +65,12 @@ export const Swap = ({ token0Address, token1Address, swapPosition }) => {
   const [deadline, setDeadline] = useState(DEFAULT_DEADLINE);
 
   useEffect(() => {
-    if (price0 && price1 && r0 && r1) {
-      if (price0.gt(r0)) setError("Insufficient user's balance");
+    if (price0 && price1 && token0Balance && r1) {
+      if (price0.gt(token0Balance)) setError("Insufficient user's balance");
       else if (price1.gt(r1)) setError('Insufficient liquidity');
       else setError(null);
     }
-  }, [price0, price1, r0, r1]);
+  }, [price0, price1, r1, token0Balance]);
 
   const onApprove = (ev) => {
     ev.preventDefault();
@@ -143,7 +144,7 @@ export const Swap = ({ token0Address, token1Address, swapPosition }) => {
           <label className="w-40">
             {token0.name} ({token0.symbol}):
             <br />
-            Balance: {token1Balance && prettyNum(token1Balance, token0.decimals)}
+            Balance: {token0Balance && prettyNum(token0Balance, token0.decimals)}
           </label>
           <input {...token0InputProps} className="border border-gray-400 rounded flex-grow px-2 py-1" />
         </div>
@@ -156,7 +157,7 @@ export const Swap = ({ token0Address, token1Address, swapPosition }) => {
         <div className="flex flex-row space-x-2 my-2 ">
           <label className="w-40">
             {token1.name} ({token1.symbol}) <br />
-            Balance: {token2Balance && prettyNum(token2Balance, token1.decimals)}
+            Balance: {token1Balance && prettyNum(token1Balance, token1.decimals)}
           </label>
           <input {...token1InputProps} className="border border-gray-400 rounded flex-grow px-2 py-1" />
         </div>
