@@ -31,14 +31,14 @@ export default function Curve({ r0, r1, addToken0, addToken1, title0, title1, wi
       const ctx = canvas.getContext('2d');
       ctx.clearRect(0, 0, width, height);
 
-      let maxX = k / (r0 / 6);
+      let maxX = k / (r0 / 12);
       let minX = 10;
 
-      if (addToken0 || addToken1) {
-        maxX = k / (r0 * 0.2);
-        //maxX = k/(r0*0.8)
-        // minX = k / Math.max(1, 500 - r0);
-      }
+      // if (addToken0 || addToken1) {
+      //   maxX = k / (r0 * 0.2);
+      //   //maxX = k/(r0*0.8)
+      //   // minX = k / Math.max(1, 500 - r0);
+      // }
 
       const maxY = (maxX * height) / width;
       const minY = (minX * height) / width;

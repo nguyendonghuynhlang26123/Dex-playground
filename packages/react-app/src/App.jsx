@@ -10,6 +10,7 @@ import { Link, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import TokensManagement from './pages/Tokens';
 import Swaps from './pages/Swap';
 import LiquidityPage from './pages/Liquidity';
+import { SwapConfig } from './components/SwapConfig';
 
 function WalletButton() {
   const { account, chainId, activateBrowserWallet, deactivate, error } = useEthers();
@@ -96,6 +97,8 @@ function App() {
         )}
         <WalletButton />
       </div>
+      <hr />
+      <SwapConfig />
       <hr />
       <ul>
         <li className="flex flex-row justify-center items-center space-x-2 my-2">

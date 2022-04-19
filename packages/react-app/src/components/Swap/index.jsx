@@ -12,6 +12,7 @@ import {
 import { BigNumber, constants } from 'ethers';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { RiArrowUpDownLine } from 'react-icons/ri';
+import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { envConfig } from '../../common/config';
 import { UniswapUtils } from '../../common/UniswapUtils';
@@ -61,12 +62,13 @@ export const Swap = ({ token0Address, token1Address, swapPosition }) => {
 
   // Pool state management
   const [error, setError] = useState(null);
-  const [slippage, setSlippage] = useState(DEFAULT_SLIPPAGE);
-  const [deadline, setDeadline] = useState(DEFAULT_DEADLINE);
+  const slippage = useSelector((state) => state.slippage.value);
+  const { value: deadline, toSec } = useSelector((state) => state.deadline);
 
   useEffect(() => {
     if (price0 && price1 && token0Balance && r1) {
-      if (price0.gt(token0Balance)) setError("Insufficient user's balance");
+      if (price0.isZero() || price1.isZero()) setError('Input invalid ');
+      else if (price0.gt(token0Balance)) setError("Insufficient user's balance");
       else if (price1.gt(r1)) setError('Insufficient liquidity');
       else setError(null);
     }
@@ -76,9 +78,6 @@ export const Swap = ({ token0Address, token1Address, swapPosition }) => {
     ev.preventDefault();
     approveToken();
   };
-
-  const onChangeSlippage = (ev) => setSlippage(ev.target.value);
-  const onChangeDeadline = (ev) => setDeadline(ev.target.value);
 
   const calculateFee = (value) => {
     return value.mul(FEE_PERCENT).div(1000);
@@ -110,7 +109,7 @@ export const Swap = ({ token0Address, token1Address, swapPosition }) => {
         const amountOutMin = BigNumber.from(price1) // (100 - X)% desired output
           .mul(10000 - slippage * 100)
           .div(10000);
-        const dl = Math.floor(Date.now() / 1000) + deadline * 60000;
+        const dl = Math.floor(Date.now() / 1000) + deadline * toSec;
         swapWithInput(amountIn, amountOutMin, [token0Address, token1Address], account, dl);
       } else if (swapBy === 1) {
         //Swap by outpu
@@ -118,11 +117,23 @@ export const Swap = ({ token0Address, token1Address, swapPosition }) => {
         const amountInMax = BigNumber.from(price0)
           .mul(10000 + slippage * 100)
           .div(10000);
-        const dl = Math.floor(Date.now() / 1000) + deadline * 60000;
+        const dl = Math.floor(Date.now() / 1000) + deadline * toSec;
         swapWithOutput(amountOut, amountInMax, [token0Address, token1Address], account, dl);
       } else toast.warn('Enter amount before swap');
     },
-    [account, price0, price1, swapBy, swapWithInput, swapWithOutput, token0Address, token1Address, slippage, deadline]
+    [
+      account,
+      price0,
+      price1,
+      swapBy,
+      swapWithInput,
+      swapWithOutput,
+      token0Address,
+      token1Address,
+      slippage,
+      deadline,
+      toSec,
+    ]
   );
 
   return active && token0 && token1 ? (
@@ -170,11 +181,6 @@ export const Swap = ({ token0Address, token1Address, swapPosition }) => {
                 </>
               )}
             </summary>
-            <p className="">
-              Slippage: <input className="inline w-16" onChange={onChangeSlippage} type="number" value={slippage} />% -
-              Deadline: <input className="inline w-16" type="number" onChange={onChangeDeadline} value={deadline} />
-              {' minutes'}
-            </p>
             <hr className="my-2" />
             {price0 && price1 && (
               <div>
