@@ -15,9 +15,7 @@ export const useLiquidityInputHandle = ({ r0, r1, debounceTime = 100 }) => {
   const [[output0, output1], setOutput] = useState(['', '']);
   const debouncedValue0 = useDebounce(input0, debounceTime);
   const debouncedValue1 = useDebounce(input1, debounceTime);
-  const [currentRate, setCurrentRate] = useState(0);
   const [swapBy, setSwapBy] = useState(null);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (debouncedValue0 && !isNaN(debouncedValue0)) {
@@ -36,13 +34,6 @@ export const useLiquidityInputHandle = ({ r0, r1, debounceTime = 100 }) => {
       setOutput((prvState) => [data.toString(), prvState[1]]);
     }
   }, [debouncedValue1, r0, r1]);
-
-  useEffect(() => {
-    if (r0 && r1) {
-      const value = UniswapUtils.quote('1', r0, r1);
-      setCurrentRate(prettyNum(value));
-    }
-  }, [r0, r1]);
 
   const token0InputProps = React.useMemo(() => {
     return {
@@ -73,7 +64,6 @@ export const useLiquidityInputHandle = ({ r0, r1, debounceTime = 100 }) => {
   return {
     price0: output0 ? BigNumber.from(output0) : input0 ? parseEther(input0) : '',
     price1: output1 ? BigNumber.from(output1) : input1 ? parseEther(input1) : '',
-    liquidityRate: currentRate,
     token0InputProps,
     token1InputProps,
     swapBy,

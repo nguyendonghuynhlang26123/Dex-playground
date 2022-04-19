@@ -40,7 +40,10 @@ export class UniswapUtils {
     const newR0 = fR0.addUnsafe(fInput);
     const newR1 = fR1.subUnsafe(fOutput);
 
-    if (newR0 < 0 || newR1 < 0) throw new Error('Invalid input/output price that lead to negative reserve');
+    if (newR0 < 0 || newR1 < 0) {
+      console.warn('Invalid input/output price that lead to negative reserve');
+      return FixedNumber.from(100);
+    }
     const currentRate = this.getRate(reserve0, reserve1);
     const newRate = this.getRate(newR0, newR1);
     const impacted = FixedNumber.from(newRate).divUnsafe(FixedNumber.from(currentRate));

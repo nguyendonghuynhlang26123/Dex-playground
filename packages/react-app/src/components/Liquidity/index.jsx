@@ -1,24 +1,32 @@
-import { abis, addresses } from '@dex/contracts';
-import React, { useCallback, useState, useEffect } from 'react';
-import { useApprove, useLiquidityReserve } from '../../hooks';
-import { useContractFunction, useEthers, useToken, useTokenAllowance, useTokenBalance } from '@usedapp/core';
+import React, { useState, useMemo } from 'react';
+import { useLiquidityReserve } from '../../hooks';
+import { useEthers, useToken, useTokenBalance } from '@usedapp/core';
 import { FixedNumber } from 'ethers';
-import { UniswapUtils } from '../../common/UniswapUtils';
-import { getContract, prettyNum } from '../../common/utils';
-import { useLiquidityInputHandle } from '../../hooks/useLiquidityInputHandle';
-import { TransactionButton } from '../common';
+import { calculateShare, prettyNum } from '../../common/utils';
+import { useExchangeRate } from '../../hooks/useExchangeRate';
+import { AddLiquidity } from './AddLiquidity';
+import { RemoveLiquidity } from './RemoveLiquidity';
 
 export const Liquidity = ({ token0Address, token1Address, pairAddress }) => {
-  const { account, library } = useEthers();
-  const routerAddress = addresses[4].router;
+  const { account } = useEthers();
+
+  // Add/Remove mode
+  const [mode, setMode] = useState('add');
 
   //Liquidity
   const { active, r0, r1 } = useLiquidityReserve(pairAddress, token0Address, token1Address);
-  const { price0, price1, token0InputProps, token1InputProps } = useLiquidityInputHandle({ r0, r1 });
+  const exchangeRate = useExchangeRate({ r0, r1 });
 
   //Liquidity token
   const mintedLiquidity = useTokenBalance(pairAddress, account);
   const { totalSupply } = useToken(pairAddress) ?? {};
+  const share = useMemo(
+    () =>
+      mintedLiquidity && totalSupply
+        ? FixedNumber.from(mintedLiquidity.mul(100)).divUnsafe(FixedNumber.from(totalSupply)).round(4).toString()
+        : '0',
+    [totalSupply, mintedLiquidity]
+  );
 
   //Token
   const token0 = useToken(token0Address);
@@ -26,112 +34,94 @@ export const Liquidity = ({ token0Address, token1Address, pairAddress }) => {
   const token0Balance = useTokenBalance(token0Address, account);
   const token1Balance = useTokenBalance(token1Address, account);
 
-  //Token Approval:
-  const token0Allowance = useTokenAllowance(token0Address, account, routerAddress);
-  const token1Allowance = useTokenAllowance(token1Address, account, routerAddress);
-  const { state: approval0State, approveToken0 } = useApprove(token0Address, routerAddress, 'Token Approved');
-  const { state: approval1State, approveToken1 } = useApprove(token1Address, routerAddress, 'Token Approved');
-
-  // Provide liquidity function
-  const routerContract = getContract(abis.router, routerAddress, library);
-  const { state: provideState, send: submitProvision } = useContractFunction(routerContract, 'addLiquidity', {
-    transactionName: 'Provide liquidity successfully',
-  });
-
-  //State management
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    if (price0 && price1 && token0Balance && token1Balance && token0 && token1) {
-      if (price0.gt(token0Balance)) setError('Insufficient ' + token0.symbol);
-      else if (price1.gt(token1Balance)) setError('Insufficient ' + token1.symbol);
-      else setError(null);
-    }
-  }, [price0, price1, token0Balance, token1Balance, token0, token1]);
-
-  const calculateShare = (minted, total) => {
-    return FixedNumber.from(minted.mul(100)).divUnsafe(FixedNumber.from(total)).ceiling(); //Ceil up ?;
-  };
-
-  const provideLiquidity = () => {};
-
-  const percentShareExpected = useCallback(
-    (deposit) => {
-      return UniswapUtils.percentShareExpect(deposit, r0, totalSupply).round(2).toString();
-    },
-    [totalSupply, r0]
-  );
-
   return active && token0 && token1 && mintedLiquidity ? (
     <div className="flex flex-col my-2">
       <h1 className="text-[32px] text-center mt-4 mb-2 font-bold">Liquidity</h1>
 
       <div className="flex flex-row w-full divide-x space-x-2">
-        <p className="flex-1 p-2">
+        <p className="flex-1 p-2 text-center">
           <b>Pool {token0.symbol}</b>
-          <br /> {prettyNum(r0, 18)}
+          <br />
+          {prettyNum(r0, 18)}
         </p>
-        <p className="flex-1 p-2">
+        <p className="flex-1 p-2 text-center">
           <b>Pool {token1.symbol}</b>
           <br /> {prettyNum(r1, 18)}
         </p>
       </div>
+      <p className="italic text-gray-600 text-center">
+        {exchangeRate && token0 && token1 && (
+          <>
+            1 {token0.symbol} = {exchangeRate} {token1.symbol}
+          </>
+        )}
+      </p>
 
       <hr className="w-32 mx-auto my-2 border-gray-500" />
       {totalSupply && (
-        <>
-          <p>
+        <div className="py-2 px-4 border border-dashed border-gray-600 rounded">
+          <h1 className="font-bold text-lg text-center">Your position</h1>
+          <p className="flex flex-row justify-between">
             <b>Your liquidity token: </b>
-            {prettyNum(mintedLiquidity, 18)} / {prettyNum(totalSupply, 18)}
+            <span>
+              {prettyNum(mintedLiquidity, 18)} / {prettyNum(totalSupply, 18)}
+            </span>
           </p>
-          <p>
-            <b>% share: </b>
-            {calculateShare(mintedLiquidity, totalSupply).toString() + '%'}{' '}
+          <p className="flex flex-row justify-between">
+            <b>Pool share: </b>
+            <span>{share.toString() + '%'} </span>
           </p>
-        </>
+          <p className="flex flex-row justify-between">
+            <b>{token0.symbol}: </b>
+            <span>{prettyNum(calculateShare(r0, share))}</span>
+          </p>
+          <p className="flex flex-row justify-between">
+            <b>{token1.symbol}: </b>
+            <span>{prettyNum(calculateShare(r1, share))}</span>
+          </p>
+        </div>
       )}
 
-      <p className="font-bold mt-4 ">Add liquidity</p>
-      <div className="grid gap-x-4 grid-cols-2 w-full  items-center mt-2">
-        <p>
-          {token0.symbol} (Max: {prettyNum(token0Balance)})
-        </p>
-        <p>
-          {token1.symbol} (Max: {prettyNum(token1Balance)})
-        </p>
-        <input {...token0InputProps} id="0" className="ml-0 border border-gray-300 rounded px-2 py-1 my-0.5" />
-        <input {...token1InputProps} id="1" className="border border-gray-300 rounded px-2 py-1 my-0.5" />
-        {token0Allowance && token0Allowance.isZero() && (
-          <TransactionButton
-            label={`Approve ${token0.symbol}`}
-            onClick={() => approveToken0()}
-            state={approval0State}
-            className={`mt-2 !bg-white !text-blue-500 border border-blue-500 hover:!bg-blue-300 hover:!border-blue-300 hover:!text-white`}
-          />
-        )}
-        {token1Allowance && token1Allowance.isZero() && (
-          <TransactionButton
-            label={`Approve ${token1.symbol}`}
-            onClick={() => approveToken1()}
-            state={approval1State}
-            className={`mt-2 !bg-white !text-blue-500 border border-blue-500 hover:!bg-blue-300 hover:!border-blue-300 hover:!text-white`}
-          />
-        )}
-      </div>
-      {price0 && (
-        <p className="text-center">
-          <b>{percentShareExpected(price0)}</b> % Share of Pool
-        </p>
-      )}
-      {error ? (
-        <button
-          className={`bg-red-500 text-white ease-in-out duration-300 rounded px-2 py-1.5 my-2 disabled:opacity-60`}
-          disabled
+      <div className="flex flex-row space-x-2">
+        <p
+          className={`underline mt-4 cursor-pointer hover:text-blue-500 ${
+            mode === 'add' && 'text-green-500 font-bold'
+          }`}
+          onClick={() => setMode('add')}
         >
-          {error}
-        </button>
+          Add liquidity
+        </p>
+        <p
+          className={`underline mt-4 cursor-pointer  hover:text-blue-500 ${mode === 'rm' && 'text-red-500 font-bold'}`}
+          onClick={() => setMode('rm')}
+        >
+          Remove liquidity
+        </p>
+      </div>
+
+      {mode === 'add' ? (
+        <AddLiquidity
+          token0={token0}
+          token1={token1}
+          token0Address={token0Address}
+          token1Address={token1Address}
+          token0Balance={token0Balance}
+          token1Balance={token1Balance}
+          r0={r0}
+          r1={r1}
+          totalLPToken={totalSupply}
+        />
       ) : (
-        <TransactionButton onClick={() => {}} className="mt-2" state={undefined} label="Supply" />
+        <RemoveLiquidity
+          token0={token0}
+          token1={token1}
+          token0Address={token0Address}
+          token1Address={token1Address}
+          r0={r0}
+          r1={r1}
+          totalLPToken={totalSupply}
+          lpAmount={mintedLiquidity}
+        />
       )}
     </div>
   ) : (

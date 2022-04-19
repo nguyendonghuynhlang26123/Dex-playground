@@ -12,5 +12,5 @@ export const useApprove = (tokenAddress, address, txName = '') => {
     return send(address, constants.MaxInt256);
   }, [address, send]);
 
-  return { state, approveToken };
+  return [state, approveToken];
 };

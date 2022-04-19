@@ -1,7 +1,7 @@
 import { parseEther } from '@ethersproject/units';
 import { useDebounce } from '@usedapp/core';
-import { BigNumber } from 'ethers';
-import React, { useState, useCallback, useEffect } from 'react';
+import { BigNumber, FixedNumber } from 'ethers';
+import React, { useState, useEffect } from 'react';
 import { UniswapUtils } from '../common/UniswapUtils';
 import { prettyNum } from '../common/utils';
 
@@ -63,12 +63,13 @@ export const useSwapInputHandle = ({ r0, r1, debounceTime = 100 }) => {
       onChange: (ev) => {
         const value = ev.target.value;
         if (isNaN(value)) return;
+        if (value && r1 && BigNumber.from(parseEther(value)).gte(r1)) return; // Ouput should < r1 since it will be negative ...
         setInput(['', value]);
         setOutput(['', '']);
         setSwapBy(1);
       },
     };
-  }, [output1, input1]);
+  }, [output1, input1, r1]);
 
   return {
     price0: output0 ? BigNumber.from(output0) : input0 ? parseEther(input0) : '',

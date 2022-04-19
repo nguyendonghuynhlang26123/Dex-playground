@@ -23,3 +23,8 @@ export const toInteger = (floatNumber) => {
   const comps = floatNumber.toString().split('.');
   return comps[0];
 };
+
+export const calculateShare = (total, percent) => {
+  const result = FixedNumber.from(total).mulUnsafe(FixedNumber.from(percent)).divUnsafe(FixedNumber.from(100));
+  return toInteger(result);
+};

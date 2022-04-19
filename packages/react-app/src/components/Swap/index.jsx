@@ -21,8 +21,6 @@ import { useApprove, useLiquidityReserve, useSwapInputHandle } from '../../hooks
 import { TransactionButton } from '../common';
 import Curve from '../Curve';
 
-const DEFAULT_SLIPPAGE = envConfig.slippage;
-const DEFAULT_DEADLINE = envConfig.deadline;
 const FEE_PERCENT = 3; // 0.3
 export const Swap = ({ token0Address, token1Address, swapPosition }) => {
   const { library, account } = useEthers();
@@ -37,7 +35,7 @@ export const Swap = ({ token0Address, token1Address, swapPosition }) => {
 
   //User must approve the router to spend their money before transfer
   const allowance = useTokenAllowance(token0Address, account, routerAddress);
-  const { state: approvalState, approveToken } = useApprove(token0Address, routerAddress, 'Token Approved');
+  const [approvalState, approveToken] = useApprove(token0Address, routerAddress, 'Token Approved');
 
   //Liquidity
   const { active, r0, r1 } = useLiquidityReserve(poolAddress, token0Address, token1Address);
@@ -55,13 +53,12 @@ export const Swap = ({ token0Address, token1Address, swapPosition }) => {
   const { state: inputSwapState, send: swapWithInput } = useSwapHook('swapExactTokensForTokens');
   const { state: outputSwapState, send: swapWithOutput } = useSwapHook('swapTokensForExactTokens');
   const swapState = useMemo(() => {
-    if (inputSwapState.status !== 'None') return inputSwapState;
-    if (outputSwapState.status !== 'None') return outputSwapState;
-    return inputSwapState;
-  }, [inputSwapState, outputSwapState]);
+    if (swapBy === 0) return inputSwapState;
+    else return outputSwapState;
+  }, [swapBy, inputSwapState, outputSwapState]);
 
   // Pool state management
-  const [error, setError] = useState(null);
+  const [error, setError] = useState('Enter amount');
   const slippage = useSelector((state) => state.slippage.value);
   const { value: deadline, toSec } = useSelector((state) => state.deadline);
 
@@ -112,8 +109,8 @@ export const Swap = ({ token0Address, token1Address, swapPosition }) => {
         const dl = Math.floor(Date.now() / 1000) + deadline * toSec;
         swapWithInput(amountIn, amountOutMin, [token0Address, token1Address], account, dl);
       } else if (swapBy === 1) {
-        //Swap by outpu
-        const amountOut = parseEther(price1);
+        //Swap by output
+        const amountOut = price1;
         const amountInMax = BigNumber.from(price0)
           .mul(10000 + slippage * 100)
           .div(10000);
@@ -139,8 +136,8 @@ export const Swap = ({ token0Address, token1Address, swapPosition }) => {
   return active && token0 && token1 ? (
     <>
       <Curve
-        title0="ONE"
-        title1="TWO"
+        title0={token0.symbol}
+        title1={token1.symbol}
         r0={Number(prettyNum(r0))}
         r1={Number(prettyNum(r1))}
         addToken0={price0 ? Number(prettyNum(price0)) : 0}
