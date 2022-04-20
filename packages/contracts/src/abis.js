@@ -1,4 +1,4 @@
-import erc20 from './abis/ERC20.json';
+import erc20 from './abis/erc20.json';
 import token from './abis/Token.json';
 import factory from './abis/factory.json';
 import router from './abis/router.json';
