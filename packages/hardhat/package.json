@@ -21,14 +21,19 @@
     "hardhat": "^2.9.2",
     "hardhat-abi-exporter": "^2.8.0",
     "hardhat-gas-reporter": "^1.0.8",
+    "mocha": "^10.0.0",
     "prettier": "^2.6.1",
     "prettier-plugin-solidity": "^1.0.0-beta.13",
     "solhint": "^3.3.7",
     "solidity-coverage": "^0.7.20"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.6.0"
+  },
   "scripts": {
     "deploy": "npx hardhat run scripts/deploy.js --network rinkeby --emoji",
-    "compile": "npx hardhat clean && npx hardhat --emoji compile"
+    "compile": "npx hardhat clean && npx hardhat --emoji compile",
+    "test": "npx hardhat test --network local",
+    "chain": "npx hardhat node --fork https://eth-mainnet.alchemyapi.io/v2/TI0Hp-KalL7vhgdsmEqOFO1NarhM15si "
   }
 }
