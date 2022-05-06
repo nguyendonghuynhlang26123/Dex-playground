@@ -29,11 +29,10 @@ module.exports = {
         version: "0.8.4",
       },
       {
-        version: "0.6.6",
-        settings: {},
+        version: "0.5.16",
       },
       {
-        version: "0.5.16",
+        version: "0.6.8",
         settings: {},
       },
     ],
@@ -73,7 +72,7 @@ module.exports = {
     currency: "VND",
     showTimeSpent: true,
     coinmarketcap: process.env.COINMARKETCAP_API_KEY,
-    excludeContracts: ["mocks/", "Token"],
+    excludeContracts: ["mocks/uniswapV1", "mocks/uniswapV2", "Token"],
   },
   etherscan: {
     apiKey: process.env.ETHERSCAN_API_KEY,

@@ -9,7 +9,7 @@ const APPROVE_VALUE = ethers.constants.MaxUint256;
 
 const getDeadline = () => Math.floor(Date.now() / 1000) + 5 * 60;
 
-describe.only("Core Contract Testing", function () {
+describe("Core Contract Testing", function () {
   let owner;
   let user1;
   let user2;
@@ -27,6 +27,7 @@ describe.only("Core Contract Testing", function () {
 
   const FACTORY_ADDRESS = "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f";
   const ROUTER_ADDRESS = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
+  const WETH_ADDRESS = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
 
   beforeEach(async () => {
     [owner, user1, user2] = await ethers.getSigners();
@@ -40,10 +41,9 @@ describe.only("Core Contract Testing", function () {
     const Weth = await ethers.getContractFactory("WETH9");
     token1 = await Token.deploy("token 1", "ONE");
     token2 = await Token.deploy("token 2", "TWO");
-    weth = await Weth.deploy();
+    weth = await Weth.attach(WETH_ADDRESS);
     await token1.deployed();
     await token2.deployed();
-    await weth.deployed();
 
     // Approve tokens
     await token1.connect(owner).approve(ROUTER_ADDRESS, APPROVE_VALUE);
@@ -98,12 +98,12 @@ describe.only("Core Contract Testing", function () {
       to: weth.address,
       value: _18digits(2),
     });
-    await token2.connect(owner).mint(ethers.utils.parseEther("100"));
+    await token2.connect(owner).mint(ethers.utils.parseEther("200"));
     await uniswapMock.addLiquidity(
       token2.address,
       weth.address,
-      _18digits(100),
-      _18digits(2),
+      _18digits(200),
+      _18digits(1),
       owner.address
     );
     const token2EthReserves = await uniswapMock.getReserves(
@@ -123,7 +123,7 @@ describe.only("Core Contract Testing", function () {
 
     // Uniswap handler:
     const UniswapHandler = await ethers.getContractFactory("UniswapV2Handler");
-    handlerUniswap = await UniswapHandler.deploy(weth.address, ROUTER_ADDRESS);
+    handlerUniswap = await UniswapHandler.deploy(weth.address, FACTORY_ADDRESS);
     await handlerUniswap.deployed();
     console.log(
       "UniswapV2Handler contract is deployed to:",
@@ -264,7 +264,7 @@ describe.only("Core Contract Testing", function () {
         orderData,
         abiEncoder.encode(
           ["address", "uint256"],
-          [user2.address, _18digits(0.1)]
+          [user2.address, _18digits(0.00001)]
         ),
         signature
       );
@@ -274,24 +274,27 @@ describe.only("Core Contract Testing", function () {
     );
   });
 
-  it.only("Test", async () => {
+  it("Test", async () => {
     console.log(
       "ONE -> 0.1 ETH",
       prettyNum(
         await uniswapMock.getAmountIn(
           token1.address,
           weth.address,
-          _18digits(0.1)
+          _18digits(0.001)
         )
       )
     );
-    // console.log(
-    //   "ETH - TWO",
-    //   await uniswapMock.getAmountIn(
-    //     token1.address,
-    //     weth.address,
-    //     _18digits(0.1)
-    //   )
-    // );
+
+    console.log(
+      "0.009862 ETH -> ",
+      prettyNum(
+        await uniswapMock.getAmountOut(
+          weth.address,
+          token2.address,
+          "9861580343970612"
+        )
+      )
+    );
   });
 });

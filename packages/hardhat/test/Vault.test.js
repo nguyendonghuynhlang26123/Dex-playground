@@ -1,5 +1,6 @@
 const { expect } = require("chai");
 const { ethers, waffle } = require("hardhat");
+const { balanceSnap } = require("./common/balances");
 const { UniswapMock } = require("./common/UniswapMock");
 const truncate = (str, maxDecimalDigits) => {
   if (str.includes(".")) {
@@ -15,7 +16,7 @@ const BN = ethers.BigNumber;
 const APPROVE_VALUE = ethers.constants.MaxUint256;
 const toBytes32 = ethers.utils.formatBytes32String;
 
-describe("Vault Contract Testing", function () {
+describe.only("Vault Contract", function () {
   let owner;
   let user1;
   let user2;
@@ -58,6 +59,7 @@ describe("Vault Contract Testing", function () {
     //  - mint 1000 token ONE abd 100 TWO for owner
     await token1.connect(owner).mint(ethers.utils.parseEther("1000"));
     await token2.connect(owner).mint(ethers.utils.parseEther("100"));
+
     //  - approve both token first before add liquidity
     const routerAddress = uniswapMock.getRouterAddress();
     await token1.connect(owner).approve(routerAddress, APPROVE_VALUE);
@@ -87,19 +89,32 @@ describe("Vault Contract Testing", function () {
   it("Vault should contains tokens when deposit", async function () {
     const KEY = toBytes32("KEY");
     const amountTesting = BN.from(_18digits("100"));
+    const userBalanceSnap = await balanceSnap(
+      token1,
+      user1.address,
+      "User1's ONE"
+    );
+    const vaultBalanceSnap = await balanceSnap(
+      token1,
+      vault.address,
+      "Vault's ONE"
+    );
+
+    // ** SETUP:
     // mint 100 token ONE for user1
     await token1.connect(user1).mint(amountTesting);
-
-    expect(await token1.balanceOf(user1.address)).to.equal(amountTesting);
-
     await token1.connect(user1).approve(vault.address, APPROVE_VALUE);
+    await userBalanceSnap.requireIncrease(amountTesting);
+    await (await vaultBalanceSnap).requireConstant();
+
+    // ** VERIFY
     await expect(
       vault.depositVault(KEY, token1.address, user1.address, amountTesting)
     )
       .to.emit(vault, "VaultDeposited")
       .withArgs(KEY, amountTesting);
-    expect(await token1.balanceOf(user1.address)).to.equal(BN.from("0"));
-    expect(await token1.balanceOf(vault.address)).to.equal(amountTesting);
+    await userBalanceSnap.requireDecrease(amountTesting);
+    await vaultBalanceSnap.requireIncrease(amountTesting);
     expect(await vault.getDeposits(KEY)).to.equal(amountTesting);
   });
 
@@ -107,40 +122,53 @@ describe("Vault Contract Testing", function () {
     const KEY = toBytes32("KEY");
     const amountExisted = BN.from(_18digits("100"));
     const amountDepositing = BN.from(_18digits("20"));
+    const vaultBalanceSnap = await balanceSnap(
+      token1,
+      vault.address,
+      "Vault's ONE"
+    );
 
-    // Mock exists
+    // ** SETUP
     await token1.connect(user1).mint(amountExisted);
     await token1.connect(user1).approve(vault.address, APPROVE_VALUE);
     await vault.depositVault(KEY, token1.address, user1.address, amountExisted);
+    await vaultBalanceSnap.requireIncrease(amountExisted);
 
+    // ** VERIFY
     // Expect revert if key exists
     await token1.connect(user1).mint(amountDepositing);
     await expect(
       vault.depositVault(KEY, token1.address, user1.address, amountDepositing)
-    ).to.be.revertedWith("VaultContract: VAULT_EXISTS");
-    expect(await token1.balanceOf(user1.address)).to.equal(amountDepositing);
+    ).to.be.revertedWith("VaultContract#deposit: VAULT_EXISTS");
+    await vaultBalanceSnap.requireConstant();
   });
 
   it("Token should be able to be pulled", async function () {
     const KEY = toBytes32("KEY");
-    const amountExisted = BN.from(_18digits("100"));
+    const amountTesing = BN.from(_18digits("100"));
+    const userBalanceSnap = await balanceSnap(
+      token1,
+      user1.address,
+      "User1's ONE"
+    );
+    const vaultBalanceSnap = await balanceSnap(
+      token1,
+      vault.address,
+      "Vault's ONE"
+    );
 
-    // Mock exists order
-    await token1.connect(user1).mint(amountExisted);
+    // ** SETUP
+    await token1.connect(user1).mint(amountTesing);
     await token1.connect(user1).approve(vault.address, APPROVE_VALUE);
-    await vault.depositVault(KEY, token1.address, user1.address, amountExisted);
+    await vault.depositVault(KEY, token1.address, user1.address, amountTesing);
+    await userBalanceSnap.requireConstant();
+    await vaultBalanceSnap.requireIncrease(amountTesing);
 
-    // Expect revert if key exists
-    expect(await token1.balanceOf(user2.address)).to.equal(BN.from(0)); // user2 has 0 ONE at first
-    const beforePullTokenBalance = await token1.balanceOf(vault.address);
-    expect(beforePullTokenBalance).to.eq(amountExisted); // Vault having > 100 ONE initially
-    await expect(vault.pullVault(KEY, user2.address))
+    // ** VERIFY
+    await expect(vault.pullVault(KEY, user1.address))
       .to.emit(vault, "VaultWithdrawed")
-      .withArgs(KEY, amountExisted);
-    const afterPullTokenBalance = await token1.balanceOf(vault.address);
-    expect(beforePullTokenBalance.sub(afterPullTokenBalance)).to.equal(
-      amountExisted
-    ); // loss a certain number of balance after be pulled
-    expect(await token1.balanceOf(user2.address)).to.equal(amountExisted); // user2 has 0 ONE at first
+      .withArgs(KEY, amountTesing);
+    await userBalanceSnap.requireIncrease(amountTesing);
+    await vaultBalanceSnap.requireDecrease(amountTesing);
   });
 });

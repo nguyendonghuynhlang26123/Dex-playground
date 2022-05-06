@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.0; 
-
+pragma solidity ^0.6.8;
 import "../Vault.sol";
 
 contract FakeVault is Vault {
@@ -8,7 +7,7 @@ contract FakeVault is Vault {
     _depositVault(_key, _tokenAddress, _user, _amount);
   }
 
-  function pullVault(bytes32 _key, address _recipient) external {
+  function pullVault(bytes32 _key, address payable _recipient) external {
     _pullVault(_key, _recipient);
   }  
 }

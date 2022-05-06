@@ -53,7 +53,7 @@ class UniswapMock {
   async getPair(token1, token2) {
     const pairAddress = await this.factory.getPair(token1, token2);
     const Pair = await this.ethers.getContractFactory(
-      "contracts/mocks/UniswapV2/UniswapV2Pair.sol:UniswapV2Pair"
+      "contracts/mocks/uniswapV2/UniswapV2Pair.sol:UniswapV2Pair"
     );
     return await Pair.attach(pairAddress);
   }
