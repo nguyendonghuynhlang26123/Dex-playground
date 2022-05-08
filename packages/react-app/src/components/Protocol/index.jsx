@@ -133,12 +133,22 @@ export const Protocol = ({ token0Address, token1Address, swapPosition }) => {
         toSec,
       ]
     );
-   
+   const headerStyle={
+
+   }
   
     return active && token0 && token1 ? (
       <>
         <form className="tag" >
-            <h1 className="font-bold text-[32px] ">Limit order</h1>
+          <h1 className="font-bold text-[32px] ">Limit order</h1>
+          <div className="relative h-6 w-450 mb-2" >
+            <div className="absolute inset-y-0 right-0  w-50 ">
+            <button  className="btn py-0 hover:bg-gray-500 ">Sell</button>
+            <button className=" btn py-0 hover:bg-gray-500">Buy</button>
+        
+
+            </div>
+          </div>
             
             <div className="labelBox flex flex-row space-x-2 my-2 ">
           <label className="w-40">
@@ -175,7 +185,7 @@ export const Protocol = ({ token0Address, token1Address, swapPosition }) => {
               )}
             </label>
         <div>
-        <button className="btnSetLimit">Set limit</button>
+        <button className="btnSetLimit  hover:bg-red-400">Set limit</button>
             
         </div>
         
