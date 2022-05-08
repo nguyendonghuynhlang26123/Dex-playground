@@ -456,11 +456,11 @@ Ensure the default browser behavior of the `hidden` attribute.
 .mb-2 {
   margin-bottom: 0.5rem;
 }
-.mt-6 {
-  margin-top: 1.5rem;
-}
 .ml-auto {
   margin-left: auto;
+}
+.mt-6 {
+  margin-top: 1.5rem;
 }
 .mt-1 {
   margin-top: 0.25rem;
@@ -674,6 +674,9 @@ Ensure the default browser behavior of the `hidden` attribute.
 .text-2xl {
   font-size: 1.5rem;
   line-height: 2rem;
+}
+.text-\[8px\] {
+  font-size: 8px;
 }
 .font-bold {
   font-weight: 700;
