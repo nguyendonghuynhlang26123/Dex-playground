@@ -27,21 +27,32 @@ module.exports = {
     compilers: [
       {
         version: "0.8.4",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 1000,
+          },
+        },
       },
       {
         version: "0.5.16",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 1000,
+          },
+        },
       },
       {
         version: "0.6.8",
-        settings: {},
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 1000,
+          },
+        },
       },
     ],
-    settings: {
-      optimizer: {
-        enabled: true,
-        runs: 1000,
-      },
-    },
   },
   networks: {
     hardhat: {

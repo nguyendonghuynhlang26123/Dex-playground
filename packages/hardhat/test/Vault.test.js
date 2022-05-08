@@ -1,6 +1,6 @@
 const { expect } = require("chai");
 const { ethers, waffle } = require("hardhat");
-const { balanceSnap } = require("./common/balances");
+const { balanceSnap, etherSnap } = require("./common/balances");
 const { UniswapMock } = require("./common/UniswapMock");
 const truncate = (str, maxDecimalDigits) => {
   if (str.includes(".")) {
@@ -16,7 +16,8 @@ const BN = ethers.BigNumber;
 const APPROVE_VALUE = ethers.constants.MaxUint256;
 const toBytes32 = ethers.utils.formatBytes32String;
 
-describe.only("Vault Contract", function () {
+describe("Vault Contract", function () {
+  const ETH_ADDRESS = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
   let owner;
   let user1;
   let user2;
@@ -170,5 +171,46 @@ describe.only("Vault Contract", function () {
       .withArgs(KEY, amountTesing);
     await userBalanceSnap.requireIncrease(amountTesing);
     await vaultBalanceSnap.requireDecrease(amountTesing);
+  });
+
+  it("Vault should contains ETH when deposit", async function () {
+    const KEY = toBytes32("KEY");
+    const amountTesting = BN.from(_18digits("1")); // 1 ETH
+    const vaultEtherSnap = await etherSnap(vault.address, "Vault's ETH");
+
+    // ** VERIFY
+    await expect(
+      vault
+        .connect(user1)
+        .depositVault(KEY, ETH_ADDRESS, user1.address, amountTesting, {
+          value: amountTesting,
+        })
+    )
+      .to.emit(vault, "VaultDeposited")
+      .withArgs(KEY, amountTesting);
+    await vaultEtherSnap.requireIncrease(amountTesting);
+    expect(await vault.getDeposits(KEY)).to.equal(amountTesting);
+  });
+
+  it("ETH order should be able to be pulled", async function () {
+    const KEY = toBytes32("KEY");
+    const amountTesting = BN.from(_18digits("1"));
+
+    // ** SETUP
+    await vault
+      .connect(user1)
+      .depositVault(KEY, ETH_ADDRESS, user1.address, amountTesting, {
+        value: amountTesting,
+      });
+
+    const userEtherSnap = await etherSnap(user1.address, "User1's ETH");
+    const vaultEtherSnap = await etherSnap(vault.address, "Vault's ETH");
+
+    // ** VERIFY
+    await expect(vault.pullVault(KEY, user1.address))
+      .to.emit(vault, "VaultWithdrawed")
+      .withArgs(KEY, amountTesting);
+    await userEtherSnap.requireIncrease(amountTesting);
+    await vaultEtherSnap.requireDecrease(amountTesting);
   });
 });

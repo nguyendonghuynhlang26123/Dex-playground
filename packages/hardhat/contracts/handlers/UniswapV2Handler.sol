@@ -10,6 +10,7 @@ import "../libs/ProtocolUtils.sol";
 import "../libs/SafeMath.sol";
 import "../libs/SafeERC20.sol";
 
+import "hardhat/console.sol";
 
 /// @notice UniswapV2 Handler used to execute an order
 contract UniswapV2Handler is IHandler {
@@ -76,7 +77,7 @@ contract UniswapV2Handler is IHandler {
         } else if (outputToken == weth || outputToken == ProtocolUtils.ETH_ADDRESS) {
             // Swap inputToken -> WETH
             bought = _swap(inputToken, weth, amount, address(this));
-
+            console.log("Bought: ", bought);
             // Convert from WETH to ETH if necessary
             if (outputToken == ProtocolUtils.ETH_ADDRESS) {
                 WETH.withdraw(bought);
@@ -91,12 +92,13 @@ contract UniswapV2Handler is IHandler {
             // Swap inputToken -> WETH -> outputToken
             //  - inputToken -> WETH
             bought = _swap(inputToken, weth, amount, address(this));
-
+            console.log("Bought %s WETH", bought);
             // Withdraw fee
             WETH.withdraw(fee);
-
+            console.log("Without fee = %s WETH", bought.sub(fee));
             // - WETH -> outputToken
             bought = _swap(weth, outputToken, bought.sub(fee), msg.sender);
+            console.log("Bought %s TWO", bought);
         }
 
         // Send fee to relayer
@@ -241,6 +243,7 @@ contract UniswapV2Handler is IHandler {
         // Get uniswap trading pair
         (address token0, address token1) = UniswapUtils.sortTokens(_inputToken, _outputToken);
         IUniswapV2Pair pair = IUniswapV2Pair(UniswapUtils.pairForSorted(FACTORY, token0, token1, FACTORY_CODE_HASH));
+        console.log("Uniswap pair = ", address(pair), _inputToken, _outputToken);
 
         uint256 inputAmount = _inputAmount;
         uint256 prevPairBalance;

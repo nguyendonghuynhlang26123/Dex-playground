@@ -3,7 +3,7 @@ pragma solidity ^0.6.8;
 import "../Vault.sol";
 
 contract FakeVault is Vault {
-  function depositVault(bytes32 _key, address _tokenAddress, address _user, uint256 _amount) external{
+  function depositVault(bytes32 _key, address _tokenAddress, address _user, uint256 _amount) external payable{
     _depositVault(_key, _tokenAddress, _user, _amount);
   }
 

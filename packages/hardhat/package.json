@@ -34,6 +34,6 @@
     "deploy": "npx hardhat run scripts/deploy.js --network rinkeby --emoji",
     "compile": "npx hardhat clean && npx hardhat --emoji compile",
     "test": "npx hardhat test --network local",
-    "chain": "npx hardhat node --fork https://eth-mainnet.alchemyapi.io/v2/TI0Hp-KalL7vhgdsmEqOFO1NarhM15si "
+    "chain": "npx hardhat node --fork https://eth-mainnet.alchemyapi.io/v2/TI0Hp-KalL7vhgdsmEqOFO1NarhM15si --verbose "
   }
 }

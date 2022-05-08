@@ -17,12 +17,13 @@ contract OrderProtocol is Vault {
     // Events
     event OrderCreated(
         bytes32 indexed _key,
-        address indexed _inputToken,
-        address indexed _owner,
+        address indexed _module,
+        address _inputToken,
+        address _owner, 
         address _witness,
+        uint256 _amount,
         bytes _data, 
-        bytes32 _secret, 
-        uint256 _amount
+        bytes32 _secret 
     );
 
     event OrderExecuted(
@@ -44,16 +45,6 @@ contract OrderProtocol is Vault {
         bytes _data,
         uint256 _amount
     );
-
-    /**
-     * @dev Prevent users to send Ether directly to this contract
-     */
-    receive() external payable {
-        require(
-            msg.sender != tx.origin,
-            "OrderProtocol#receive: NO_SEND_ETH_PLEASE"
-        );
-    }
 
     /**
      * @notice Create an order
@@ -85,12 +76,13 @@ contract OrderProtocol is Vault {
         _depositVault(key, _inputToken, _owner, _amount);
         emit OrderCreated(
             key,
-            address(_inputToken),
+            _module,
+            _inputToken,
             _owner,
             _witness,
+            _amount,
             _data,
-            _secret,
-            _amount
+            _secret
         );
     }
 
@@ -155,10 +147,7 @@ contract OrderProtocol is Vault {
         bytes calldata _auxData
     ) external {
         // Calculate witness using signature
-        address witness = ECDSA.recover(
-            keccak256(abi.encodePacked(PASS_PHRASE)),
-            _signature
-        );
+        address witness = _recoverSigner(_signature);
 
         bytes32 key = keyOf(
             _module,
@@ -289,6 +278,16 @@ contract OrderProtocol is Vault {
                 _amount,
                 _data
             )
+        );
+    }
+
+    function _recoverSigner(bytes memory _signature) internal view returns(address) {
+        bytes32 hashMsg = keccak256(abi.encodePacked(msg.sender));
+        return ECDSA.recover(
+            keccak256(
+                abi.encodePacked("\x19Ethereum Signed Message:\n32", hashMsg)
+            ),
+            _signature
         );
     }
 }

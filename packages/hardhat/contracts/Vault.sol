@@ -4,6 +4,7 @@ pragma solidity ^0.6.8;
 import "./libs/SafeMath.sol"; 
 import "./interfaces/IERC20.sol"; 
 import "./libs/ProtocolUtils.sol"; 
+import "hardhat/console.sol";
 
 
 contract Vault {
@@ -15,7 +16,16 @@ contract Vault {
 
     event VaultDeposited(bytes32 indexed key, uint256 amount);
     event VaultWithdrawed(bytes32 indexed key, uint256 amount);
-
+    
+    /**
+     * @dev Prevent users to send Ether directly to this contract
+     */
+    receive() external payable {
+        require(
+            msg.sender != tx.origin,
+            "VaultContract#receive: NO_SEND_ETH_PLEASE"
+        );
+    }
     /**
         @notice Deposit 
      */
@@ -25,7 +35,7 @@ contract Vault {
         _deposits[_key] = _deposits[_key].add(_amount);
         _tokens[_key] = _tokenAddress;
         if (_tokenAddress == ETH_ADDRESS) {
-          require(msg.value != 0 && msg.value == _amount, "VaultContract#deposit: INVALID_ETH_AMOUNT");
+            require(msg.value != 0 && msg.value == _amount, "VaultContract#deposit: INVALID_ETH_AMOUNT");
         }
         else ProtocolUtils.transferFrom(IERC20(_tokenAddress), _user, address(this), _amount);
 
@@ -37,11 +47,11 @@ contract Vault {
 
         address token = _tokens[_key];
         amount = _deposits[_key];
-        // require(IERC20(token).balanceOf(address(this)) >= amount, "VaultContract: INSUFFICIENT_FUND");
+        console.log("Is eth: " , token == ETH_ADDRESS, token);
+        require(ProtocolUtils.balanceOf(IERC20(token), address(this)) >= amount, "VaultContract: INSUFFICIENT_FUND");
 
         delete _deposits[_key];
         delete _tokens[_key];
-
         ProtocolUtils.transfer(IERC20(token), _recipient, amount); 
         emit VaultWithdrawed(_key, amount);
     }
