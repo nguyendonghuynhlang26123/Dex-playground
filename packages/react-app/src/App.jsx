@@ -10,7 +10,6 @@ import { Link, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import TokensManagement from './pages/Tokens';
 import Swaps from './pages/Swap';
 import LiquidityPage from './pages/Liquidity';
-import Protocols from './pages/Protocol'
 import { SwapConfig } from './components/SwapConfig';
 
 function WalletButton() {
@@ -130,7 +129,6 @@ function App() {
         <Route path="swap" element={<Swaps />} />
         <Route path="liquidity" element={<LiquidityPage />} />
         <Route path="/" element={<Navigate to="/swap" />} />
-        <Route path="protocol" element={<Protocols />} />
       </Routes>
     </div>
   );
