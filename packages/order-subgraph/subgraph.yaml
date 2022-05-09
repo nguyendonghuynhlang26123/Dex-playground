@@ -1,0 +1,35 @@
+specVersion: 0.0.2
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: OrderProtocol
+    network: rinkeby
+    source:
+      address: "0xd0a9a25055127Bf14ae948dE572d9C67Bc556085"
+      abi: OrderProtocol
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - OrderCancelled
+        - OrderCreated
+        - OrderExecuted
+        - VaultDeposited
+        - VaultWithdrawed
+      abis:
+        - name: OrderProtocol
+          file: ./abis/OrderProtocol.json
+      eventHandlers:
+        - event: OrderCancelled(indexed bytes32,address,address,address,bytes,uint256)
+          handler: handleOrderCancelled
+        - event: OrderCreated(indexed bytes32,indexed address,address,address,address,uint256,bytes,bytes32)
+          handler: handleOrderCreated
+        - event: OrderExecuted(indexed bytes32,address,address,address,bytes,bytes,uint256,uint256)
+          handler: handleOrderExecuted
+        - event: VaultDeposited(indexed bytes32,uint256)
+          handler: handleVaultDeposited
+        - event: VaultWithdrawed(indexed bytes32,uint256)
+          handler: handleVaultWithdrawed
+      file: ./src/mapping.ts
