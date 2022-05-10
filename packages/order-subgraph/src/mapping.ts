@@ -1,65 +1,63 @@
-import { BigInt } from "@graphprotocol/graph-ts"
+import { BigInt } from '@graphprotocol/graph-ts';
 import {
   OrderProtocol,
   OrderCancelled,
   OrderCreated,
   OrderExecuted,
   VaultDeposited,
-  VaultWithdrawed
-} from "../generated/OrderProtocol/OrderProtocol"
-import { ExampleEntity } from "../generated/schema"
+  VaultWithdrawed,
+} from '../generated/OrderProtocol/OrderProtocol';
+import { Order } from '../generated/schema';
 
-export function handleOrderCancelled(event: OrderCancelled): void {
-  // Entities can be loaded from the store using a string ID; this ID
-  // needs to be unique across all entities of the same type
-  let entity = ExampleEntity.load(event.transaction.from.toHex())
+export const OPEN = 'open';
+export const EXECUTED = 'executed';
+export const CANCELLED = 'cancelled';
 
-  // Entities only exist after they have been saved to the store;
-  // `null` checks allow to create entities on demand
-  if (!entity) {
-    entity = new ExampleEntity(event.transaction.from.toHex())
+export function handleOrderCreated(event: OrderCreated): void {
+  let order = new Order(event.params._key.toHex());
 
-    // Entity fields can be set using simple assignments
-    entity.count = BigInt.fromI32(0)
-  }
+  order.module = event.params._module.toHex();
+  order.inputToken = event.params._inputToken.toHex();
+  order.owner = event.params._owner.toHex();
+  order.witness = event.params._witness.toHex();
+  order.amount = event.params._amount;
+  order.secret = event.params._secret.toHex();
+  order.data = event.params._data;
+  order.status = OPEN;
 
-  // BigInt and BigDecimal math are supported
-  entity.count = entity.count + BigInt.fromI32(1)
-
-  // Entity fields can be set based on event parameters
-  entity._key = event.params._key
-  entity._inputToken = event.params._inputToken
-
-  // Entities can be written to the store with `.save()`
-  entity.save()
-
-  // Note: If a handler doesn't require existing field values, it is faster
-  // _not_ to load the entity from the store. Instead, create it fresh with
-  // `new Entity(...)`, set the fields that should be updated and save the
-  // entity back to the store. Fields that were not set or unset remain
-  // unchanged, allowing for partial updates to be applied.
-
-  // It is also possible to access smart contracts from mappings. For
-  // example, the contract that has emitted the event can be connected to
-  // with:
-  //
-  // let contract = Contract.bind(event.address)
-  //
-  // The following functions can then be called on this contract to access
-  // state variables and other data:
-  //
-  // - contract.ETH_ADDRESS(...)
-  // - contract.PASS_PHRASE(...)
-  // - contract.canExecuteOrder(...)
-  // - contract.existOrder(...)
-  // - contract.getDeposits(...)
-  // - contract.keyOf(...)
+  order.createdTxHash = event.transaction.hash;
+  order.createdAt = event.block.timestamp;
+  order.updatedAt = event.block.timestamp;
 }
 
-export function handleOrderCreated(event: OrderCreated): void {}
+export function handleOrderCancelled(event: OrderCancelled): void {
+  let order = Order.load(event.params._key.toHex());
+  if (order == null) {
+    return;
+  }
 
-export function handleOrderExecuted(event: OrderExecuted): void {}
+  order.cancelledTxHash = event.transaction.hash;
+  order.status = CANCELLED;
+  order.updatedAt = event.block.timestamp;
 
-export function handleVaultDeposited(event: VaultDeposited): void {}
+  order.save();
+}
 
-export function handleVaultWithdrawed(event: VaultWithdrawed): void {}
+export function handleOrderExecuted(event: OrderExecuted): void {
+  let order = Order.load(event.params._key.toHex());
+  if (order == null) {
+    return;
+  }
+
+  order.bought = event.params._bought;
+  order.auxData = event.params._auxData;
+
+  // Skip padding 0, read address of handler from auxData (20 bytes)
+  order.handler = '0x' + event.params._auxData.toHex().substr(2 + 24, 40);
+
+  order.executedTxHash = event.transaction.hash;
+  order.status = EXECUTED;
+  order.updatedAt = event.block.timestamp;
+
+  order.save();
+}

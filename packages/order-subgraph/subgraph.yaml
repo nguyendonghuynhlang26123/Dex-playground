@@ -6,8 +6,9 @@ dataSources:
     name: OrderProtocol
     network: rinkeby
     source:
-      address: "0xd0a9a25055127Bf14ae948dE572d9C67Bc556085"
+      address: '0xd0a9a25055127Bf14ae948dE572d9C67Bc556085'
       abi: OrderProtocol
+      startBlock: 10647012
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
@@ -28,8 +29,4 @@ dataSources:
           handler: handleOrderCreated
         - event: OrderExecuted(indexed bytes32,address,address,address,bytes,bytes,uint256,uint256)
           handler: handleOrderExecuted
-        - event: VaultDeposited(indexed bytes32,uint256)
-          handler: handleVaultDeposited
-        - event: VaultWithdrawed(indexed bytes32,uint256)
-          handler: handleVaultWithdrawed
       file: ./src/mapping.ts
