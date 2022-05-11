@@ -23,5 +23,8 @@
   },
   "dependencies": {
     "react-router-dom": "^6.3.0"
+  },
+  "devDependencies": {
+    "terser-brunch": "^4.1.0"
   }
 }

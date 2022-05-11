@@ -420,12 +420,8 @@ Ensure the default browser behavior of the `hidden` attribute.
 .relative {
   position: relative;
 }
-.inset-y-0 {
-  top: 0px;
-  bottom: 0px;
-}
-.right-0 {
-  right: 0px;
+.m-0 {
+  margin: 0px;
 }
 .my-2 {
   margin-top: 0.5rem;
@@ -463,8 +459,14 @@ Ensure the default browser behavior of the `hidden` attribute.
 .mb-2 {
   margin-bottom: 0.5rem;
 }
+.ml-2 {
+  margin-left: 0.5rem;
+}
 .ml-auto {
   margin-left: auto;
+}
+.ml-3 {
+  margin-left: 0.75rem;
 }
 .mt-6 {
   margin-top: 1.5rem;
@@ -665,10 +667,6 @@ Ensure the default browser behavior of the `hidden` attribute.
   padding-top: 0.5rem;
   padding-bottom: 0.5rem;
 }
-.py-0 {
-  padding-top: 0px;
-  padding-bottom: 0px;
-}
 .text-center {
   text-align: center;
 }
@@ -782,17 +780,9 @@ input[type="number"]::-webkit-inner-spin-button,
   --tw-bg-opacity: 1 !important;
   background-color: rgb(147 197 253 / var(--tw-bg-opacity)) !important;
 }
-.hover\:bg-gray-500:hover {
-  --tw-bg-opacity: 1;
-  background-color: rgb(107 114 128 / var(--tw-bg-opacity));
-}
 .hover\:bg-gray-200:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(229 231 235 / var(--tw-bg-opacity));
-}
-.hover\:bg-red-400:hover {
-  --tw-bg-opacity: 1;
-  background-color: rgb(248 113 113 / var(--tw-bg-opacity));
 }
 .hover\:bg-gray-300:hover {
   --tw-bg-opacity: 1;

@@ -8,9 +8,11 @@ import {
   useToken,
   useTokenAllowance,
   useTokenBalance,
+  useEtherBalance
 } from '@usedapp/core';
+
 import { BigNumber, constants } from 'ethers';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState, Component } from 'react';
 import { RiArrowUpDownLine } from 'react-icons/ri';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
@@ -21,6 +23,12 @@ import { useApprove, useLiquidityReserve, useSwapInputHandle } from '../../hooks
 import { TransactionButton } from '../common';
 import Curve from '../Curve';
 import './index.css'
+
+
+import Select from 'react-select';
+
+
+
 
 const FEE_PERCENT = 3; // 0.3
 export const Protocol = ({ token0Address, token1Address, swapPosition }) => {
@@ -37,7 +45,7 @@ export const Protocol = ({ token0Address, token1Address, swapPosition }) => {
     //User must approve the router to spend their money before transfer
     const allowance = useTokenAllowance(token0Address, account, routerAddress);
     const [approvalState, approveToken] = useApprove(token0Address, routerAddress, 'Token Approved');
-  
+    
     //Liquidity
     const { active, r0, r1 } = useLiquidityReserve(poolAddress, token0Address, token1Address);
   
@@ -77,86 +85,67 @@ export const Protocol = ({ token0Address, token1Address, swapPosition }) => {
       approveToken();
     };
   
-    const calculateFee = (value) => {
-      return value.mul(FEE_PERCENT).div(1000);
-    };
-  
-    const calculatePriceImpact = (value0, value1, reserve0, reserve1) => {
-      return UniswapUtils.calculatePriceImpact(value0, value1, reserve0, reserve1).round(2).toString();
-    };
-  
-    const calculatePriceSlippage = (swapByInput, price, slippage) => {
-      let result;
-      if (swapByInput)
-        result = BigNumber.from(price) // (100 - X)% desired output
-          .mul(10000 - slippage * 100)
-          .div(10000);
-      else
-        result = BigNumber.from(price)
-          .mul(10000 + slippage * 100)
-          .div(10000);
-      return prettyNum(result);
-    };
-  
-    const performSwap = useCallback(
-      (ev) => {
-        ev.preventDefault();
-        if (swapBy === 0) {
-          // Swap by Input
-          const amountIn = price0;
-          const amountOutMin = BigNumber.from(price1) // (100 - X)% desired output
-            .mul(10000 - slippage * 100)
-            .div(10000);
-          const dl = Math.floor(Date.now() / 1000) + deadline * toSec;
-          swapWithInput(amountIn, amountOutMin, [token0Address, token1Address], account, dl);
-        } else if (swapBy === 1) {
-          //Swap by output
-          const amountOut = price1;
-          const amountInMax = BigNumber.from(price0)
-            .mul(10000 + slippage * 100)
-            .div(10000);
-          const dl = Math.floor(Date.now() / 1000) + deadline * toSec;
-          swapWithOutput(amountOut, amountInMax, [token0Address, token1Address], account, dl);
-        } else toast.warn('Enter amount before swap');
-      },
-      [
-        account,
-        price0,
-        price1,
-        swapBy,
-        swapWithInput,
-        swapWithOutput,
-        token0Address,
-        token1Address,
-        slippage,
-        deadline,
-        toSec,
-      ]
-    );
-   const headerStyle={
 
-   }
   
+ 
+    const { one, two } = addresses['4'];
+    const balanceETH= useEtherBalance(account);
+    const options = [
+      { value: account, label: 'ETH' },
+      { value: one, label: 'ONE' },
+      { value: two, label: 'TWO' }
+    ]
+
+    
+    
+  
+    const [value1,setValue1]=useState('');
+    // token0Balance=useTokenBalance(value1, account);
+    const handleChange1=(value)=>{
+      
+      setValue1(value);
+    
+      console.log(value);
+
+    }
+    const [value2,setValue2]=useState('');
+    // token1Balance = useTokenBalance(value2, account);
+    const handleChange2=(value)=>{
+      
+      setValue2(value);
+    
+      console.log(value);
+
+    }
+
+
+  const selectionStyle={
+    control: (styles)=>({...styles, backgroundColor: '#0066FF', borderRadius:'1.5rem',"&:hover": {
+      backgroundColor: "#3399FF"
+    } }),
+
+   
+    placeholder: (styles) => ({ ...styles, color:'white' }),
+    singleValue: (styles) => ({ ...styles, color:'white'}),
+
+  };
     return active && token0 && token1 ? (
       <>
         <form className="tag" >
-          <h1 className="font-bold text-[32px] ">Limit order</h1>
-          <div className="relative h-6 w-450 mb-2" >
-            <div className="absolute inset-y-0 right-0  w-50 ">
-            <button  className="btn py-0 hover:bg-gray-500 ">Sell</button>
-            <button className=" btn py-0 hover:bg-gray-500">Buy</button>
-        
-
-            </div>
-          </div>
+          <h1 className="font-bold text-[32px] ml-2  ">Limit order</h1>
+  
             
             <div className="labelBox flex flex-row space-x-2 my-2 ">
-          <label className="w-40">
-            {token0.name} ({token0.symbol}):
+          <label className="w-40 font-bold ml-2 ">
+        
+             <Select  styles={selectionStyle} className ="w-21 "   value={value1} placeholder='Select Token' onChange={handleChange1} options={options}  />
+              
+         
             <br />
-            Balance: {token0Balance && prettyNum(token0Balance, token0.decimals)}
+         Balance: {token0Balance && prettyNum(token0Balance, token0.decimals)}
           </label>
-          <input {...token0InputProps} className="inputBox   rounded flex-grow px-2 py-1" />
+          
+          <input {...token0InputProps} text style={{}} className="  flex-grow px-2 py-1 inputBox " placeholder="0.0" />
         </div>
         <button
           className="rounded-full border border-gray-300 hover:bg-gray-200 w-6 h-6 flex justify-center items-center ml-auto"
@@ -165,17 +154,19 @@ export const Protocol = ({ token0Address, token1Address, swapPosition }) => {
           <RiArrowUpDownLine />
         </button>
         <div className=" labelBox flex flex-row space-x-2 my-2 ">
-          <label className="w-40">
+          <label className="w-40 font-bold ml-3">
             Price
           </label>
-          <input {...token1InputProps} className="inputBox  rounded flex-grow px-2 py-1" />
+          <input {...token1InputProps} className="inputBox  rounded flex-grow px-2 py-1" placeholder="0.0" />
         </div>  
         <div className="labelBox flex flex-row space-x-2 my-2 ">
-          <label className="w-40">
-            {token1.name} ({token1.symbol}) <br />
+          <label className="w-40 font-bold ml-2">
+
+          <Select   className ="w-30 m-0" styles={selectionStyle} value={value2} placeholder='Select Token' onChange={handleChange2} options={options} />
+             <br />
             Balance: {token1Balance && prettyNum(token1Balance, token1.decimals)}
           </label>
-          <input {...token1InputProps} className="inputBox rounded flex-grow px-2 py-1" />
+          <input {...token1InputProps} className="inputBox rounded flex-grow px-2 py-1" placeholder="0.0" />
         </div>    
         <label className=" text-gray-800 hover:underline hover:cursor-pointer py-1 text-[8px] ">
               {exchangePrice && (
@@ -185,7 +176,7 @@ export const Protocol = ({ token0Address, token1Address, swapPosition }) => {
               )}
             </label>
         <div>
-        <button className="btnSetLimit  hover:bg-red-400">Set limit</button>
+        <button className="btnSetLimit ">Set limit</button>
             
         </div>
         
