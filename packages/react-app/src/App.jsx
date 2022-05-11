@@ -13,6 +13,7 @@ import LiquidityPage from './pages/Liquidity';
 import Protocols from './pages/Protocol'
 import { SwapConfig } from './components/SwapConfig';
 
+
 function WalletButton() {
   const { account, chainId, activateBrowserWallet, deactivate, error } = useEthers();
 
@@ -86,7 +87,7 @@ function App() {
     }
   }, [notifications]);
   return (
-    <div className="w-[560px] mx-auto px-4 my-4">
+    <div className="w-[560px] mx-auto px-4 my-4 ">
       <div className="flex items-start justify-between my-2">
         {rendered ? (
           <div className="flex flex-col items-start">

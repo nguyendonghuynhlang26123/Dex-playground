@@ -120,8 +120,8 @@ export const Protocol = ({ token0Address, token1Address, swapPosition }) => {
 
 
   const selectionStyle={
-    control: (styles)=>({...styles, backgroundColor: '#0066FF', borderRadius:'1.5rem',"&:hover": {
-      backgroundColor: "#3399FF"
+    control: (styles)=>({...styles, backgroundColor: '#3399FF', borderRadius:'1.5rem' ,"&:hover": {
+      backgroundColor: "#046cd4"
     } }),
 
    
@@ -143,7 +143,7 @@ export const Protocol = ({ token0Address, token1Address, swapPosition }) => {
             <div className="labelBox flex flex-row space-x-2 my-2 ">
           <label className="w-40 font-bold ml-2 ">
         
-             <Select  styles={selectionStyle} className ="w-21 " isOptionDisabled={(option) => option.disabled}  value={swapLimit? value1:value2} placeholder='Select Token' onChange={swapLimit?handleChange1:handleChange2} options={options}  />
+             <Select  styles={selectionStyle} className ="w-21 mt-2" isOptionDisabled={(option) => option.disabled}  value={swapLimit? value1:value2} placeholder='Select Token' onChange={swapLimit?handleChange1:handleChange2} options={options}  />
               
          
             <br />
@@ -167,13 +167,13 @@ export const Protocol = ({ token0Address, token1Address, swapPosition }) => {
         <div className="labelBox flex flex-row space-x-2 my-2 ">
           <label className="w-40 font-bold ml-2">
 
-          <Select   className ="w-30 m-0" isOptionDisabled={(options)=>options.isdisabled} styles={selectionStyle} value={swapLimit?value2:value1} placeholder='Select Token' onChange={swapLimit?handleChange2:handleChange1} options={options} />
+          <Select   className ="w-30 mt-2"  styles={selectionStyle} value={swapLimit?value2:value1} placeholder='Select Token' onChange={swapLimit?handleChange2:handleChange1} options={options} />
              <br />
             Balance: {token1Balance && prettyNum(token1Balance, token1.decimals)}
           </label>
           <input {...token1InputProps}  style={{fontSize:'25px'}} className="inputBox rounded flex-grow px-2 py-1" placeholder="0.0" />
         </div>    
-        <label className=" text-gray-800 hover:underline hover:cursor-pointer py-1 text-[8px] ">
+        <label className=" text-gray-800 hover:underline hover:cursor-pointer py-1 text-[8px]  ">
               {exchangePrice && (
                 <>
                   1 {token0.symbol} = {exchangePrice} {token1.symbol}

@@ -420,9 +420,6 @@ Ensure the default browser behavior of the `hidden` attribute.
 .relative {
   position: relative;
 }
-.m-0 {
-  margin: 0px;
-}
 .my-2 {
   margin-top: 0.5rem;
   margin-bottom: 0.5rem;
