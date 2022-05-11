@@ -99,8 +99,8 @@ export const Protocol = ({ token0Address, token1Address, swapPosition }) => {
     
     
   
-    const [value1,setValue1]=useState('');
-    // token0Balance=useTokenBalance(value1, account);
+    let [value1,setValue1]=useState('');
+    //token0Balance=useTokenBalance(value1, account);
     const handleChange1=(value)=>{
       
       setValue1(value);
@@ -113,6 +113,7 @@ export const Protocol = ({ token0Address, token1Address, swapPosition }) => {
     const handleChange2=(value)=>{
       
       setValue2(value);
+    
     
       console.log(value);
 
@@ -145,7 +146,7 @@ export const Protocol = ({ token0Address, token1Address, swapPosition }) => {
          Balance: {token0Balance && prettyNum(token0Balance, token0.decimals)}
           </label>
           
-          <input {...token0InputProps} text style={{}} className="  flex-grow px-2 py-1 inputBox " placeholder="0.0" />
+          <input {...token0InputProps}  style={{fontSize:'25px'}} className="  flex-grow px-2 py-1 inputBox " placeholder="0.0" />
         </div>
         <button
           className="rounded-full border border-gray-300 hover:bg-gray-200 w-6 h-6 flex justify-center items-center ml-auto"
@@ -157,7 +158,7 @@ export const Protocol = ({ token0Address, token1Address, swapPosition }) => {
           <label className="w-40 font-bold ml-3">
             Price
           </label>
-          <input {...token1InputProps} className="inputBox  rounded flex-grow px-2 py-1" placeholder="0.0" />
+          <input {...token1InputProps} style={{fontSize:'25px'}}  className="inputBox  rounded flex-grow px-2 py-1" placeholder="0.0" />
         </div>  
         <div className="labelBox flex flex-row space-x-2 my-2 ">
           <label className="w-40 font-bold ml-2">
@@ -166,7 +167,7 @@ export const Protocol = ({ token0Address, token1Address, swapPosition }) => {
              <br />
             Balance: {token1Balance && prettyNum(token1Balance, token1.decimals)}
           </label>
-          <input {...token1InputProps} className="inputBox rounded flex-grow px-2 py-1" placeholder="0.0" />
+          <input {...token1InputProps}  style={{fontSize:'25px'}} className="inputBox rounded flex-grow px-2 py-1" placeholder="0.0" />
         </div>    
         <label className=" text-gray-800 hover:underline hover:cursor-pointer py-1 text-[8px] ">
               {exchangePrice && (
