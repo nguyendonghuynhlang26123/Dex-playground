@@ -90,8 +90,8 @@ export const Protocol = ({ token0Address, token1Address, swapPosition }) => {
  
     const { one, two } = addresses['4'];
     const balanceETH= useEtherBalance(account);
-    const options = [
-      { value: account, label: 'ETH' },
+    let options = [
+      { value: account, label: 'ETH'},
       { value: one, label: 'ONE' },
       { value: two, label: 'TWO' }
     ]
@@ -99,13 +99,13 @@ export const Protocol = ({ token0Address, token1Address, swapPosition }) => {
     
     
   
-    let [value1,setValue1]=useState('');
+    const [value1,setValue1]=useState();
     //token0Balance=useTokenBalance(value1, account);
     const handleChange1=(value)=>{
       
       setValue1(value);
-    
-      console.log(value);
+ 
+      console.log(value1);
 
     }
     const [value2,setValue2]=useState('');
@@ -113,9 +113,8 @@ export const Protocol = ({ token0Address, token1Address, swapPosition }) => {
     const handleChange2=(value)=>{
       
       setValue2(value);
-    
-    
-      console.log(value);
+
+      console.log(value2);
 
     }
 
@@ -130,6 +129,11 @@ export const Protocol = ({ token0Address, token1Address, swapPosition }) => {
     singleValue: (styles) => ({ ...styles, color:'white'}),
 
   };
+  const [swapLimit,setSwapLimit]=useState(false);
+  const onSwapLimit =(status) =>{
+    status.preventDefault();
+    setSwapLimit((status)=>!status)
+  };
     return active && token0 && token1 ? (
       <>
         <form className="tag" >
@@ -139,7 +143,7 @@ export const Protocol = ({ token0Address, token1Address, swapPosition }) => {
             <div className="labelBox flex flex-row space-x-2 my-2 ">
           <label className="w-40 font-bold ml-2 ">
         
-             <Select  styles={selectionStyle} className ="w-21 "   value={value1} placeholder='Select Token' onChange={handleChange1} options={options}  />
+             <Select  styles={selectionStyle} className ="w-21 " isOptionDisabled={(option) => option.disabled}  value={swapLimit? value1:value2} placeholder='Select Token' onChange={swapLimit?handleChange1:handleChange2} options={options}  />
               
          
             <br />
@@ -150,7 +154,7 @@ export const Protocol = ({ token0Address, token1Address, swapPosition }) => {
         </div>
         <button
           className="rounded-full border border-gray-300 hover:bg-gray-200 w-6 h-6 flex justify-center items-center ml-auto"
-          onClick={swapPosition}
+          onClick={onSwapLimit}
         >
           <RiArrowUpDownLine />
         </button>
@@ -163,7 +167,7 @@ export const Protocol = ({ token0Address, token1Address, swapPosition }) => {
         <div className="labelBox flex flex-row space-x-2 my-2 ">
           <label className="w-40 font-bold ml-2">
 
-          <Select   className ="w-30 m-0" styles={selectionStyle} value={value2} placeholder='Select Token' onChange={handleChange2} options={options} />
+          <Select   className ="w-30 m-0" isOptionDisabled={(options)=>options.isdisabled} styles={selectionStyle} value={swapLimit?value2:value1} placeholder='Select Token' onChange={swapLimit?handleChange2:handleChange1} options={options} />
              <br />
             Balance: {token1Balance && prettyNum(token1Balance, token1.decimals)}
           </label>
