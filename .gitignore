@@ -2,7 +2,6 @@
 
 # dependencies
 /node_modules/**
-index.css
 /.pnp
 .pnp.js
 
