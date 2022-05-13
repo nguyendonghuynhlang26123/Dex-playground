@@ -10,9 +10,8 @@ import { Link, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import TokensManagement from './pages/Tokens';
 import Swaps from './pages/Swap';
 import LiquidityPage from './pages/Liquidity';
-import Protocols from './pages/Protocol'
+import Protocols from './pages/Protocol';
 import { SwapConfig } from './components/SwapConfig';
-
 
 function WalletButton() {
   const { account, chainId, activateBrowserWallet, deactivate, error } = useEthers();
@@ -110,16 +109,10 @@ function App() {
           <Link className={`px-2 hover:underline ${pathname === '/swap' && 'font-bold text-blue-500'}`} to="/swap">
             Swap
           </Link>
-          <Link
-            className={`px-2 hover:underline ${pathname === '/liquidity' && 'font-bold text-blue-500'}`}
-            to="/liquidity"
-          >
+          <Link className={`px-2 hover:underline ${pathname === '/liquidity' && 'font-bold text-blue-500'}`} to="/liquidity">
             Liquidity
           </Link>
-          <Link
-            className={`px-2 hover:underline ${pathname === '/protocol' && 'font-bold text-blue-500'}`}
-            to="/protocol"
-          >
+          <Link className={`px-2 hover:underline ${pathname === '/protocol' && 'font-bold text-blue-500'}`} to="/protocol">
             Protocol
           </Link>
         </li>

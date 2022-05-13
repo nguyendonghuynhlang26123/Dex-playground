@@ -670,16 +670,16 @@ Ensure the default browser behavior of the `hidden` attribute.
 .text-right {
   text-align: right;
 }
+.text-2xl {
+  font-size: 1.5rem;
+  line-height: 2rem;
+}
 .text-\[32px\] {
   font-size: 32px;
 }
 .text-lg {
   font-size: 1.125rem;
   line-height: 1.75rem;
-}
-.text-2xl {
-  font-size: 1.5rem;
-  line-height: 2rem;
 }
 .text-\[8px\] {
   font-size: 8px;

@@ -3,7 +3,7 @@ import { Swap } from '../../components/Swap';
 import { addresses } from '@dex/contracts';
 import { useEthers } from '@usedapp/core';
 import { Protocol } from '../../components/Protocol';
-import '../../components/Protocol/index.css'
+// import '../../components/Protocol/index.css';
 
 const Protocols = () => {
   const { active } = useEthers();
@@ -15,7 +15,7 @@ const Protocols = () => {
   };
 
   return (
-    <div  >
+    <div>
       {active && (
         <>
           {swapReversed ? (

@@ -1,14 +1,6 @@
 import { abis, addresses } from '@dex/contracts';
 import { formatEther, parseEther } from '@ethersproject/units';
-import {
-  ERC20Interface,
-  useContractFunction,
-  useDebounce,
-  useEthers,
-  useToken,
-  useTokenAllowance,
-  useTokenBalance,
-} from '@usedapp/core';
+import { ERC20Interface, useContractFunction, useDebounce, useEthers, useToken, useTokenAllowance, useTokenBalance } from '@usedapp/core';
 import { BigNumber, constants } from 'ethers';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { RiArrowUpDownLine } from 'react-icons/ri';
@@ -118,19 +110,7 @@ export const Swap = ({ token0Address, token1Address, swapPosition }) => {
         swapWithOutput(amountOut, amountInMax, [token0Address, token1Address], account, dl);
       } else toast.warn('Enter amount before swap');
     },
-    [
-      account,
-      price0,
-      price1,
-      swapBy,
-      swapWithInput,
-      swapWithOutput,
-      token0Address,
-      token1Address,
-      slippage,
-      deadline,
-      toSec,
-    ]
+    [account, price0, price1, swapBy, swapWithInput, swapWithOutput, token0Address, token1Address, slippage, deadline, toSec]
   );
 
   return active && token0 && token1 ? (
@@ -156,10 +136,7 @@ export const Swap = ({ token0Address, token1Address, swapPosition }) => {
           </label>
           <input {...token0InputProps} className="border border-gray-400 rounded flex-grow px-2 py-1" />
         </div>
-        <button
-          className="rounded-full border border-gray-300 hover:bg-gray-200 w-6 h-6 flex justify-center items-center ml-auto"
-          onClick={swapPosition}
-        >
+        <button className="rounded-full border border-gray-300 hover:bg-gray-200 w-6 h-6 flex justify-center items-center ml-auto" onClick={swapPosition}>
           <RiArrowUpDownLine />
         </button>
         <div className="flex flex-row space-x-2 my-2 ">
@@ -225,10 +202,7 @@ export const Swap = ({ token0Address, token1Address, swapPosition }) => {
           />
         )}
         {error ? (
-          <button
-            className={`bg-red-500 text-white ease-in-out duration-300 rounded px-2 py-1.5 my-2 disabled:opacity-60`}
-            disabled
-          >
+          <button className={`bg-red-500 text-white ease-in-out duration-300 rounded px-2 py-1.5 my-2 disabled:opacity-60`} disabled>
             {error}
           </button>
         ) : (

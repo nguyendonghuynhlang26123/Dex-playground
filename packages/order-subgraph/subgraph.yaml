@@ -1,0 +1,28 @@
+specVersion: 0.0.2
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: OrderProtocol
+    network: rinkeby
+    source:
+      address: '0xA9cd06EDF421373F7dD86Fb26268C7995A872327'
+      abi: OrderProtocol
+      startBlock: 10647012
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - Order
+      abis:
+        - name: OrderProtocol
+          file: ./abis/OrderProtocol.json
+      eventHandlers:
+        - event: OrderCancelled(indexed bytes32,address,address,address,bytes,uint256)
+          handler: handleOrderCancelled
+        - event: OrderCreated(indexed bytes32,indexed address,address,address,address,uint256,bytes,bytes32)
+          handler: handleOrderCreated
+        - event: OrderExecuted(indexed bytes32,address,address,address,bytes,bytes,uint256,uint256)
+          handler: handleOrderExecuted
+      file: ./src/mapping.ts

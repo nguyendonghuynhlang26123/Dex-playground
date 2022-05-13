@@ -1,7 +1,6 @@
 {
   "name": "@dex/react-app",
   "version": "1.0.0",
-  "homepage": "./",
   "browserslist": {
     "production": [
       ">0.2%",
@@ -51,12 +50,12 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "npm run watch:css && react-scripts build",
+    "build": "yarn build:css && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "watch:css": "postcss src/assets/styles/tailwind.css -o src/assets/styles/index.css",
-    "watch": "chokidar \"./src/**/*.jsx\" -c \"npm run watch:css\"",
-    "dev": "concurrently \"npm run watch\" \"npm run start\""
+    "build:css": "postcss src/assets/styles/tailwind.css -o src/assets/styles/index.css",
+    "watch": "chokidar \"./src/**/*.jsx\" -c \"yarn build:css\"",
+    "dev": "concurrently \"yarn watch\" \"yarn start\""
   },
   "devDependencies": {
     "autoprefixer": "^10.4.4",

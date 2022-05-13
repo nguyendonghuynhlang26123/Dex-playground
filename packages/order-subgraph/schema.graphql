@@ -1,0 +1,31 @@
+enum OrderStatus {
+  open
+  executed
+  cancelled
+}
+
+type Order @entity {
+  id: ID!
+  module: String!
+  inputToken: String!
+  owner: String!
+  witness: String!
+  amount: BigInt!
+  secret: String!
+  data: Bytes!
+  status: OrderStatus!
+
+  # Executed data
+  bought: BigInt
+  handler: String
+  auxData: Bytes
+
+  # Hashes
+  createdTxHash: Bytes!
+  executedTxHash: Bytes
+  cancelledTxHash: Bytes
+
+  # Common data:
+  createdAt: BigInt!
+  updatedAt: BigInt!
+}
