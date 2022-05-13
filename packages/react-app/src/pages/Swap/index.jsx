@@ -6,6 +6,7 @@ import { useEthers } from '@usedapp/core';
 const Swaps = () => {
   const { active } = useEthers();
   const { one, two } = addresses['4'];
+  const [token1Address, setToken1Address] = useState(false);
   const [swapReversed, setSwapReversed] = useState(false);
   const swapPositionBtn = (ev) => {
     ev.preventDefault();

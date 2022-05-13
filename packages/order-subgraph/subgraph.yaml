@@ -2,11 +2,11 @@ specVersion: 0.0.2
 schema:
   file: ./schema.graphql
 dataSources:
-  - kind: ethereum
+  - kind: ethereum/contract
     name: OrderProtocol
     network: rinkeby
     source:
-      address: '0xd0a9a25055127Bf14ae948dE572d9C67Bc556085'
+      address: '0xA9cd06EDF421373F7dD86Fb26268C7995A872327'
       abi: OrderProtocol
       startBlock: 10647012
     mapping:
@@ -14,11 +14,7 @@ dataSources:
       apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
-        - OrderCancelled
-        - OrderCreated
-        - OrderExecuted
-        - VaultDeposited
-        - VaultWithdrawed
+        - Order
       abis:
         - name: OrderProtocol
           file: ./abis/OrderProtocol.json

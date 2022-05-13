@@ -16,7 +16,7 @@ const BN = ethers.BigNumber;
 const APPROVE_VALUE = ethers.constants.MaxUint256;
 const toBytes32 = ethers.utils.formatBytes32String;
 
-describe("Vault Contract", function () {
+describe.only("Vault Contract", function () {
   const ETH_ADDRESS = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
   let owner;
   let user1;
@@ -142,6 +142,32 @@ describe("Vault Contract", function () {
       vault.depositVault(KEY, token1.address, user1.address, amountDepositing)
     ).to.be.revertedWith("VaultContract#deposit: VAULT_EXISTS");
     await vaultBalanceSnap.requireConstant();
+  });
+
+  it.only("Vault should revert if user not approve the token transfer yet", async function () {
+    const KEY = toBytes32("KEY");
+    const amountTesting = BN.from(_18digits("100"));
+
+    // ** SETUP
+    await token1.connect(user1).mint(amountTesting);
+    const vaultBalanceSnap = await balanceSnap(
+      token1,
+      vault.address,
+      "Vault's ONE"
+    );
+    const userBalanceSnap = await balanceSnap(
+      token1,
+      user1.address,
+      "User1's ONE"
+    );
+
+    // ** VERIFY
+    // Expect revert if key exists
+    await expect(
+      vault.depositVault(KEY, token1.address, user1.address, amountTesting)
+    ).to.be.revertedWith("ProtocolUtils: Failed to perform transferFrom");
+    await vaultBalanceSnap.requireConstant();
+    await userBalanceSnap.requireConstant();
   });
 
   it("Token should be able to be pulled", async function () {

@@ -1,12 +1,4 @@
-import { BigInt } from '@graphprotocol/graph-ts';
-import {
-  OrderProtocol,
-  OrderCancelled,
-  OrderCreated,
-  OrderExecuted,
-  VaultDeposited,
-  VaultWithdrawed,
-} from '../generated/OrderProtocol/OrderProtocol';
+import { OrderCancelled, OrderCreated, OrderExecuted } from '../generated/OrderProtocol/OrderProtocol';
 import { Order } from '../generated/schema';
 
 export const OPEN = 'open';
@@ -28,6 +20,8 @@ export function handleOrderCreated(event: OrderCreated): void {
   order.createdTxHash = event.transaction.hash;
   order.createdAt = event.block.timestamp;
   order.updatedAt = event.block.timestamp;
+
+  order.save();
 }
 
 export function handleOrderCancelled(event: OrderCancelled): void {

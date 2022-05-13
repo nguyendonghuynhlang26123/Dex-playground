@@ -1,4 +1,4 @@
-enum OrderStatus @entity {
+enum OrderStatus {
   open
   executed
   cancelled

@@ -1,0 +1,21 @@
+{
+  "extends": ["tslint-plugin-prettier"],
+  "rules": {
+    "no-commented-out-code": false,
+    "variable-name": [true, "ban-keywords", "allow-leading-underscore"],
+    "prettier": [
+      true,
+      {
+        "trailingComma": "es5",
+        "tabWidth": 2,
+        "semi": true,
+        "singleQuote": true,
+        "quoteProps": "preserve",
+        "printWidth": 160
+      }
+    ]
+  },
+  "linterOptions": {
+    "exclude": ["node_modules/**/*.ts", "./**/*.js"]
+  }
+}

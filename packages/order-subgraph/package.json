@@ -1,9 +1,10 @@
 {
-  "name": "limit-order",
+  "name": "@dex/subgraph",
   "license": "UNLICENSED",
   "author": {
     "name": "Nguyen Dang Huynh Long"
   },
+  "version": "1.0.0",
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
