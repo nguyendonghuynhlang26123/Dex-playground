@@ -56,7 +56,6 @@ export const useSwap = (factoryAddress) => {
     const fetchPairAddress = async () => {
       if (address0 && address1 && address0 != address1) {
         const pairAddress = await factoryContract.getPair(address0, address1);
-        console.log('log ~ file: useSwap.jsx ~ line 55 ~ fetchPairAddress ~ pairAddress', pairAddress);
         if (pairAddress !== '0x0000000000000000000000000000000000000000') {
           setPairAddress(pairAddress);
           setIsTokenReverse(BigNumber.from(address0).gt(BigNumber.from(address1)));

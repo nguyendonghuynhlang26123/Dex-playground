@@ -18,7 +18,6 @@ export const AddLiquidity = ({ token0, token1, token0Address, token1Address, tok
 
   //Token Approval:
   const token0Allowance = useTokenAllowance(token0Address, account, routerAddress);
-  console.log('log ~ file: AddLiquidity.jsx ~ line 31 ~ token0Allowance', token0Allowance);
   const token1Allowance = useTokenAllowance(token1Address, account, routerAddress);
   const [approval0State, approveToken0] = useApprove(token0Address, routerAddress, 'Token Approved');
   const [approval1State, approveToken1] = useApprove(token1Address, routerAddress, 'Token Approved');
