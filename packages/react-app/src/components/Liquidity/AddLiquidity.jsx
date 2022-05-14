@@ -7,7 +7,7 @@ import { UniswapUtils } from '../../common/UniswapUtils';
 import { getContract, prettyNum } from '../../common/utils';
 import { useApprove } from '../../hooks';
 import { useLiquidityInputHandle } from '../../hooks/useLiquidityInputHandle';
-import { TransactionButton } from '../common';
+import { TransactionButton } from '../TransactionButtons';
 
 export const AddLiquidity = ({ token0, token1, token0Address, token1Address, token0Balance, token1Balance, r0, r1, totalLPToken }) => {
   const { account, library } = useEthers();

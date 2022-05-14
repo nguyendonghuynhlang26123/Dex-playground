@@ -11,11 +11,12 @@ import { envConfig } from '../../common/config';
 import { UniswapUtils } from '../../common/UniswapUtils';
 import { getContract, prettyNum } from '../../common/utils';
 import { useApprove, useLiquidityReserve, useSwapInputHandle } from '../../hooks';
-import { TransactionButton } from '../common';
 import Curve from '../Curve';
-// import './index.css'
+import EthereumIcon from '../../assets/images/ethereum.png';
+import './index.css';
 
 import Select from 'react-select';
+import { CurrencyInput } from '../CurrencyInput';
 
 const FEE_PERCENT = 3; // 0.3
 export const Protocol = ({ token0Address, token1Address, swapPosition }) => {
@@ -117,6 +118,8 @@ export const Protocol = ({ token0Address, token1Address, swapPosition }) => {
     <>
       <form className="tag">
         <h1 className="font-bold text-[32px] ml-2  ">Limit order</h1>
+
+        <CurrencyInput label="Input" provider={library} account={account} onAddressChange={() => {}} />
 
         <div className="labelBox flex flex-row space-x-2 my-2 ">
           <label className="w-40 font-bold ml-2 ">

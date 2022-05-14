@@ -6,11 +6,10 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { RiArrowUpDownLine } from 'react-icons/ri';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import { envConfig } from '../../common/config';
 import { UniswapUtils } from '../../common/UniswapUtils';
 import { getContract, prettyNum } from '../../common/utils';
 import { useApprove, useLiquidityReserve, useSwapInputHandle } from '../../hooks';
-import { TransactionButton } from '../common';
+import { TransactionButton } from '../TransactionButtons';
 import Curve from '../Curve';
 
 const FEE_PERCENT = 3; // 0.3
@@ -34,7 +33,7 @@ export const Swap = ({ token0Address, token1Address, swapPosition }) => {
 
   //Input handler
   const routerContract = getContract(abis.router, routerAddress, library);
-  const { price0, price1, token0InputProps, token1InputProps, exchangePrice, swapBy } = useSwapInputHandle({
+  const { price0, price1, token0InputProps, token1InputProps, exchangePrice, swapBy, reset } = useSwapInputHandle({
     r0,
     r1,
     debounceTime: 100,
@@ -100,6 +99,7 @@ export const Swap = ({ token0Address, token1Address, swapPosition }) => {
           .div(10000);
         const dl = Math.floor(Date.now() / 1000) + deadline * toSec;
         swapWithInput(amountIn, amountOutMin, [token0Address, token1Address], account, dl);
+        reset();
       } else if (swapBy === 1) {
         //Swap by output
         const amountOut = price1;
@@ -108,6 +108,7 @@ export const Swap = ({ token0Address, token1Address, swapPosition }) => {
           .div(10000);
         const dl = Math.floor(Date.now() / 1000) + deadline * toSec;
         swapWithOutput(amountOut, amountInMax, [token0Address, token1Address], account, dl);
+        reset();
       } else toast.warn('Enter amount before swap');
     },
     [account, price0, price1, swapBy, swapWithInput, swapWithOutput, token0Address, token1Address, slippage, deadline, toSec]
@@ -115,7 +116,7 @@ export const Swap = ({ token0Address, token1Address, swapPosition }) => {
 
   return active && token0 && token1 ? (
     <>
-      <Curve
+      {/* <Curve
         title0={token0.symbol}
         title1={token1.symbol}
         r0={Number(prettyNum(r0))}
@@ -124,7 +125,7 @@ export const Swap = ({ token0Address, token1Address, swapPosition }) => {
         addToken1={0}
         width={500}
         height={500}
-      />
+      /> */}
       <form className="flex flex-col ">
         <h1 className="text-[32px] text-center mt-6 mb-2 font-bold">SWAP</h1>
 
