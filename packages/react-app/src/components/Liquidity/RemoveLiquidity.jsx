@@ -5,7 +5,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { calculateShare, getContract, prettyNum } from '../../common/utils';
 import { useApprove } from '../../hooks';
-import { TransactionButton } from '../common';
+import { TransactionButton } from '../TransactionButtons';
 
 export const RemoveLiquidity = ({ token0, token1, token0Address, token1Address, r0, r1, totalLPToken, lpAmount }) => {
   const { account, library } = useEthers();
@@ -26,31 +26,19 @@ export const RemoveLiquidity = ({ token0, token1, token0Address, token1Address, 
   });
 
   // LP token
-  const lpDesired = useMemo(
-    () => (lpAmount && slideValue ? calculateShare(lpAmount, slideValue) : '0'),
-    [lpAmount, slideValue]
-  );
+  const lpDesired = useMemo(() => (lpAmount && slideValue ? calculateShare(lpAmount, slideValue) : '0'), [lpAmount, slideValue]);
 
   // calculate total amount of user's token in pool
   const shareInPool = useMemo(
-    () =>
-      lpAmount && totalLPToken
-        ? FixedNumber.from(lpAmount.mul(100)).divUnsafe(FixedNumber.from(totalLPToken)).toString()
-        : '0',
+    () => (lpAmount && totalLPToken ? FixedNumber.from(lpAmount.mul(100)).divUnsafe(FixedNumber.from(totalLPToken)).toString() : '0'),
     [lpAmount, totalLPToken]
   );
   const balance0Max = useMemo(() => (r0 && shareInPool ? calculateShare(r0, shareInPool) : '0'), [r0, shareInPool]);
   const balance1Max = useMemo(() => (r1 && shareInPool ? calculateShare(r1, shareInPool) : '0'), [r1, shareInPool]);
 
   // slider% in total balance user have will be calculated
-  const balance0Received = useMemo(
-    () => (balance0Max && slideValue ? calculateShare(balance0Max, slideValue) : '0'),
-    [balance0Max, slideValue]
-  );
-  const balance1Received = useMemo(
-    () => (balance1Max && slideValue ? calculateShare(balance1Max, slideValue) : '0'),
-    [balance1Max, slideValue]
-  );
+  const balance0Received = useMemo(() => (balance0Max && slideValue ? calculateShare(balance0Max, slideValue) : '0'), [balance0Max, slideValue]);
+  const balance1Received = useMemo(() => (balance1Max && slideValue ? calculateShare(balance1Max, slideValue) : '0'), [balance1Max, slideValue]);
 
   // Other
   const slippage = useSelector((state) => state.slippage.value);
@@ -68,31 +56,13 @@ export const RemoveLiquidity = ({ token0, token1, token0Address, token1Address, 
       const dl = Math.floor(Date.now() / 1000) + deadline * toSec;
       submitRemoveLiquidity(token0Address, token1Address, lpDesired, amountMin0, amountMin1, account, dl);
     },
-    [
-      balance0Received,
-      balance1Received,
-      slippage,
-      deadline,
-      toSec,
-      submitRemoveLiquidity,
-      token0Address,
-      token1Address,
-      lpDesired,
-      account,
-    ]
+    [balance0Received, balance1Received, slippage, deadline, toSec, submitRemoveLiquidity, token0Address, token1Address, lpDesired, account]
   );
 
   return (
     <div className="my-2">
       <p className="text-2xl">{slideValue}%</p>
-      <input
-        type="range"
-        min="1"
-        max="100"
-        value={slideValue}
-        onChange={(ev) => setSlideValue(ev.target.value)}
-        className="w-full"
-      />
+      <input type="range" min="1" max="100" value={slideValue} onChange={(ev) => setSlideValue(ev.target.value)} className="w-full" />
 
       <hr />
       <div className="my-2">

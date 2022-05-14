@@ -1,24 +1,15 @@
 import { abis, addresses } from '@dex/contracts';
 import { formatEther, parseEther } from '@ethersproject/units';
-import {
-  ERC20Interface,
-  useContractFunction,
-  useDebounce,
-  useEthers,
-  useToken,
-  useTokenAllowance,
-  useTokenBalance,
-} from '@usedapp/core';
+import { ERC20Interface, useContractFunction, useDebounce, useEthers, useToken, useTokenAllowance, useTokenBalance } from '@usedapp/core';
 import { BigNumber, constants } from 'ethers';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { RiArrowUpDownLine } from 'react-icons/ri';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import { envConfig } from '../../common/config';
 import { UniswapUtils } from '../../common/UniswapUtils';
 import { getContract, prettyNum } from '../../common/utils';
 import { useApprove, useLiquidityReserve, useSwapInputHandle } from '../../hooks';
-import { TransactionButton } from '../common';
+import { TransactionButton } from '../TransactionButtons';
 import Curve from '../Curve';
 
 const FEE_PERCENT = 3; // 0.3
@@ -42,7 +33,7 @@ export const Swap = ({ token0Address, token1Address, swapPosition }) => {
 
   //Input handler
   const routerContract = getContract(abis.router, routerAddress, library);
-  const { price0, price1, token0InputProps, token1InputProps, exchangePrice, swapBy } = useSwapInputHandle({
+  const { price0, price1, token0InputProps, token1InputProps, exchangePrice, swapBy, reset } = useSwapInputHandle({
     r0,
     r1,
     debounceTime: 100,
@@ -108,6 +99,7 @@ export const Swap = ({ token0Address, token1Address, swapPosition }) => {
           .div(10000);
         const dl = Math.floor(Date.now() / 1000) + deadline * toSec;
         swapWithInput(amountIn, amountOutMin, [token0Address, token1Address], account, dl);
+        reset();
       } else if (swapBy === 1) {
         //Swap by output
         const amountOut = price1;
@@ -116,26 +108,15 @@ export const Swap = ({ token0Address, token1Address, swapPosition }) => {
           .div(10000);
         const dl = Math.floor(Date.now() / 1000) + deadline * toSec;
         swapWithOutput(amountOut, amountInMax, [token0Address, token1Address], account, dl);
+        reset();
       } else toast.warn('Enter amount before swap');
     },
-    [
-      account,
-      price0,
-      price1,
-      swapBy,
-      swapWithInput,
-      swapWithOutput,
-      token0Address,
-      token1Address,
-      slippage,
-      deadline,
-      toSec,
-    ]
+    [account, price0, price1, swapBy, swapWithInput, swapWithOutput, token0Address, token1Address, slippage, deadline, toSec]
   );
 
   return active && token0 && token1 ? (
     <>
-      <Curve
+      {/* <Curve
         title0={token0.symbol}
         title1={token1.symbol}
         r0={Number(prettyNum(r0))}
@@ -144,7 +125,7 @@ export const Swap = ({ token0Address, token1Address, swapPosition }) => {
         addToken1={0}
         width={500}
         height={500}
-      />
+      /> */}
       <form className="flex flex-col ">
         <h1 className="text-[32px] text-center mt-6 mb-2 font-bold">SWAP</h1>
 
@@ -156,10 +137,7 @@ export const Swap = ({ token0Address, token1Address, swapPosition }) => {
           </label>
           <input {...token0InputProps} className="border border-gray-400 rounded flex-grow px-2 py-1" />
         </div>
-        <button
-          className="rounded-full border border-gray-300 hover:bg-gray-200 w-6 h-6 flex justify-center items-center ml-auto"
-          onClick={swapPosition}
-        >
+        <button className="rounded-full border border-gray-300 hover:bg-gray-200 w-6 h-6 flex justify-center items-center ml-auto" onClick={swapPosition}>
           <RiArrowUpDownLine />
         </button>
         <div className="flex flex-row space-x-2 my-2 ">
@@ -225,10 +203,7 @@ export const Swap = ({ token0Address, token1Address, swapPosition }) => {
           />
         )}
         {error ? (
-          <button
-            className={`bg-red-500 text-white ease-in-out duration-300 rounded px-2 py-1.5 my-2 disabled:opacity-60`}
-            disabled
-          >
+          <button className={`bg-red-500 text-white ease-in-out duration-300 rounded px-2 py-1.5 my-2 disabled:opacity-60`} disabled>
             {error}
           </button>
         ) : (

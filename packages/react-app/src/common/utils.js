@@ -15,7 +15,7 @@ export const getContract = (abi, address, provider = undefined) => {
   return new Contract(address, contractInterface, provider);
 };
 
-export const eighteenDigits = (value) => {
+export const _18Digits = (value) => {
   return parseEther(value);
 };
 

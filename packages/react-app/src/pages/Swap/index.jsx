@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { Swap } from '../../components/Swap';
 import { addresses } from '@dex/contracts';
 import { useEthers } from '@usedapp/core';
+import { NewSwap } from '../../components/Swap/NewSwap';
 
 const Swaps = () => {
   const { active } = useEthers();
   const { one, two } = addresses['4'];
+  const [token1Address, setToken1Address] = useState(false);
   const [swapReversed, setSwapReversed] = useState(false);
   const swapPositionBtn = (ev) => {
     ev.preventDefault();
@@ -16,11 +18,13 @@ const Swaps = () => {
     <div>
       {active && (
         <>
-          {swapReversed ? (
+          {/* {swapReversed ? (
             <Swap token0Address={two} token1Address={one} swapPosition={swapPositionBtn} />
           ) : (
             <Swap token0Address={one} token1Address={two} swapPosition={swapPositionBtn} />
-          )}
+          )} */}
+
+          <NewSwap />
           <hr />
         </>
       )}

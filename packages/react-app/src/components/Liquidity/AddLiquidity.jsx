@@ -7,7 +7,7 @@ import { UniswapUtils } from '../../common/UniswapUtils';
 import { getContract, prettyNum } from '../../common/utils';
 import { useApprove } from '../../hooks';
 import { useLiquidityInputHandle } from '../../hooks/useLiquidityInputHandle';
-import { TransactionButton } from '../common';
+import { TransactionButton } from '../TransactionButtons';
 
 export const AddLiquidity = ({ token0, token1, token0Address, token1Address, token0Balance, token1Balance, r0, r1, totalLPToken }) => {
   const { account, library } = useEthers();
@@ -18,7 +18,6 @@ export const AddLiquidity = ({ token0, token1, token0Address, token1Address, tok
 
   //Token Approval:
   const token0Allowance = useTokenAllowance(token0Address, account, routerAddress);
-  console.log('log ~ file: AddLiquidity.jsx ~ line 31 ~ token0Allowance', token0Allowance);
   const token1Allowance = useTokenAllowance(token1Address, account, routerAddress);
   const [approval0State, approveToken0] = useApprove(token0Address, routerAddress, 'Token Approved');
   const [approval1State, approveToken1] = useApprove(token1Address, routerAddress, 'Token Approved');

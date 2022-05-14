@@ -10,6 +10,7 @@ import { Link, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import TokensManagement from './pages/Tokens';
 import Swaps from './pages/Swap';
 import LiquidityPage from './pages/Liquidity';
+import Protocols from './pages/Protocol';
 import { SwapConfig } from './components/SwapConfig';
 
 function WalletButton() {
@@ -85,7 +86,7 @@ function App() {
     }
   }, [notifications]);
   return (
-    <div className="w-[560px] mx-auto px-4 my-4">
+    <div className="w-[560px] mx-auto px-4 my-4 ">
       <div className="flex items-start justify-between my-2">
         {rendered ? (
           <div className="flex flex-col items-start">
@@ -108,16 +109,10 @@ function App() {
           <Link className={`px-2 hover:underline ${pathname === '/swap' && 'font-bold text-blue-500'}`} to="/swap">
             Swap
           </Link>
-          <Link
-            className={`px-2 hover:underline ${pathname === '/liquidity' && 'font-bold text-blue-500'}`}
-            to="/liquidity"
-          >
+          <Link className={`px-2 hover:underline ${pathname === '/liquidity' && 'font-bold text-blue-500'}`} to="/liquidity">
             Liquidity
           </Link>
-          <Link
-            className={`px-2 hover:underline ${pathname === '/protocol' && 'font-bold text-blue-500'}`}
-            to="/protocol"
-          >
+          <Link className={`px-2 hover:underline ${pathname === '/protocol' && 'font-bold text-blue-500'}`} to="/protocol">
             Protocol
           </Link>
         </li>
@@ -129,6 +124,7 @@ function App() {
         <Route path="swap" element={<Swaps />} />
         <Route path="liquidity" element={<LiquidityPage />} />
         <Route path="/" element={<Navigate to="/swap" />} />
+        <Route path="protocol" element={<Protocols />} />
       </Routes>
     </div>
   );

@@ -27,20 +27,18 @@ library ProtocolUtils {
      * @notice Transfer token or ETH to a destinatary
      * @param _token - Address of the token
      * @param _to - Address of the recipient
-     * @param _val - Uint256 of the amount to transfer
-     * @return bool - Whether the transfer was success or not
+     * @param _val - Uint256 of the amount to transfer 
      */
-    function transfer(IERC20 _token, address _to, uint256 _val) internal returns (bool) {
+    function transfer(IERC20 _token, address _to, uint256 _val) internal {
         if (ETH_ADDRESS == address(_token)) {
             (bool success, ) = _to.call{value:_val}("");
-            return success;
+            require(success, "ProtocolUtils: Failed to transfer ETH");
         }
-
-        return SafeERC20.transfer(_token, _to, _val);
+        else require(SafeERC20.transfer(_token, _to, _val), "ProtocolUtils: Failed to transfer token");
     }
 
-    function transferFrom(IERC20 _token, address _from, address _to, uint256 _val) internal returns (bool) {
+    function transferFrom(IERC20 _token, address _from, address _to, uint256 _val) internal {
         require(ETH_ADDRESS != address(_token), "Cannot transfer from on ETH");
-        return SafeERC20.transferFrom(_token, _from, _to, _val);
+        require(SafeERC20.transferFrom(_token, _from, _to, _val), "ProtocolUtils: Failed to perform transferFrom");
     }
 }
