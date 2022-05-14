@@ -1,0 +1,62 @@
+.h1 {
+    font-weight: bold;
+    font-size: large;
+}
+
+.tag {
+    margin-top: 5px;
+    padding: 5px;
+    background-color: whitesmoke;
+    border-radius: 1.5rem;
+    border: 1px solid whitesmoke;
+}
+
+.inputBox {
+    text-align: right;
+    background-color: transparent;
+    border: 0cm solid #363636;
+    vertical-align: top;
+    padding: 15px;
+    border-radius: 1.5rem;
+}
+
+.labelBox {
+    border: 1px solid whitesmoke;
+    border-radius: 1.5rem;
+    padding: 5px;
+    background-color: #E8E8E8;
+}
+
+.labelBox:hover {
+    border: 1px solid gray;
+}
+
+.labelNote {
+    font-size: medium;
+}
+
+.btnSetLimit {
+    width: 500px;
+    height: 50px;
+    background-color: #3399FF;
+    color: white;
+    text-align: center;
+    padding: auto;
+    border-radius: 1.5rem;
+    margin-top: 2px;
+    margin-left: 8px;
+}
+
+.btn {
+    width: 50px;
+    height: 30px;
+    background-color: rgb(69, 63, 63);
+    color: white;
+    text-align: center;
+    border-radius: 0.5rem;
+    padding-bottom: 0.25px;
+}
+
+.btnSetLimit:hover {
+    background-color: #046cd4;
+}
