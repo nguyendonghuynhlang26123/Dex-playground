@@ -14,6 +14,7 @@ import { CollapsePanel } from '../CollapsePanel';
 import { RiCloseLine, RiArrowDownLine } from 'react-icons/ri';
 import { ApprovalWrapper, ErrorWrapper, TransactionButton } from '../TransactionButtons';
 import { useLimitInputHandler } from '../../hooks/useLimitOrderInputHandle';
+import { OrderContainer } from '../Order/OrderContainer';
 
 export const Protocol = () => {
   const { library, account } = useEthers();
@@ -149,6 +150,12 @@ export const Protocol = () => {
           )}
         </ErrorWrapper>
       </form>
+
+      <div className="mt-8">
+        <h1 className="text-2xl">Open orders</h1>
+        <hr className="mb-4" />
+        <OrderContainer />
+      </div>
     </div>
   );
 };
