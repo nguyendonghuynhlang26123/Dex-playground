@@ -79,12 +79,11 @@ export const useLimitInputHandler = ({ r0, r1, debounceTime = 100 }) => {
       onChange: (ev) => {
         const input = ev.target.value;
         if (isNaN(input)) return;
-        if (!input || !Number(input)) reset();
+        if (!input) reset();
         else {
           setInput((prv) => [input, prv[1]]);
 
-          if (r0 && r1) {
-            console.log('Input: ', input);
+          if (r0 && r1 && Number(input)) {
             handleUserInputToken0(input, r0, r1);
           }
         }
@@ -98,11 +97,11 @@ export const useLimitInputHandler = ({ r0, r1, debounceTime = 100 }) => {
       onChange: (ev) => {
         const output = ev.target.value;
         if (isNaN(output)) return;
-        if (!output || !Number(output)) reset();
+        if (!output) reset();
         else {
           setInput((prv) => [prv[0], output]);
 
-          if (r0 && r1) {
+          if (r0 && r1 && Number(output)) {
             handleUserInputToken1(output, r0, r1);
           }
         }

@@ -5,22 +5,24 @@ import React, { useMemo, useCallback, useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { UniswapUtils } from '../../common/UniswapUtils';
-import { getContract, prettyNum } from '../../common/utils';
-import { useSwapInputHandle } from '../../hooks';
+import { generateSecret, getContract, prettyNum } from '../../common/utils';
 import { useSwap } from '../../hooks/useSwap';
 
 import { CurrencyInput } from '../CurrencyInput';
-import { CollapsePanel } from '../CollapsePanel';
 import { RiCloseLine, RiArrowDownLine } from 'react-icons/ri';
 import { ApprovalWrapper, ErrorWrapper, TransactionButton } from '../TransactionButtons';
 import { useLimitInputHandler } from '../../hooks/useLimitOrderInputHandle';
 import { OrderContainer } from '../Order/OrderContainer';
+import { AbiCoder } from '@ethersproject/abi';
 
 export const Protocol = () => {
   const { library, account } = useEthers();
 
   // Contract
-  const routerContract = getContract(abis.router, addresses[4].router, library);
+  const coreContract = getContract(abis.coreProtocol, addresses[4].coreProtocol, library);
+  const { state: placeOrderState, send: submitLimitOrderTx } = useContractFunction(coreContract, 'createOrder', {
+    transactionName: 'Successfully place limit order',
+  });
 
   // Manage all address mapping && liquidity
   const [[address0, address1], setTokenAddresses] = useState([null, null]);
@@ -51,6 +53,7 @@ export const Protocol = () => {
 
   // Msc.
   const [rateFocused, setRateFocused] = useState(false);
+  const abiEncoder = new AbiCoder();
 
   useEffect(() => {
     if (swapError) {
@@ -87,6 +90,27 @@ export const Protocol = () => {
       }
     },
     [address0, address1]
+  );
+
+  const placeLimitOrder = useCallback(
+    async (ev) => {
+      ev.preventDefault();
+      if (price0 && price1 && address0 && address1 && account) {
+        const [witnessSecret, witness] = generateSecret();
+        const orderParams = [
+          addresses[4].limitOrderModule,
+          address0,
+          account,
+          witness,
+          price0.toString(),
+          abiEncoder.encode(['address', 'uint256'], [address1, price1.toString()]),
+          witnessSecret,
+        ];
+
+        await submitLimitOrderTx(...orderParams);
+      }
+    },
+    [library, account, price0, price1, address0, address1]
   );
 
   return (
@@ -144,8 +168,8 @@ export const Protocol = () => {
 
         <ErrorWrapper error={error}>
           {token0 && (
-            <ApprovalWrapper tokenAddress={token0.address} target={addresses[4].router}>
-              <TransactionButton className="my-2 mx-2.5 !py-3 !rounded-[1rem]" label="Place" onClick={() => {}} state={null} />
+            <ApprovalWrapper tokenAddress={address0} target={addresses[4].coreProtocol}>
+              <TransactionButton className="my-2 mx-2.5 !py-3 !rounded-[1rem]" label="Place" onClick={placeLimitOrder} state={placeOrderState} />
             </ApprovalWrapper>
           )}
         </ErrorWrapper>

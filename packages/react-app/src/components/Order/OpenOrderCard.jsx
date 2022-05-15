@@ -1,10 +1,13 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import TokenIcon from '../../assets/images/token.png';
 import { HiOutlineArrowNarrowRight } from 'react-icons/hi';
 import { CollapsePanel } from '../CollapsePanel';
 import { ethers } from 'ethers';
 import { TokenUtils } from '../../common/TokenUtils';
-import { prettyNum } from '../../common/utils';
+import { getContract, prettyNum } from '../../common/utils';
+import { TransactionButton } from '../TransactionButtons';
+import { abis, addresses } from '@dex/contracts';
+import { useContractFunction } from '@usedapp/core';
 
 const Tag = ({ amount, img, symbol }) => {
   return (
@@ -34,10 +37,21 @@ export const OpenOrderCard = ({ provider, order }) => {
   const [inputToken, setInputToken] = useState();
   const [outputToken, setOutputToken] = useState();
 
+  // Canceling order:
+  const coreContract = getContract(abis.coreProtocol, addresses[4].coreProtocol, provider);
+  const { state: cancelingState, send: cancelOrderTx } = useContractFunction(coreContract, 'cancelOrder', {
+    transactionName: 'Successfully cancel order',
+  });
+
   useEffect(() => {
     if (inputAddress) TokenUtils.getTokenInfo(provider, inputAddress).then(setInputToken);
     if (outputAddress) TokenUtils.getTokenInfo(provider, outputAddress).then(setOutputToken);
   }, [inputAddress, outputAddress]);
+
+  const submitCancelOrder = useCallback(() => {
+    console.log('Cancel param: ', order.module, order.inputToken, order.owner, order.witness, order.amount, order.data);
+    cancelOrderTx(order.module, order.inputToken, order.owner, order.witness, order.amount, order.data);
+  }, [order]);
 
   return (
     <div className="my-2 p-4 rounded-[1rem] bg-gray-50 border border-gray-300 ">
@@ -49,7 +63,14 @@ export const OpenOrderCard = ({ provider, order }) => {
 
             <Tag img={outputToken.imageUrl} symbol={outputToken.symbol} amount={prettyNum(outputAmount)} />
           </div>
-          <button className="rounded-[1rem] py-1 px-3 text-yellow-800 bg-yellow-100 border border-yellow-300 hover:bg-yellow-300">Cancel</button>
+          <TransactionButton
+            label="Cancel"
+            className="rounded-[1rem] py-0.5 px-3 text-yellow-700 !bg-yellow-100 border border-yellow-300 hover:!bg-yellow-200"
+            state={cancelingState}
+            onClick={submitCancelOrder}
+          >
+            Cancel
+          </TransactionButton>
         </div>
       )}
     </div>
