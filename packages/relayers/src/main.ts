@@ -6,6 +6,8 @@ import OrderProtocolAbi from './abis/OrderProtocol.json';
 import dotenv from 'dotenv';
 dotenv.config();
 
+const telegram = (msg: string) => log.log('http', msg);
+
 const sign = async (address: string, secret: string) => {
   const signer = new ethers.Wallet(secret);
   return await signer.signMessage(
@@ -32,6 +34,7 @@ const getOrderExecutionParams = async (
 };
 
 const start = async () => {
+  let previousCount = 0;
   const envConfig = getEnvConfig();
 
   const abiEncoder = new ethers.utils.AbiCoder();
@@ -138,7 +141,21 @@ const start = async () => {
         gasPrice,
       });
 
-      log.info(`Filled ${order.id} order, executedTxHash: ${tx.hash}`);
+      // log.info(`Filled ${order.id} order, executedTxHash: ${tx.hash}`);
+      telegram(
+        `Order ${order.id} filled! Fee = ${ethers.utils.formatEther(
+          fee
+        )} ETH (price = ${ethers.utils.formatUnits(
+          gasPrice,
+          'gwei'
+        )} gwei, gas = ${estimatedGas.toString()}). Owner = ${
+          order.owner
+        }, inputToken = ${order.inputToken}, amount = ${order.amount}, data=${
+          order.data
+        }. Order on ethscan = https://rinkeby.etherscan.io/tx/${
+          order.createdTxHash
+        }`
+      );
       return tx.hash;
     } catch (e: any) {
       log.warn(`Failed to executing order ${order.id}: ${e.reason} `);
@@ -154,7 +171,18 @@ const start = async () => {
       `Start new watching round. Order fetched: ${openOrders.length} orders.`
     );
 
-    // 2. Loop and check each order:
+    // 2. Notify devs team :D
+    if (previousCount < openOrders.length) {
+      const listOrder = openOrders.map((o) => o.createdTxHash);
+      telegram(
+        `${
+          openOrders.length - previousCount
+        } orders are newly created! Order hashes: ${listOrder.toString()}`
+      );
+    }
+    previousCount = openOrders.length;
+
+    // 3. Loop and check each order:
     for (const order of openOrders) {
       const result = await handleOrder(order);
 
@@ -181,11 +209,12 @@ const start = async () => {
     setTimeout(loop, Number(envConfig.checkInterval));
   };
 
+  telegram('Relayer started');
   await loop();
 };
 
 if (require.main === module) {
-  console.log('_____________ START RELAYER  _____________');
+  log.info('_____________ START RELAYER  _____________');
   Promise.resolve()
     .then(() => start())
     .catch(log.error);

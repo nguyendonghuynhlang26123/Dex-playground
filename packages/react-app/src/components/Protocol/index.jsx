@@ -13,7 +13,7 @@ import { RiCloseLine, RiArrowDownLine } from 'react-icons/ri';
 import { ApprovalWrapper, ErrorWrapper, TransactionButton } from '../TransactionButtons';
 import { useLimitInputHandler } from '../../hooks/useLimitOrderInputHandle';
 import { OrderContainer } from '../Order/OrderContainer';
-import { AbiCoder } from '@ethersproject/abi';
+import { ethers } from 'ethers';
 
 export const Protocol = () => {
   const { library, account } = useEthers();
@@ -53,7 +53,7 @@ export const Protocol = () => {
 
   // Msc.
   const [rateFocused, setRateFocused] = useState(false);
-  const abiEncoder = new AbiCoder();
+  const abiEncoder = new ethers.utils.AbiCoder();
 
   useEffect(() => {
     if (swapError) {
