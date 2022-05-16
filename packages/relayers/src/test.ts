@@ -7,10 +7,7 @@ const OrderProtocol = '0xa9cd06edf421373f7dd86fb26268c7995a872327';
 const LimitOrderModule = '0xdf84e38277bd7634efc132c9caf71a8a12484a09';
 // const UniswapV2Handler = '0x1931ef747c1ff9b5290409684e35ed95e0d76066';
 
-const PRVKEY =
-  '106283bc4bc878dda1ab232e29f051d8e9e86eb1e02ccd5f29a6b6bf5853046e';
-// 'b7827bd013c0517a0c58c29b33a4c1713f8eb9fffa322f608058557aa42462de';
-
+const PRVKEY = '';
 const provider = new ethers.providers.JsonRpcProvider(
   'https://rinkeby.infura.io/v3/9790bda3dc49412ea06c22055b3489b7'
 );

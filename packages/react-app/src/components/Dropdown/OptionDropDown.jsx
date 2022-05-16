@@ -5,7 +5,6 @@ import { BsCheck } from 'react-icons/bs';
 
 export function OptionDropDown({ options, onSelect }) {
   const [selected, setSelected] = useState(options[0]);
-  console.log('log ~ file: OptionDropDown.jsx ~ line 8 ~ OptionDropDown ~ selected', selected);
 
   const handleSelect = (value) => {
     setSelected(value);
