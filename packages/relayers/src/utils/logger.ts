@@ -17,12 +17,13 @@ var transport = new DailyRotateFile({
 
 export const log: Logger = createLogger({
   level: process.env.LOG_LEVEL ? process.env.LOG_LEVEL : 'debug',
-  defaultMeta: { service: 'user-service' },
+  // defaultMeta: { service: 'user-service' },
   format: combine(timestamp(), myFormat),
   transports: [
     transport,
     new transports.Console({
-      format: format.combine(format.colorize(), format.simple()),
+      format: format.combine(format.colorize(), myFormat),
+      // level: 'verbose',
     }),
   ],
 });

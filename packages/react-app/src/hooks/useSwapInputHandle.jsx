@@ -30,7 +30,8 @@ export const useSwapInputHandle = ({ r0, r1, debounceTime = 100 }) => {
     if (r0 && r1 && debouncedValue0 && !isNaN(debouncedValue0)) {
       const amountIn = parseEther(debouncedValue0.toString());
       const data = UniswapUtils.getAmmountOut(amountIn, r0, r1);
-
+      const rate = UniswapUtils.getRate(amountIn, data.toString());
+      setCurrentRate(rate.round(4).toString());
       setInput((prv) => [prv[0], '']);
       setOutput((prvState) => [prvState[0], data.toString()]);
     }
@@ -40,6 +41,8 @@ export const useSwapInputHandle = ({ r0, r1, debounceTime = 100 }) => {
     if (r0 && r1 && debouncedValue1 && !isNaN(debouncedValue1)) {
       const amountOut = parseEther(debouncedValue1.toString());
       const data = UniswapUtils.getAmmountIn(amountOut, r0, r1);
+      const rate = UniswapUtils.getRate(data.toString(), amountOut);
+      setCurrentRate(rate.round(4).toString());
       setInput((prv) => ['', prv[1]]);
       setOutput((prvState) => [data.toString(), prvState[1]]);
     }
@@ -47,8 +50,8 @@ export const useSwapInputHandle = ({ r0, r1, debounceTime = 100 }) => {
 
   useEffect(() => {
     if (r0 && r1) {
-      const value = UniswapUtils.getAmmountOut(parseEther('1'), r0, r1);
-      setCurrentRate(prettyNum(value));
+      // const value = UniswapUtils.getAmmountOut(parseEther('1'), r0, r1);
+      // setCurrentRate(prettyNum(value));
     } else {
       // Reset state if r0, r1 null to avoid inconsitent data
       reset();
@@ -56,7 +59,6 @@ export const useSwapInputHandle = ({ r0, r1, debounceTime = 100 }) => {
   }, [r0, r1]);
 
   const token0InputProps = React.useMemo(() => {
-    console.log('input - output ', input0, output0);
     return {
       value: output0 ? prettyNum(output0, 18) : input0,
       onChange: (ev) => {

@@ -31,8 +31,11 @@ export class UniswapUtils {
     return toInteger(numerator.divUnsafe(denominator).floor());
   }
 
-  static getRate(r0, r1) {
-    return this.getAmmountOut(parseEther('1'), r0, r1);
+  // return v1/v0
+  static getRate(v0, v1) {
+    const [fV0, fV1] = fixNumbers(v0, v1);
+    if (!fV0.isZero()) return fV1.divUnsafe(fV0);
+    else throw new Error('UniswapUtils.getRate exception. Divide by 0');
   }
 
   static calculatePriceImpact(inputPrice, outputPrice, reserve0, reserve1) {
