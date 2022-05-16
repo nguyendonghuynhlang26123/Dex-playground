@@ -21,7 +21,7 @@ export const NewSwap = () => {
   const routerContract = getContract(abis.router, addresses[4].router, library);
 
   // Manage all address mapping && liquidity
-  const [tokenAddresses, setTokenAddresses] = useState([null, null]);
+  const [[address0, address1], setTokenAddresses] = useState([null, null]);
   const [[token0, setAddress0], [token1, setAddress1], [r0, r1], swapError] = useSwap(addresses[4].factory);
   const { price0, price1, token0InputProps, token1InputProps, exchangePrice, swapBy, reset } = useSwapInputHandle({ r0: r0, r1: r1 });
 
@@ -51,20 +51,30 @@ export const NewSwap = () => {
   }, [price0, price1, r1, token0, swapError]);
 
   const reverseInput = useCallback(() => {
-    setAddress0(tokenAddresses[1]);
-    setAddress1(tokenAddresses[0]);
+    setAddress0(address1);
+    setAddress1(address0);
     setTokenAddresses((prv) => [prv[1], prv[0]]);
-  }, [tokenAddresses]);
+  }, [address0, address1]);
 
-  const handleAddressChange = (address, isInput) => {
-    if (isInput) {
-      setAddress0(address);
-      setTokenAddresses((prv) => [address, prv[1]]);
-    } else {
-      setAddress1(address);
-      setTokenAddresses((prv) => [prv[0], address]);
-    }
-  };
+  const handleAddressChange = useCallback(
+    (address, isInput) => {
+      if (isInput) {
+        setAddress0(address);
+
+        if (address === address1) {
+          setAddress1(null);
+          setTokenAddresses((prv) => [address, null]);
+        } else setTokenAddresses((prv) => [address, prv[1]]);
+      } else {
+        setAddress1(address);
+        if (address === address0) {
+          setAddress0(null);
+          setTokenAddresses([null, address]);
+        } else setTokenAddresses((prv) => [prv[0], address]);
+      }
+    },
+    [address0, address1]
+  );
 
   const calculateFee = (value) => {
     return value.mul(FEE_PERCENT).div(1000);
@@ -120,7 +130,7 @@ export const NewSwap = () => {
             label="Input"
             provider={library}
             account={account}
-            tokenAddress={tokenAddresses[0]}
+            tokenAddress={address0}
             onAddressChange={(address) => handleAddressChange(address, true)}
             inputProps={token0InputProps}
           />
@@ -134,7 +144,7 @@ export const NewSwap = () => {
             label="Output"
             provider={library}
             account={account}
-            tokenAddress={tokenAddresses[1]}
+            tokenAddress={address1}
             onAddressChange={(address) => handleAddressChange(address, false)}
             inputProps={token1InputProps}
           />

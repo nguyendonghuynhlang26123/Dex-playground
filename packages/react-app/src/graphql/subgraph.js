@@ -1,14 +1,30 @@
 import { gql } from '@apollo/client';
 
 // See more example queries on https://thegraph.com/explorer/subgraph/uniswap/uniswap-v2
-const GET_AGGREGATED_UNISWAP_DATA = gql`
-  query liquidityPool($token0: String!, $token1: String!) {
-    pairs(first: 1, where: { token0: $token0, token1: $token1 }) {
-      pairCount
-      totalVolumeUSD
-      totalLiquidityUSD
+export const GET_ORDERS_BY_USER_AND_MODULE = gql`
+  query userOrders($account: String!, $module: String!) {
+    orders(where: { owner: $account, module: $module }) {
+      id
+      module
+      inputToken
+      owner
+      witness
+      amount
+      secret
+      data
+      status
+
+      bought
+      handler
+      auxData
+
+      createdTxHash
+      executedTxHash
+      cancelledTxHash
+
+      # Common data:
+      createdAt
+      updatedAt
     }
   }
 `;
-
-export default GET_AGGREGATED_UNISWAP_DATA;

@@ -4,6 +4,7 @@ import factory from './abis/factory.json';
 import router from './abis/router.json';
 import pair from './abis/pair.json';
 import weth from './abis/IWETH.json';
+import coreProtocol from './abis/OrderProtocol.json';
 
 export default {
   token,
@@ -12,4 +13,5 @@ export default {
   router,
   pair,
   weth,
+  coreProtocol,
 };

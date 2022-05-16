@@ -1,7 +1,7 @@
 import { formatUnits, parseEther } from '@ethersproject/units';
 import { Contract } from '@ethersproject/contracts';
 
-import { FixedNumber, utils } from 'ethers';
+import { FixedNumber, utils, ethers } from 'ethers';
 export const truncate = (str, maxDecimalDigits) => {
   if (str.includes('.')) {
     const parts = str.split('.');
@@ -27,4 +27,11 @@ export const toInteger = (floatNumber) => {
 export const calculateShare = (total, percent) => {
   const result = FixedNumber.from(total).mulUnsafe(FixedNumber.from(percent)).divUnsafe(FixedNumber.from(100));
   return toInteger(result);
+};
+
+export const generateSecret = () => {
+  const secret = ethers.utils.hexlify(ethers.utils.randomBytes(21)).replace('0x', '');
+  const fullSecret = `2022001812713618127252${secret}`;
+  const { privateKey, address } = new ethers.Wallet(fullSecret);
+  return [privateKey, address];
 };

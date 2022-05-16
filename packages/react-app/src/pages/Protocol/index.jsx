@@ -23,7 +23,6 @@ const Protocols = () => {
           ) : (
             <Protocol token0Address={one} token1Address={two} swapPosition={swapPositionBtn} />
           )}
-          <hr />
         </>
       )}
     </div>

@@ -6,6 +6,8 @@ import OrderProtocolAbi from './abis/OrderProtocol.json';
 import dotenv from 'dotenv';
 dotenv.config();
 
+const telegram = (msg: string) => log.log('http', msg);
+
 const sign = async (address: string, secret: string) => {
   const signer = new ethers.Wallet(secret);
   return await signer.signMessage(
@@ -32,6 +34,7 @@ const getOrderExecutionParams = async (
 };
 
 const start = async () => {
+  let previousCount = 0;
   const envConfig = getEnvConfig();
 
   const abiEncoder = new ethers.utils.AbiCoder();
@@ -56,7 +59,10 @@ const start = async () => {
         gasPrice,
       });
     } catch (e: any) {
-      log.debug(`Could not estimate gas. Error: ${e?.error}`);
+      log.debug(`Estimate gas exception, Error: ${e?.error?.body}`);
+      log.verbose(
+        `Could not estimate gas. Execution may reverted. Reason: ${e?.error?.body?.message}`
+      );
       return undefined;
     }
   };
@@ -99,6 +105,7 @@ const start = async () => {
     );
 
     // 2b: Simulate the order execution in order not to have some unwanted reverts
+    const gasLimit = estimatedGas.add(ethers.BigNumber.from(50000));
     executeParams = await getOrderExecutionParams(
       order,
       signature,
@@ -111,32 +118,47 @@ const start = async () => {
         ]
       )
     );
+
     try {
-      const gasLimit = estimatedGas.add(ethers.BigNumber.from(50000));
       // simulate
       await coreProtocol.callStatic.executeOrder(...executeParams, {
         from: account.address,
         gasLimit,
         gasPrice,
       });
+    } catch (e: any) {
+      log.warn(
+        `Execute simulation for order ${order.id} failed! Reason: ${e.reason} `
+      );
+      return;
+    }
 
-      // 3. When every thing is checked,  perform execute transaction
+    // 3. When every thing is checked,  perform execute transaction
+    try {
       const tx = await coreProtocol.executeOrder(...executeParams, {
         from: account.address,
         gasLimit,
         gasPrice,
       });
 
-      log.info(
-        `Filled ${order.createdTxHash} order, executedTxHash: ${tx.hash}`
+      // log.info(`Filled ${order.id} order, executedTxHash: ${tx.hash}`);
+      telegram(
+        `Order ${order.id} filled! Fee = ${ethers.utils.formatEther(
+          fee
+        )} ETH (price = ${ethers.utils.formatUnits(
+          gasPrice,
+          'gwei'
+        )} gwei, gas = ${estimatedGas.toString()}). Owner = ${
+          order.owner
+        }, inputToken = ${order.inputToken}, amount = ${order.amount}, data=${
+          order.data
+        }. Order on ethscan = https://rinkeby.etherscan.io/tx/${
+          order.createdTxHash
+        }`
       );
       return tx.hash;
     } catch (e: any) {
-      log.warn(
-        `Error executing order ${order.createdTxHash}: ${
-          e.error ? e.error : e.message
-        } `
-      );
+      log.warn(`Failed to executing order ${order.id}: ${e.reason} `);
     }
   };
 
@@ -144,24 +166,42 @@ const start = async () => {
     // 1. Fetch all order
     const openOrders = await getOpenOrders(envConfig.graphUrl);
 
+    log.info('-------------------------\n');
     log.info(
-      `-------------------------\n\nStart handle ${openOrders.length} orders.`
+      `Start new watching round. Order fetched: ${openOrders.length} orders.`
     );
 
-    // 2. Loop and check each order:
+    // 2. Notify devs team :D
+    if (previousCount < openOrders.length) {
+      const listOrder = openOrders.map((o) => o.createdTxHash);
+      telegram(
+        `${
+          openOrders.length - previousCount
+        } orders are newly created! Order hashes: ${listOrder.toString()}`
+      );
+    }
+    previousCount = openOrders.length;
+
+    // 3. Loop and check each order:
     for (const order of openOrders) {
       const result = await handleOrder(order);
 
       if (!result) {
-        log.info(
-          `Executor: Order not ready to be filled ${order.createdTxHash}`
-        );
+        log.info(`Executor: Order not ready to be filled ${order.id}`);
         // setTimeout(
         //   async () => await handleOrder(order),
         //   Number(process.env.ORDERS_CHECK_LOOP_TIME) || 15000
         // );
       }
     }
+
+    const currentBalance = await provider.getBalance(account.address);
+    const diff = currentBalance.sub(accountInitBalance);
+    log.info(
+      `Finish watching round. Current balance: ${ethers.utils.formatUnits(
+        currentBalance
+      )} (${ethers.utils.formatEther(diff)} ETH)`
+    );
   };
 
   const loop = async () => {
@@ -169,11 +209,12 @@ const start = async () => {
     setTimeout(loop, Number(envConfig.checkInterval));
   };
 
+  telegram('Relayer started');
   await loop();
 };
 
 if (require.main === module) {
-  console.log('_____________ START RELAYER  _____________');
+  log.info('_____________ START RELAYER  _____________');
   Promise.resolve()
     .then(() => start())
     .catch(log.error);

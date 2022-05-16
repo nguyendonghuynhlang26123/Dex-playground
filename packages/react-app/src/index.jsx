@@ -15,7 +15,7 @@ import store from './store';
 // See all subgraphs: https://thegraph.com/explorer/
 const client = new ApolloClient({
   cache: new InMemoryCache(),
-  uri: 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2',
+  uri: 'https://api.thegraph.com/subgraphs/name/nguyendonghuynhlang26123/limit-order-rinkeby',
 });
 
 ReactDOM.render(
