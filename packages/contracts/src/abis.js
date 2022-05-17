@@ -7,11 +7,11 @@ import weth from './abis/IWETH.json';
 import coreProtocol from './abis/OrderProtocol.json';
 
 export default {
-  token,
-  erc20,
-  factory,
-  router,
-  pair,
-  weth,
-  coreProtocol,
+    token,
+    erc20,
+    factory,
+    router,
+    pair,
+    weth,
+    coreProtocol,
 };
