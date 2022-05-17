@@ -13,10 +13,10 @@ import { RiCloseLine, RiArrowDownLine } from 'react-icons/ri';
 import { ApprovalWrapper, ErrorWrapper, TransactionButton } from '../TransactionButtons';
 import { useLimitInputHandler } from '../../hooks/useLimitOrderInputHandle';
 import { OrderContainer } from '../Order/OrderContainer';
-<<<<<<< HEAD
+
 //import { AbiCoder } from '@ethersproject/abi';
-=======
->>>>>>> 3ef4ba59446e684745ff4e4d2f1c8ea166593049
+
+
 import { ethers } from 'ethers';
 
 export const Protocol = () => {
