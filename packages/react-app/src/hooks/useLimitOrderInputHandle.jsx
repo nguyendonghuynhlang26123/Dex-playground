@@ -29,11 +29,14 @@ export const useLimitInputHandler = ({ r0, r1, debounceTime = 100 }) => {
 
   useEffect(() => {
     if (r0 && r1) {
-      if (input0 && !isNaN(input0) && Number(input0) !== 0) {
+      console.log('log ~ file: useLimitOrderInputHandle.jsx ~ line 32 ~ useEffect ~ r0 && r1', r0.toString(), r1.toString());
+      if (input0 && !isNaN(input0) && Number(input0)) {
         handleUserInputToken0(input0, r0, r1);
+      } else if (input1 && !isNaN(input1) && Number(input1)) {
+        handleUserInputToken1(input1, r0, r1);
       }
     } else reset();
-  }, [r0, r1]);
+  }, [r0?.toString(), r1?.toString()]);
 
   const handleUserInputToken0 = async (input, _r0, _r1) => {
     //Start handling
@@ -78,6 +81,7 @@ export const useLimitInputHandler = ({ r0, r1, debounceTime = 100 }) => {
       value: input0,
       onChange: (ev) => {
         const input = ev.target.value;
+        console.log('log ~ file: useLimitOrderInputHandle.jsx ~ line 81 ~ tokenInputProps ~ input', input);
         if (isNaN(input)) return;
         if (!input) reset();
         else {
@@ -115,7 +119,7 @@ export const useLimitInputHandler = ({ r0, r1, debounceTime = 100 }) => {
       onChange: (ev) => {
         const price = ev.target.value;
         if (isNaN(price)) return;
-        if (!price || !Number(price)) {
+        if (!price) {
           setInputRate('');
           setCurrentRate(FixedNumber.from(0));
           setInput((prv) => [prv[0], '']);
@@ -123,7 +127,7 @@ export const useLimitInputHandler = ({ r0, r1, debounceTime = 100 }) => {
         } else {
           setInputRate(price);
           setCurrentRate(FixedNumber.from(price));
-          if (price && price0) {
+          if (price && price0 && Number(price)) {
             handlePriceInput(price, price0);
           }
         }

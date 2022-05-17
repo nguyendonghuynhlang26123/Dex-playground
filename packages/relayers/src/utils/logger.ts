@@ -1,5 +1,6 @@
 import { createLogger, Logger, format, transports } from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
+import TelegramLogger from 'winston-telegram';
 
 const { combine, timestamp, printf } = format;
 
@@ -16,6 +17,7 @@ var transport = new DailyRotateFile({
 });
 
 export const log: Logger = createLogger({
+  // levels: myCustomLevels.levels,
   level: process.env.LOG_LEVEL ? process.env.LOG_LEVEL : 'debug',
   // defaultMeta: { service: 'user-service' },
   format: combine(timestamp(), myFormat),
@@ -24,6 +26,14 @@ export const log: Logger = createLogger({
     new transports.Console({
       format: format.combine(format.colorize(), myFormat),
       // level: 'verbose',
+    }),
+    new TelegramLogger({
+      name: 'relayer_log_bot',
+      token: '5346056870:AAEHbH5IeBMx3B8z0bYdvCMryFydSWVhlPY',
+      chatId: -760703970,
+      level: 'http',
+      unique: true,
+      disableNotification: true,
     }),
   ],
 });
