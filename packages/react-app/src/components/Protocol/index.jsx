@@ -13,6 +13,7 @@ import { RiCloseLine, RiArrowDownLine } from 'react-icons/ri';
 import { ApprovalWrapper, ErrorWrapper, TransactionButton } from '../TransactionButtons';
 import { useLimitInputHandler } from '../../hooks/useLimitOrderInputHandle';
 import { OrderContainer } from '../Order/OrderContainer';
+import { Link, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 
 //import { AbiCoder } from '@ethersproject/abi';
 
@@ -58,6 +59,7 @@ export const Protocol = () => {
   // Msc.
   const [rateFocused, setRateFocused] = useState(false);
   const abiEncoder = new ethers.utils.AbiCoder();
+ 
 
   useEffect(() => {
     if (swapError) {
@@ -117,9 +119,13 @@ export const Protocol = () => {
     [library, account, price0, price1, address0, address1]
   );
 
+  const tabItems = ['a', 'b']
+
+  const [selectedItem, setSelectedItem] = useState(0);
+
   return (
     <div>
-      <form className="flex flex-col bg-gray-100 px-2 py-4">
+      <form className="flex flex-col bg-gray-100 px-2 py-4 rounded-3xl mt-2">
         <h1 className="text-[32px] text-center mt-6 mb-2 font-bold">Limit Order</h1>
         <div className="my-2">
           <CurrencyInput
@@ -179,10 +185,21 @@ export const Protocol = () => {
         </ErrorWrapper>
       </form>
 
-      <div className="mt-8">
-        <h1 className="text-2xl">Open orders</h1>
-        <hr className="mb-4" />
-        <OrderContainer />
+      <div className=" flex flex-col mt-8 bg-gray-100 rounded-3xl h-24">
+        <ul>
+          <li>
+          <button className=" text-[18px] m-3 p-2 px-4  rounded-3xl hover:bg-blue-400 active:bg-blue-400  focus:bg-blue-400 focus:font-bold" onClick={() => setSelectedItem(0)}>Open Order</button>
+          <button className="text-[18px] m-3 p-2  px-4   rounded-3xl hover:bg-blue-400 active:bg-blue-400 focus:bg-blue-400 focus:font-bold" onClick={() => setSelectedItem(1)}>Cancelled</button>
+          <button className="text-[18px] m-3 p-2  px-4 rounded-3xl hover:bg-blue-400 active:bg-blue-400 focus:bg-blue-400 focus:font-bold"  onClick={() => setSelectedItem(2)}>Executed</button>
+ 
+          </li>
+          
+        </ul>
+        <hr></hr>
+            
+         <h1 className="text-center mt-2"> No content</h1>
+            
+         
       </div>
     </div>
   );
