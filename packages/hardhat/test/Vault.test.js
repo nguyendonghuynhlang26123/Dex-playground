@@ -16,7 +16,7 @@ const BN = ethers.BigNumber;
 const APPROVE_VALUE = ethers.constants.MaxUint256;
 const toBytes32 = ethers.utils.formatBytes32String;
 
-describe.only("Vault Contract", function () {
+describe("Vault Contract", function () {
   const ETH_ADDRESS = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
   let owner;
   let user1;
