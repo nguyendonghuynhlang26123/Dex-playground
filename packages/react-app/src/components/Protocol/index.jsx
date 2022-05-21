@@ -13,7 +13,7 @@ import { RiCloseLine, RiArrowDownLine } from 'react-icons/ri';
 import { ApprovalWrapper, ErrorWrapper, TransactionButton } from '../TransactionButtons';
 import { useLimitInputHandler } from '../../hooks/useLimitOrderInputHandle';
 import { OrderContainer } from '../Order/OrderContainer';
-import { Link, Route, Routes, Navigate, useLocation } from 'react-router-dom';
+
 
 //import { AbiCoder } from '@ethersproject/abi';
 
