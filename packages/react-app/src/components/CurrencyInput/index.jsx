@@ -78,7 +78,7 @@ export const CurrencyInput = ({ provider, account, label, tokenAddress, onAddres
             placeholder="0.0"
           />
           <button
-            className="flex flex-row items-center rounded-full py-1 px-3 bg-gray-50 border border-gray-200"
+            className="flex flex-row items-center rounded-full py-1 px-3 bg-gray-50 border border-gray-200 hover:bg-gray-100" 
             onClick={(ev) => {
               ev.preventDefault();
               showModal(true);

@@ -14,9 +14,7 @@ import { ApprovalWrapper, ErrorWrapper, TransactionButton } from '../Transaction
 import { useLimitInputHandler } from '../../hooks/useLimitOrderInputHandle';
 import { OrderContainer } from '../Order/OrderContainer';
 
-
 //import { AbiCoder } from '@ethersproject/abi';
-
 
 import { ethers } from 'ethers';
 
@@ -59,7 +57,6 @@ export const Protocol = () => {
   // Msc.
   const [rateFocused, setRateFocused] = useState(false);
   const abiEncoder = new ethers.utils.AbiCoder();
- 
 
   useEffect(() => {
     if (swapError) {
@@ -118,8 +115,6 @@ export const Protocol = () => {
     },
     [library, account, price0, price1, address0, address1]
   );
-
-
 
   const [selectedItem, setSelectedItem] = useState(1);
 
@@ -188,31 +183,46 @@ export const Protocol = () => {
       <div className=" flex flex-col mt-8 bg-gray-100 rounded-3xl h-48">
         <ul>
           <li>
-          <button className="  mx-3 p-2  px-4  rounded-3xl hover:bg-blue-400 active:bg-blue-400  focus:bg-blue-400 focus:font-bold " onClick={() => setSelectedItem(1)}>Open Order</button>
-          <button className=" m-3 p-2  px-4   rounded-3xl hover:bg-blue-400 active:bg-blue-400 focus:bg-blue-400 focus:font-bold" onClick={() => setSelectedItem(2)}>Cancelled</button>
-          <button className=" m-3 p-2  px-4 rounded-3xl hover:bg-blue-400 active:bg-blue-400 focus:bg-blue-400 focus:font-bold"  onClick={() => setSelectedItem(3)}>Executed</button>
- 
+            <button
+           
+             // className =   { selectedItem===1 ? 'mx-3 p-2  px-4  rounded-3xl hover:bg-blue-400 hover:text-white active:bg-blue-400 active:text-white focus:bg-blue-400 focus:text-white' : 'text-black'} 
+              className={
+                selectedItem===1 ? 'm-3 mx-3 p-2  px-4  rounded-3xl  bg-blue-400 text-white' : ' m-3 mx-3 p-2  px-4  rounded-3xl  text-black hover:bg-blue-400 hover:text-white'
+              }
+              onClick={() => setSelectedItem(1)}
+              
+            >
+              Open Order
+            </button>
+            <button
+              className={
+                selectedItem===2 ? 'm-3 mx-3 p-2  px-4  rounded-3xl  bg-blue-400 text-white' : 'm-3 mx-3 p-2  px-4  rounded-3xl  text-black hover:bg-blue-400 hover:text-white'
+              } 
+              onClick={() => setSelectedItem(2)}
+            >
+              Cancelled
+            </button>
+            <button
+              className={
+                selectedItem===3 ? 'm-3 mx-3 p-2  px-4  rounded-3xl  bg-blue-400 text-white' : 'm-3 mx-3 p-2  px-4  rounded-3xl  text-black hover:bg-blue-400 hover:text-white'
+              }  
+              onClick={() => setSelectedItem(3)}
+            >
+              Executed
+            </button>
           </li>
-          
         </ul>
         <hr></hr>
-        
-        
-          {
-          (selectedItem===1)? <OrderContainer/>
 
-        
-         :(selectedItem===2) ? <h1 className="text-center mt-2"> Cancelled</h1>
-
-        
-          :(selectedItem===3) ?<h1 className="text-center mt-2"> Executed</h1> : <></>
-          }
-        
-        
-            
-       
-            
-         
+        {selectedItem === 1 ? (
+          <OrderContainer />
+        ) : selectedItem === 2 ? (
+          <h1 className="text-center mt-2"> Cancelled</h1>
+        ) : selectedItem === 3 ? (
+          <h1 className="text-center mt-2"> Executed</h1>
+        ) : (
+          <></>
+        )}
       </div>
     </div>
   );
