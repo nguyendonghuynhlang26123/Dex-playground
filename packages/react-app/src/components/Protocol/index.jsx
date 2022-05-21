@@ -119,9 +119,9 @@ export const Protocol = () => {
     [library, account, price0, price1, address0, address1]
   );
 
-  const tabItems = ['a', 'b']
 
-  const [selectedItem, setSelectedItem] = useState(0);
+
+  const [selectedItem, setSelectedItem] = useState(1);
 
   return (
     <div>
@@ -185,19 +185,32 @@ export const Protocol = () => {
         </ErrorWrapper>
       </form>
 
-      <div className=" flex flex-col mt-8 bg-gray-100 rounded-3xl h-24">
+      <div className=" flex flex-col mt-8 bg-gray-100 rounded-3xl h-48">
         <ul>
           <li>
-          <button className=" text-[18px] m-3 p-2 px-4  rounded-3xl hover:bg-blue-400 active:bg-blue-400  focus:bg-blue-400 focus:font-bold" onClick={() => setSelectedItem(0)}>Open Order</button>
-          <button className="text-[18px] m-3 p-2  px-4   rounded-3xl hover:bg-blue-400 active:bg-blue-400 focus:bg-blue-400 focus:font-bold" onClick={() => setSelectedItem(1)}>Cancelled</button>
-          <button className="text-[18px] m-3 p-2  px-4 rounded-3xl hover:bg-blue-400 active:bg-blue-400 focus:bg-blue-400 focus:font-bold"  onClick={() => setSelectedItem(2)}>Executed</button>
+          <button className="  mx-3 p-2  px-4  rounded-3xl hover:bg-blue-400 active:bg-blue-400  focus:bg-blue-400 focus:font-bold " onClick={() => setSelectedItem(1)}>Open Order</button>
+          <button className=" m-3 p-2  px-4   rounded-3xl hover:bg-blue-400 active:bg-blue-400 focus:bg-blue-400 focus:font-bold" onClick={() => setSelectedItem(2)}>Cancelled</button>
+          <button className=" m-3 p-2  px-4 rounded-3xl hover:bg-blue-400 active:bg-blue-400 focus:bg-blue-400 focus:font-bold"  onClick={() => setSelectedItem(3)}>Executed</button>
  
           </li>
           
         </ul>
         <hr></hr>
+        
+        
+          {
+          (selectedItem===1)? <OrderContainer/>
+
+        
+         :(selectedItem===2) ? <h1 className="text-center mt-2"> Cancelled</h1>
+
+        
+          :(selectedItem===3) ?<h1 className="text-center mt-2"> Executed</h1> : <></>
+          }
+        
+        
             
-         <h1 className="text-center mt-2"> No content</h1>
+       
             
          
       </div>
