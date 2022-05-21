@@ -123,7 +123,7 @@ export const NewSwap = () => {
 
   return (
     <div>
-      <form className="flex flex-col bg-gray-100 px-2 py-4">
+      <form className="flex flex-col bg-gray-100 px-2 py-4 rounded-3xl mt-2">
         <h1 className="text-[32px] text-center mt-6 mb-2 font-bold">SWAP</h1>
         <div className="my-2">
           <CurrencyInput
