@@ -29,17 +29,20 @@ export const Header = ({ paths }) => {
   }, [error]);
 
   return (
-    <div className="w-full px-3 py-3 flex flex-row items-center justify-between shadow  ">
+    <nav id="header" className="w-full flex items-center justify-between px-4 shadow bg-gradient-to-r from-sky-900/20 to-sky-900/20">
       <div className="flex gap-4">
         <div className="flex gap-1 items-center ">
           <p className="text-2xl align-text-bottom -mt-2">🌊</p>
-          <p className="logo leading-4 align-text-bottom text-3xl text-sky-500">Aqua.finance</p>
+          <p className="logo  align-text-bottom text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-b from-sky-100 to-sky-500">Aqua.finance</p>
         </div>
 
         <ul className="flex flex-row justify-center items-center space-x-1 my-2">
           {paths?.map((path, i) => (
             <li className="" key={i}>
-              <Link className={`px-2 capitalize  hover:underline ${pathname === path && 'font-bold text-blue-500'}`} to={'/' + path}>
+              <Link
+                className={`px-2 capitalize font-bold text-sky-200/60  ${pathname === '/' + path ? 'text-sky-200' : 'hover:text-sky-200/80'}`}
+                to={'/' + path}
+              >
                 {path}
               </Link>
             </li>
@@ -47,15 +50,15 @@ export const Header = ({ paths }) => {
         </ul>
       </div>
       <div className="flex flex-row items-center gap-2 ">
-        <div>Rinkeby</div>
+        {/* <div className="text-sky-200">Rinkeby</div> */}
         {rendered && balance && (
-          <div className="flex items-center gap-2 border rounded-[0.5rem] pl-2 h-8 bg-blue-50 border-blue-200">
+          <div className="flex items-center gap-2 border rounded-[0.5rem] pl-2 h-8 bg-sky-100 border-sky-200">
             <span>{prettyNum(balance, null, 0) + ' ETH'}</span>
             <button className="px-2 py-0.5   btn-primary-light">{rendered}</button>
           </div>
         )}
         <WalletButton />
       </div>
-    </div>
+    </nav>
   );
 };

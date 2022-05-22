@@ -8,7 +8,7 @@ import { OpenOrderCard } from './OpenOrderCard';
 export const OrderContainer = () => {
   const { account, library } = useEthers();
   const { loading, error, data } = useQuery(GET_ORDERS_BY_USER_AND_MODULE, {
-    variables: { account: account?.toLowerCase(), module: addresses[4].limitOrderModule },
+    variables: { account: account ? account.toLowerCase() : '', module: addresses[4].limitOrderModule },
     pollInterval: 5000,
   });
 
@@ -21,11 +21,10 @@ export const OrderContainer = () => {
   }, [data]);
 
   return (
-    <div className=" flex flex-col mt-8 bg-gray-100 rounded-3xl h-48">
+    <div className="relative mt-4 bg-sky-100/90 shadow-lg rounded-3xl px-2 py-4 border-sky-900/50 border-2">
       <ul>
         <li>
           <button
-            // className =   { selectedItem===1 ? 'mx-3 p-2  px-4  rounded-3xl hover:bg-blue-400 hover:text-white active:bg-blue-400 active:text-white focus:bg-blue-400 focus:text-white' : 'text-black'}
             className={
               selectedItem === 1
                 ? 'm-3 mx-3 p-2  px-4  rounded-3xl  bg-blue-400 text-white'
@@ -57,17 +56,22 @@ export const OrderContainer = () => {
           </button>
         </li>
       </ul>
-      <hr></hr>
 
-      {selectedItem === 1 ? (
-        <OrderContainer />
-      ) : selectedItem === 2 ? (
-        <h1 className="text-center mt-2"> Cancelled</h1>
-      ) : selectedItem === 3 ? (
-        <h1 className="text-center mt-2"> Executed</h1>
-      ) : (
-        <></>
-      )}
+      <div className="h-48 overflow-auto bg-sky-50 rounded-xl mx-2">
+        {selectedItem === 1 ? (
+          <div className="divide-y divide-gray-300">
+            {openOrders.map((order, i) => (
+              <OpenOrderCard key={i} order={order} provider={library} />
+            ))}
+          </div>
+        ) : selectedItem === 2 ? (
+          <h1 className="text-center mt-2"> Cancelled</h1>
+        ) : selectedItem === 3 ? (
+          <h1 className="text-center mt-2"> Executed</h1>
+        ) : (
+          <></>
+        )}
+      </div>
     </div>
   );
 

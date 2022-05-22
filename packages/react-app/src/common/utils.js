@@ -36,3 +36,7 @@ export const generateSecret = () => {
   const { privateKey, address } = new ethers.Wallet(fullSecret);
   return [privateKey, address];
 };
+
+export const classNames = (...args) => {
+  return args.join(' ');
+};

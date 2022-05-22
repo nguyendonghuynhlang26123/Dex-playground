@@ -6,26 +6,12 @@ import { NewSwap } from '../../components/Swap/NewSwap';
 
 const Swaps = () => {
   const { active } = useEthers();
-  const { one, two } = addresses['4'];
-  const [token1Address, setToken1Address] = useState(false);
-  const [swapReversed, setSwapReversed] = useState(false);
-  const swapPositionBtn = (ev) => {
-    ev.preventDefault();
-    setSwapReversed((prv) => !prv);
-  };
 
   return (
     <div>
       {active && (
         <>
-          {/* {swapReversed ? (
-            <Swap token0Address={two} token1Address={one} swapPosition={swapPositionBtn} />
-          ) : (
-            <Swap token0Address={one} token1Address={two} swapPosition={swapPositionBtn} />
-          )} */}
-
           <NewSwap />
-          <hr />
         </>
       )}
     </div>

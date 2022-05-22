@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 export const TransactionButton = ({ onClick, label, className, state, disabled = false }) => {
   const [isLoading, setLoading] = useState(false);
   const [loadingLabel, setLoadingLabel] = useState('');
+
   useEffect(() => {
     if (!state || state.status === 'None' || state.status === 'Success') {
       setLoading(false);
@@ -21,7 +22,7 @@ export const TransactionButton = ({ onClick, label, className, state, disabled =
   }, [state]);
 
   return isLoading ? (
-    <button className={`flex justify-center bg-blue-500 text-white hover:bg-blue-300 rounded-lg px-2 py-1.5 opacity-60 ${className}`} disabled>
+    <button className={`flex justify-center btn-primary hover:scale-100 px-2 py-1.5 opacity-60 ${className}`} disabled>
       <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
         <path
@@ -33,11 +34,7 @@ export const TransactionButton = ({ onClick, label, className, state, disabled =
       {loadingLabel}
     </button>
   ) : (
-    <button
-      className={`bg-blue-500 text-white hover:bg-blue-300 ease-in-out duration-300 rounded px-2 py-1.5 ${className} disabled:opacity-60`}
-      onClick={onClick}
-      disabled={Boolean(disabled)}
-    >
+    <button className={`btn-primary px-2 py-1.5 ${className} disabled:opacity-60`} onClick={onClick} disabled={Boolean(disabled)}>
       {label}
     </button>
   );

@@ -5,15 +5,7 @@
 @font-face {
   font-family: 'Nailhead-Nova';
   src: local('Nailhead-Nova'), url(../fonts/Nailhead-Nova.otf) format('opentype'); 
-}
-@font-face {
-  font-family: 'Bumble';
-  src: local('Bumble'), url(../fonts/Bumble.ttf) format('truetype'); 
-}
-@font-face {
-  font-family: 'FloridaOrange';
-  src: local('FloridaOrange'), url(../fonts/FloridaOrange.ttf) format('truetype'); 
-}
+} 
 
 @layer utilities {
   /* Chrome, Safari, Edge, Opera */
@@ -31,23 +23,57 @@
   .logo{
     font-family: 'Nailhead-Nova', sans-serif;
   }
+  #root, html, body {
+    height: 100%;
+  }
+
+  #global {
+    width: auto; 
+    min-height: 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+
+  #header {
+    height: 4rem; 
+  }
+
+  #main {
+    min-height: calc(100vh - 4rem - 3rem - 5px); 
+    height: auto;
+  }
+
+  #footer {
+    height: 3rem;
+  }
+
+  body {
+    margin: 0;
+  }
 } 
 
 @layer components{
+  .flex-row-center {
+    @apply flex flex-row items-center;
+  }
 
   .btn-primary {
-    @apply cursor-pointer bg-gradient-to-r from-cyan-500 to-blue-500 text-white focus:ring-blue-400 rounded-lg font-semibold shadow-md hover:scale-105 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-opacity-75 transition-all ease-in-out;
+    @apply cursor-pointer bg-gradient-to-r from-cyan-500 to-blue-500 text-white focus:ring-blue-400 rounded-lg font-semibold shadow-md hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-opacity-75 transition-all ease-in-out;
   }
   .btn-primary-light {
-    @apply cursor-pointer bg-gradient-to-r from-cyan-400 to-blue-400 text-white focus:ring-blue-400 rounded-lg font-semibold shadow-md hover:scale-105 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-opacity-75 transition-all ease-in-out;
+    @apply cursor-pointer bg-gradient-to-r from-cyan-400 to-blue-400 text-white focus:ring-blue-400 rounded-lg font-semibold shadow-md hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-opacity-75 transition-all ease-in-out;
   }
   .btn-secondary {
-    @apply cursor-pointer bg-gradient-to-r from-violet-500 to-purple-500 text-white focus:ring-purple-400  rounded-lg font-semibold shadow-md hover:scale-105 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-opacity-75 transition-all ease-in-out;
+    @apply cursor-pointer bg-gradient-to-r from-by-300 to-sky-400 text-white focus:ring-indigo-600  rounded-lg font-semibold shadow-md hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-opacity-75 transition-all ease-in-out;
   } 
   .btn-success {
-    @apply cursor-pointer bg-gradient-to-r from-lime-500 to-green-500 text-white focus:ring-green-400  rounded-lg font-semibold shadow-md hover:scale-105 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-opacity-75 transition-all ease-in-out;
+    @apply cursor-pointer bg-gradient-to-r from-emerald-500 to-teal-500 text-white focus:ring-teal-400  rounded-lg font-semibold shadow-md hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-opacity-75 transition-all ease-in-out;
   } 
   .btn-danger {
-    @apply cursor-pointer bg-gradient-to-r from-red-500 to-orange-500 text-white focus:ring-orange-400  rounded-lg font-semibold shadow-md hover:scale-105 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-opacity-75 transition-all ease-in-out;
+    @apply cursor-pointer bg-gradient-to-r from-red-500 to-orange-500 text-white focus:ring-orange-400  rounded-lg font-semibold shadow-md hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-opacity-75 transition-all ease-in-out;
+  } 
+  .btn-warning {
+    @apply cursor-pointer bg-gradient-to-r from-amber-500 to-yellow-500 text-white focus:ring-yellow-400  rounded-lg font-semibold shadow-md hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-opacity-75 transition-all ease-in-out;
   } 
 }
