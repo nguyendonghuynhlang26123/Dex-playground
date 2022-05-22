@@ -21,10 +21,7 @@ export const Liquidity = ({ token0Address, token1Address, pairAddress }) => {
   const mintedLiquidity = useTokenBalance(pairAddress, account);
   const { totalSupply } = useToken(pairAddress) ?? {};
   const share = useMemo(
-    () =>
-      mintedLiquidity && totalSupply
-        ? FixedNumber.from(mintedLiquidity.mul(100)).divUnsafe(FixedNumber.from(totalSupply)).round(4).toString()
-        : '0',
+    () => (mintedLiquidity && totalSupply ? FixedNumber.from(mintedLiquidity.mul(100)).divUnsafe(FixedNumber.from(totalSupply)).round(4).toString() : '0'),
     [totalSupply, mintedLiquidity]
   );
 
@@ -35,9 +32,7 @@ export const Liquidity = ({ token0Address, token1Address, pairAddress }) => {
   const token1Balance = useTokenBalance(token1Address, account);
 
   return active && token0 && token1 && mintedLiquidity ? (
-    <div className="flex flex-col my-2">
-      <h1 className="text-[32px] text-center mt-4 mb-2 font-bold">Liquidity</h1>
-
+    <div className="flex flex-col mt-2">
       <div className="flex flex-row w-full divide-x space-x-2">
         <p className="flex-1 p-2 text-center">
           <b>Pool {token0.symbol}</b>
@@ -83,18 +78,10 @@ export const Liquidity = ({ token0Address, token1Address, pairAddress }) => {
       )}
 
       <div className="flex flex-row space-x-2">
-        <p
-          className={`underline mt-4 cursor-pointer hover:text-blue-500 ${
-            mode === 'add' && 'text-green-500 font-bold'
-          }`}
-          onClick={() => setMode('add')}
-        >
+        <p className={`underline mt-4 cursor-pointer hover:text-blue-500 ${mode === 'add' && 'text-green-500 font-bold'}`} onClick={() => setMode('add')}>
           Add liquidity
         </p>
-        <p
-          className={`underline mt-4 cursor-pointer  hover:text-blue-500 ${mode === 'rm' && 'text-red-500 font-bold'}`}
-          onClick={() => setMode('rm')}
-        >
+        <p className={`underline mt-4 cursor-pointer  hover:text-blue-500 ${mode === 'rm' && 'text-red-500 font-bold'}`} onClick={() => setMode('rm')}>
           Remove liquidity
         </p>
       </div>

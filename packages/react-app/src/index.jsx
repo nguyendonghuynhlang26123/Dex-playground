@@ -17,7 +17,7 @@ const client = new ApolloClient({
   cache: new InMemoryCache(),
   uri: 'https://api.thegraph.com/subgraphs/name/nguyendonghuynhlang26123/limit-order-rinkeby',
 });
-
+console.log(networkConfig);
 ReactDOM.render(
   <React.StrictMode>
     <Provider store={store}>

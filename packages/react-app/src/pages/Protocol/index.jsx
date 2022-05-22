@@ -18,11 +18,12 @@ const Protocols = () => {
     <div>
       {active && (
         <>
-          {swapReversed ? (
-            <Protocol token0Address={two} token1Address={one} swapPosition={swapPositionBtn} />
+          {/* {swapReversed ? (
+            <Protocol  />
           ) : (
-            <Protocol token0Address={one} token1Address={two} swapPosition={swapPositionBtn} />
-          )}
+            <Protocol  />
+          )} */}
+          <Protocol/>
         </>
       )}
     </div>

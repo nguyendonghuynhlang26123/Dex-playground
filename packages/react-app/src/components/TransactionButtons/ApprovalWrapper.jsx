@@ -24,7 +24,7 @@ export const ApprovalWrapper = ({ tokenAddress, target, amountToApprove = MAX_AP
             approveToken();
           }}
           state={approvalState}
-          className={`mt-2 mx-2.5 !py-3 !rounded-[1rem] !bg-white !text-blue-500 border border-blue-500 hover:!bg-blue-300 hover:!border-blue-300 hover:!text-white`}
+          className={`mt-2 mx-2.5 !py-3 !btn-success !rounded-[1rem]`}
         />
       ) : (
         <>{children}</>

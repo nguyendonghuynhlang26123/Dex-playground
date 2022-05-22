@@ -30,7 +30,7 @@ const mintToken = async (token, user, value) => {
     await token.connect(user).mint(_18digits(value));
   }
 };
-describe("Core Contract", function () {
+describe.only("Core Contract", function () {
   let owner;
   let user1;
   let user2;

@@ -54,7 +54,7 @@ export const OpenOrderCard = ({ provider, order }) => {
   }, [order]);
 
   return (
-    <div className="my-2 p-4 rounded-[1rem] bg-gray-50 border border-gray-300 ">
+    <div className="my-2 px-4 py-2">
       {inputToken && outputToken && (
         <div className=" flex flex-row justify-between">
           <div className="flex flex-row items-center gap-2">
@@ -65,7 +65,7 @@ export const OpenOrderCard = ({ provider, order }) => {
           </div>
           <TransactionButton
             label="Cancel"
-            className="rounded-[1rem] py-0.5 px-3 text-yellow-700 !bg-yellow-100 border border-yellow-300 hover:!bg-yellow-200"
+            className="text-sm rounded-3xl tracking-tight py-0.5 px-3 !btn-warning"
             state={cancelingState}
             onClick={submitCancelOrder}
           >

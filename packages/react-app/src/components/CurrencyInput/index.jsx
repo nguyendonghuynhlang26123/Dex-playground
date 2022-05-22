@@ -48,37 +48,23 @@ export const CurrencyInput = ({ provider, account, label, tokenAddress, onAddres
     showModal(false);
   };
 
-  // const onTokenSelect = useCallback(
-  //   async (selectToken) => {
-  //     if (!provider || !account) return;
-  //     if (onAddressChange) onAddressChange(selectToken.address);
-  //     setTokenInfo({
-  //       ...selectToken,
-  //       balance: await TokenUtils.getTokenBalance(provider, selectToken.address, account),
-  //     });
-
-  //     showModal(false);
-  //   },
-  //   [provider, account]
-  // );
-
   return (
     <>
-      <div className={`rounded-[1.2rem] bg-white mx-2 shadow group border ${focusState ? ' border-blue-500' : 'border-transparent'}`}>
+      <div className={`rounded-3xl bg-white mx-2 shadow group border-2 ${focusState ? ' border-sky-300' : 'border-transparent'}`}>
         <div className="flex flex-row justify-between py-3 px-4 ">
-          <label className="text-sm text-gray-400">{label}</label>
+          <label className={`text-sm font-semibold tracking-wide ${focusState ? ' text-sky-500' : 'text-gray-400'}`}>{label}</label>
           <a className="text-sm text-gray-400 hover:text-gray-500 cursor-pointer">{token ? 'Balance: ' + prettyNum(token.balance) : '-'}</a>
         </div>
         <div className="flex flex-row items-center whitespace-nowrap px-4 pb-3">
           <input
-            className="w-0 text-2xl flex-1 placeholder:text-gray-300 focus:outline-none"
+            className="w-0 text-2xl bg-inherit flex-1 placeholder:text-gray-300 focus:outline-none"
             {...inputProps}
             onFocus={() => setFocusState(true)}
             onBlur={() => setFocusState(false)}
             placeholder="0.0"
           />
           <button
-            className="flex flex-row items-center rounded-full py-1 px-3 bg-gray-50 border border-gray-200"
+            className=" flex flex-row items-center rounded-full py-1 px-3 bg-sky-50 border border-gray-200 hover:bg-gray-100"
             onClick={(ev) => {
               ev.preventDefault();
               showModal(true);
@@ -88,7 +74,7 @@ export const CurrencyInput = ({ provider, account, label, tokenAddress, onAddres
               <>
                 <img
                   src={token.imageUrl}
-                  className="w-6 h-6 mr-2"
+                  className="w-6 h-6 mr-2 bg-white rounded-full"
                   onError={({ currentTarget }) => {
                     currentTarget.onerror = null; // prevents looping
                     currentTarget.src = TokenIcon;

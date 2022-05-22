@@ -5,6 +5,7 @@ import { FixedNumber, utils, ethers } from 'ethers';
 export const truncate = (str, maxDecimalDigits) => {
   if (str.includes('.')) {
     const parts = str.split('.');
+    if (maxDecimalDigits === 0) return parts[0];
     return parts[0] + '.' + parts[1].slice(0, maxDecimalDigits);
   }
   return str;
@@ -34,4 +35,8 @@ export const generateSecret = () => {
   const fullSecret = `2022001812713618127252${secret}`;
   const { privateKey, address } = new ethers.Wallet(fullSecret);
   return [privateKey, address];
+};
+
+export const classNames = (...args) => {
+  return args.join(' ');
 };

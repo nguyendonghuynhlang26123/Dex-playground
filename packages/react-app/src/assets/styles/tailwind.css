@@ -1,19 +1,79 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/* Fonts */
+@font-face {
+  font-family: 'Nailhead-Nova';
+  src: local('Nailhead-Nova'), url(../fonts/Nailhead-Nova.otf) format('opentype'); 
+} 
 
 @layer utilities {
+  /* Chrome, Safari, Edge, Opera */
   input[type="number"]::-webkit-inner-spin-button,
   input[type="number"]::-webkit-outer-spin-button {
     -webkit-appearance: none;
     margin: 0;
   }
-}
-details[open] summary ~ * {
-  animation: sweep .5s ease-in-out;
-}
 
-@keyframes sweep {
-  0%    {opacity: 0; margin-left: -10px}
-  100%  {opacity: 1; margin-left: 0px}
+  /* Firefox */
+  input[type=number] {
+    -moz-appearance: textfield;
+  }
+
+  .logo{
+    font-family: 'Nailhead-Nova', sans-serif;
+  }
+  #root, html, body {
+    height: 100%;
+  }
+
+  #global {
+    width: auto; 
+    min-height: 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+
+  #header {
+    height: 4rem; 
+  }
+
+  #main {
+    min-height: calc(100vh - 4rem - 3rem - 5px); 
+    height: auto;
+  }
+
+  #footer {
+    height: 3rem;
+  }
+
+  body {
+    margin: 0;
+  }
+} 
+
+@layer components{
+  .flex-row-center {
+    @apply flex flex-row items-center;
+  }
+
+  .btn-primary {
+    @apply cursor-pointer bg-gradient-to-r from-cyan-500 to-blue-500 text-white focus:ring-blue-400 rounded-lg font-semibold shadow-md hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-opacity-75 transition-all ease-in-out;
+  }
+  .btn-primary-light {
+    @apply cursor-pointer bg-gradient-to-r from-cyan-400 to-blue-400 text-white focus:ring-blue-400 rounded-lg font-semibold shadow-md hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-opacity-75 transition-all ease-in-out;
+  }
+  .btn-secondary {
+    @apply cursor-pointer bg-gradient-to-r from-by-300 to-sky-400 text-white focus:ring-indigo-600  rounded-lg font-semibold shadow-md hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-opacity-75 transition-all ease-in-out;
+  } 
+  .btn-success {
+    @apply cursor-pointer bg-gradient-to-r from-emerald-500 to-teal-500 text-white focus:ring-teal-400  rounded-lg font-semibold shadow-md hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-opacity-75 transition-all ease-in-out;
+  } 
+  .btn-danger {
+    @apply cursor-pointer bg-gradient-to-r from-red-500 to-orange-500 text-white focus:ring-orange-400  rounded-lg font-semibold shadow-md hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-opacity-75 transition-all ease-in-out;
+  } 
+  .btn-warning {
+    @apply cursor-pointer bg-gradient-to-r from-amber-500 to-yellow-500 text-white focus:ring-yellow-400  rounded-lg font-semibold shadow-md hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-opacity-75 transition-all ease-in-out;
+  } 
 }

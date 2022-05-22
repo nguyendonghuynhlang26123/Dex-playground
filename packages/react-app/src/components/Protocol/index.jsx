@@ -13,6 +13,9 @@ import { RiCloseLine, RiArrowDownLine } from 'react-icons/ri';
 import { ApprovalWrapper, ErrorWrapper, TransactionButton } from '../TransactionButtons';
 import { useLimitInputHandler } from '../../hooks/useLimitOrderInputHandle';
 import { OrderContainer } from '../Order/OrderContainer';
+
+//import { AbiCoder } from '@ethersproject/abi';
+
 import { ethers } from 'ethers';
 
 export const Protocol = () => {
@@ -115,26 +118,39 @@ export const Protocol = () => {
 
   return (
     <div>
-      <form className="flex flex-col bg-gray-100 px-2 py-4">
-        <h1 className="text-[32px] text-center mt-6 mb-2 font-bold">Limit Order</h1>
+      <form className="flex flex-col pt-4">
         <div className="my-2">
           <CurrencyInput
-            label="Input"
+            label="Sell:"
             provider={library}
             account={account}
             tokenAddress={address0}
             onAddressChange={(address) => handleAddressChange(address, true)}
             inputProps={tokenInputProps}
           />
-          <span className="w-full flex justify-center items-center h-1">
+          {/* <span className="w-full flex justify-center items-center h-1">
             <RiCloseLine
-              className="w-7 h-7 p-0.5 bg-white rounded-[1rem] text-gray-400 border-4 border-gray-100 absolute text-md cursor-pointer hover:bg-gray-100"
+              className="w-7 h-7 bg-white rounded-[1rem] text-gray-400 border-4 border-sky-100 absolute text-md cursor-pointer hover:bg-sky-100 "
+            />
+          </span> */}
+
+          <span className="w-full flex justify-center items-center h-1">
+            <RiArrowDownLine
+              className="w-7 h-7 bg-white rounded-[1rem] text-gray-400 border-4 border-sky-100 absolute text-md cursor-pointer hover:bg-sky-100 "
               onClick={reverseInput}
             />
           </span>
-          <div className={`rounded-[1.2rem] bg-white mx-2 shadow group border ${rateFocused ? ' border-blue-500' : 'border-transparent'}`}>
+          <CurrencyInput
+            label="For:"
+            provider={library}
+            account={account}
+            tokenAddress={address1}
+            onAddressChange={(address) => handleAddressChange(address, false)}
+            inputProps={tokenOutputProps}
+          />
+          <div className={`mt-1 rounded-[1.2rem] bg-white mx-2 shadow group border-2 ${rateFocused ? ' border-sky-300' : 'border-transparent'}`}>
             <div className="flex flex-row justify-between py-3 px-4 ">
-              <label className="text-sm text-gray-400">Price</label>
+              <label className={` text-sm font-semibold ${rateFocused ? ' text-sky-500' : 'text-gray-400'}`}>With price:</label>
 
               <a className="text-sm text text-gray-400 hover:text-gray-500 cursor-pointer">
                 {marketPriceCompare ? <span className={marketPriceCompare.style}>{marketPriceCompare.message}</span> : ''}
@@ -148,22 +164,9 @@ export const Protocol = () => {
                 placeholder="0.0"
                 {...rateInputProps}
               />
+              {token1 ? <p className="text-xl capitalize tracking-tighter font-semibold px-2 text-gray-400">{token1.symbol}</p> : <></>}
             </div>
           </div>
-          <span className="w-full flex justify-center items-center h-1">
-            <RiArrowDownLine
-              className="w-7 h-7 p-0.5 bg-white rounded-full text-gray-400 border-4 border-gray-100 absolute text-md cursor-pointer hover:bg-gray-100"
-              onClick={reverseInput}
-            />
-          </span>
-          <CurrencyInput
-            label="Output"
-            provider={library}
-            account={account}
-            tokenAddress={address1}
-            onAddressChange={(address) => handleAddressChange(address, false)}
-            inputProps={tokenOutputProps}
-          />
         </div>
 
         <ErrorWrapper error={error}>
@@ -174,12 +177,6 @@ export const Protocol = () => {
           )}
         </ErrorWrapper>
       </form>
-
-      <div className="mt-8">
-        <h1 className="text-2xl">Open orders</h1>
-        <hr className="mb-4" />
-        <OrderContainer />
-      </div>
     </div>
   );
 };
