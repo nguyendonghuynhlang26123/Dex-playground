@@ -18,69 +18,70 @@ contract OrderProtocol is Vault {
     event OrderCreated(
         bytes32 indexed _key,
         address indexed _module,
-        address _inputToken,
+        address[] _inputTokens,
+        uint256[] _amounts,
         address _owner, 
         address _witness,
-        uint256 _amount,
         bytes _data, 
         bytes32 _secret 
     );
 
     event OrderExecuted(
         bytes32 indexed _key,
-        address _inputToken,
+        address[] _inputTokens,
+        uint256[] _amounts,
         address _owner,
         address _witness,
         bytes _data,
         bytes _auxData,
-        uint256 _amount,
         uint256 _bought
     );
 
     event OrderCancelled(
         bytes32 indexed _key,
-        address _inputToken,
+        address[] _inputTokens,
+        uint256[] _amounts,
         address _owner,
         address _witness,
-        bytes _data,
-        uint256 _amount
+        bytes _data
     );
 
     /**
      * @notice Create an order
      * @param _module - Address of the module to use for the order execution
-     * @param _inputToken - Address of the input token
+     * @param _inputTokens - Address list of input tokens
+     * @param _amounts - The list of amount deposit to the vault. This must has the same length with the input addresses list
      * @param _owner - Address of the order's owner
      * @param _witness - Address of the witness
-     * @param _amount - Amount of token deposited for this order
      * @param _data - Bytes of the order's data
      */
     function createOrder( 
         address payable _module,
-        address _inputToken,
         address payable _owner,
+        address[] memory _inputTokens,
+        uint256[] memory _amounts,
         address _witness,
-        uint256 _amount,
         bytes calldata _data,
         bytes32 _secret
     ) external payable {
         bytes32 key = keyOf(
             IModule(_module),
-            IERC20(_inputToken),
+            _inputTokens,
+            _amounts,
             _owner,
             _witness,
-            _amount,
             _data
         );
 
-        _depositVault(key, _inputToken, _owner, _amount);
+        _depositVault(_key, _inputTokens, _amounts, owner);
+
         emit OrderCreated(
             key,
             _module,
-            _inputToken,
+            _inputTokens,
+            _amounts,
             _owner,
             _witness,
-            _amount,
             _data,
             _secret
         );
@@ -90,27 +91,24 @@ contract OrderProtocol is Vault {
      * @notice Cancel order
      * @dev The params should be the same used for the order creation
      * @param _module - Address of the module to use for the order execution
-     * @param _inputToken - Address of the input token
-     * @param _owner - Address of the order's owner
-     * @param _witness - Address of the witness
-     * @param _amount - Amount of token deposited for this order
+     * @param _inputTokens - Address list of input tokens
+     * @param _amounts - The list of amount deposit to the vault. This must has the same length with the input addresses list
+     * @param _witness - Address of the witness. 
      * @param _data - Bytes of the order's data
      */
     function cancelOrder(
         IModule _module,
-        IERC20 _inputToken,
-        address payable _owner,
+        IERC20[] memory _inputTokens,
+        uint256[] memory _amounts, 
         address _witness,
-        uint256 _amount,
         bytes calldata _data
     ) external {
-        require(msg.sender == _owner, "OrderProtocol#cancelOrder: INVALID_OWNER");
         bytes32 key = keyOf(
             _module,
-            _inputToken,
-            _owner,
+            _inputTokens,
+            _amounts,
+            msg.sender,
             _witness,
-            _amount,
             _data
         );
 
@@ -139,9 +137,9 @@ contract OrderProtocol is Vault {
      */
     function executeOrder(
         IModule _module,
-        IERC20 _inputToken,
+        IERC20[] calldata _inputTokens,
+        uint256[] calldata _amounts,
         address payable _owner,
-        uint256 _amount,
         bytes calldata _data,
         bytes calldata _signature,
         bytes calldata _auxData
@@ -263,19 +261,19 @@ contract OrderProtocol is Vault {
      */
     function keyOf(
         IModule _module,
-        IERC20 _inputToken,
+        IERC20[] calldata _inputTokens,
+        uint256[] calldata _amounts,
         address payable _owner,
         address _witness,
-        uint256 _amount,
         bytes memory _data
     ) public pure returns (bytes32) {
         return keccak256(
             abi.encode(
                 _module,
-                _inputToken,
+                _inputTokens,
+                _amounts,
                 _owner,
                 _witness,
-                _amount,
                 _data
             )
         );

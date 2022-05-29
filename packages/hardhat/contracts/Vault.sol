@@ -11,11 +11,10 @@ contract Vault {
     using SafeMath for uint256; 
     address public constant ETH_ADDRESS = address(0x00eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee);
 
-    mapping (bytes32 => uint256) _deposits; 
-    mapping (bytes32 => address) _tokens; 
+    mapping (bytes32 => bytes) _deposits;
 
-    event VaultDeposited(bytes32 indexed key, uint256 amount);
-    event VaultWithdrawed(bytes32 indexed key, uint256 amount);
+    event VaultDeposited(bytes32 indexed key, bytes value);
+    event VaultWithdrawed(bytes32 indexed key, bytes value);
     
     /**
      * @dev Prevent users to send Ether directly to this contract
@@ -26,37 +25,43 @@ contract Vault {
             "VaultContract#receive: NO_SEND_ETH_PLEASE"
         );
     }
+
     /**
         @notice Deposit 
      */
-    function _depositVault(bytes32 _key, address _tokenAddress, address _user, uint256 _amount) internal {
+    function _depositVault(bytes32 _key, address[] memory _tokenAddresses, uint112[] memory _amounts, address owner) internal {
         require(_deposits[_key] == 0, "VaultContract#deposit: VAULT_EXISTS");
 
-        _deposits[_key] = _deposits[_key].add(_amount);
-        _tokens[_key] = _tokenAddress;
-        if (_tokenAddress == ETH_ADDRESS) {
-            require(msg.value != 0 && msg.value == _amount, "VaultContract#deposit: INVALID_ETH_AMOUNT");
+        bytes memory value = abi.encode(_tokenAddress, _amounts);
+        _deposits[_key] = value;
+        uint8 len = _tokenAddresses.length;
+        for (uint8 i = 0; i < len; i++){
+            if (_tokenAddresses[i] == ETH_ADDRESS) {
+                require(msg.value != 0 && msg.value == _amounts[i], "VaultContract#deposit: INVALID_ETH_AMOUNT");
+            }
+            else ProtocolUtils.transferFrom(IERC20(_tokenAddress), _user, address(this), _amounts[i]);
         }
-        else ProtocolUtils.transferFrom(IERC20(_tokenAddress), _user, address(this), _amount);
 
-        emit VaultDeposited(_key, _amount);
+        emit VaultDeposited(_key, value);
     }
     
-    function _pullVault(bytes32 _key, address payable _recipient) internal returns(uint256 amount) {
-        require(_deposits[_key] > 0, "VaultContract#pull: VAULT_EMPTY");
+    function _pullVault(bytes32 _key, address payable _recipient) internal returns(uint112[] memory amounts) {
+        require(_deposits[_key] != 0, "VaultContract#pull: VAULT_EMPTY");
 
-        address token = _tokens[_key];
-        amount = _deposits[_key];
-        console.log("Is eth: " , token == ETH_ADDRESS, token);
-        require(ProtocolUtils.balanceOf(IERC20(token), address(this)) >= amount, "VaultContract: INSUFFICIENT_FUND");
+        (address[] memory tokens, amounts) = abi.decode(address[], uint112[]);
 
-        delete _deposits[_key];
-        delete _tokens[_key];
-        ProtocolUtils.transfer(IERC20(token), _recipient, amount); 
-        emit VaultWithdrawed(_key, amount);
+        uint8 len = _tokenAddresses.length;
+        for (uint8 i = 0; i < len; i++){
+            require(ProtocolUtils.balanceOf(IERC20(tokens[i]), address(this)) >= amounts[i], "VaultContract: INSUFFICIENT_FUND");
+            ProtocolUtils.transfer(IERC20(tokens[i]), _recipient, amounts[i]);
+        }
+        
+        bytes memory value = _deposits[_key];
+        delete _deposits[_key];  
+        emit VaultWithdrawed(_key, value);
     }
 
-    function getDeposits(bytes32 key) public view returns (uint256) {
-        return _deposits[key];
+    function getDeposits(bytes32 key) public view returns (uint112[] memory amounts) {
+        (, amounts) = abi.decode(_deposits[key], (address[], uint112[]));
     }
 }
