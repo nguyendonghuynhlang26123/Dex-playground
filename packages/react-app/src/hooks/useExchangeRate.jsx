@@ -12,7 +12,7 @@ export const useExchangeRate = ({ r0, r1 }) => {
 
   useEffect(() => {
     if (r0 && r1) {
-      const value = UniswapUtils.getAmmountOut(parseEther('1'), r0, r1);
+      const value = UniswapUtils.getAmountOut(parseEther('1'), r0, r1);
       setCurrentRate(prettyNum(value));
     }
   }, [r0, r1]);

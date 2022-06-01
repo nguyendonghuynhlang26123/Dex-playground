@@ -34,6 +34,7 @@
     "@usedapp/core": "^0.12.1",
     "graphql": "^16.3.0",
     "ipfs-deploy": "^11.2.0",
+    "moment": "^2.29.3",
     "react": "17.0.2",
     "react-dom": "17.0.2",
     "react-icons": "^4.3.1",
@@ -41,6 +42,7 @@
     "react-router-dom": "^6.3.0",
     "react-scripts": "4.0.3",
     "react-toastify": "^8.2.0",
+    "react-tooltip": "^4.2.21",
     "styled-components": "^5.3.3"
   },
   "eslintConfig": {
@@ -55,8 +57,8 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "build:css": "postcss src/assets/styles/tailwind.css -o src/assets/styles/index.css",
-    "watch": "chokidar \"./src/**/*.jsx\" -c \"yarn build:css\"",
-    "dev": "concurrently \"yarn watch\" \"yarn start\""
+    "watch": "CHOKIDAR_USEPOLLING=true chokidar \"./src/**/*.jsx\" -c \"yarn build:css\"",
+    "dev": "CHOKIDAR_USEPOLLING=true concurrently \"yarn watch\" \"yarn start\""
   },
   "devDependencies": {
     "autoprefixer": "^10.4.4",

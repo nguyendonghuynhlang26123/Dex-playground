@@ -5,9 +5,6 @@ import { toast } from 'react-toastify';
 import { Footer } from './components/Footer';
 import { Header } from './components/Header';
 import Exchange from './pages/Exchange';
-import LiquidityPage from './pages/Liquidity';
-import Protocols from './pages/Protocol';
-import Swaps from './pages/Swap';
 import TokensManagement from './pages/Tokens';
 
 function App() {
@@ -38,11 +35,8 @@ function App() {
       <div id="main" className="flex justify-center items-start py-12">
         <div className="w-[560px] px-4">
           <Routes>
-            <Route path="token" element={<TokensManagement />} />
-            <Route path="swap" element={<Swaps />} />
-            <Route path="liquidity" element={<LiquidityPage />} />
+            <Route path="playground" element={<TokensManagement />} />
             <Route path="/" element={<Navigate to="/exchange" />} />
-            <Route path="protocol" element={<Protocols />} />
             <Route path="exchange" element={<Exchange />} />
           </Routes>
         </div>

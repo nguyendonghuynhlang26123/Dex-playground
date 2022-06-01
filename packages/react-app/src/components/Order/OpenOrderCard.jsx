@@ -1,37 +1,20 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import TokenIcon from '../../assets/images/token.png';
-import { HiOutlineArrowNarrowRight } from 'react-icons/hi';
-import { CollapsePanel } from '../CollapsePanel';
-import { ethers } from 'ethers';
+import moment from 'moment';
+import { ethers, BigNumber } from 'ethers';
 import { TokenUtils } from '../../common/TokenUtils';
 import { getContract, prettyNum } from '../../common/utils';
 import { TransactionButton } from '../TransactionButtons';
 import { abis, addresses } from '@dex/contracts';
 import { useContractFunction } from '@usedapp/core';
+import { Tag } from './Tag';
+import { LoadingPlaceHolder } from '../LoadingPlaceHolder';
 
-const Tag = ({ amount, img, symbol }) => {
-  return (
-    <button className="flex flex-row gap-1 items-center rounded-full py-1 px-3 bg-white border border-gray-300 text-sm" onClick={(ev) => ev.preventDefault()}>
-      <img
-        src={img}
-        className="w-4 h-4"
-        onError={({ currentTarget }) => {
-          currentTarget.onerror = null; // prevents looping
-          currentTarget.src = TokenIcon;
-        }}
-      />
-      <span>
-        {amount} {symbol}
-      </span>
-    </button>
-  );
-};
-
-export const OpenOrderCard = ({ provider, order }) => {
+export const OpenOrderCard = ({ provider, order, handleClick }) => {
   const abiEncoder = new ethers.utils.AbiCoder();
 
   const inputAddress = order.inputToken;
-  const inputAmount = order.amount;
+  const inputAmount = BigNumber.from(order.amount);
+  const createdAt = moment(new Date(order.updatedAt * 1000)).fromNow();
   const [outputAddress, outputAmount] = abiEncoder.decode(['address', 'uint256'], order.data);
 
   const [inputToken, setInputToken] = useState();
@@ -48,31 +31,47 @@ export const OpenOrderCard = ({ provider, order }) => {
     if (outputAddress) TokenUtils.getTokenInfo(provider, outputAddress).then(setOutputToken);
   }, [inputAddress, outputAddress]);
 
-  const submitCancelOrder = useCallback(() => {
-    console.log('Cancel param: ', order.module, order.inputToken, order.owner, order.witness, order.amount, order.data);
-    cancelOrderTx(order.module, order.inputToken, order.owner, order.witness, order.amount, order.data);
-  }, [order]);
+  const submitCancelOrder = useCallback(
+    (ev) => {
+      ev.preventDefault();
+      cancelOrderTx(order.module, order.inputToken, order.owner, order.witness, order.amount, order.data);
+    },
+    [order]
+  );
+
+  const onClickHandler = useCallback(
+    (ev) => {
+      ev.preventDefault();
+      handleClick({
+        inputAddress,
+        outputAddress,
+        inputAmount,
+        outputAmount,
+      });
+    },
+    [inputAddress, outputAddress, inputAmount, outputAmount]
+  );
 
   return (
-    <div className="my-2 px-4 py-2">
-      {inputToken && outputToken && (
-        <div className=" flex flex-row justify-between">
-          <div className="flex flex-row items-center gap-2">
-            <Tag img={inputToken.imageUrl} symbol={inputToken.symbol} amount={prettyNum(inputAmount)} />
-            <HiOutlineArrowNarrowRight />
-
-            <Tag img={outputToken.imageUrl} symbol={outputToken.symbol} amount={prettyNum(outputAmount)} />
+    <li className="p-4 hover:shadow cursor-pointer hover:bg-sky-100 grid grid-cols-4 gap-2 " onClick={onClickHandler}>
+      {inputToken && outputToken ? (
+        <>
+          <Tag img={inputToken.imageUrl} symbol={inputToken.symbol} amount={prettyNum(inputAmount)} />
+          {/* <HiOutlineArrowNarrowRight /> */}
+          <Tag img={outputToken.imageUrl} symbol={outputToken.symbol} amount={prettyNum(outputAmount)} />
+          <p className="text-sm text-gray-500 justify-center flex items-center ">{createdAt}</p>
+          <div className="flex justify-center items-center">
+            <TransactionButton
+              label="Cancel"
+              className="text-sm rounded-3xl tracking-tight py-0.5 px-3 !btn-warning !shadow-none"
+              state={cancelingState}
+              onClick={submitCancelOrder}
+            />
           </div>
-          <TransactionButton
-            label="Cancel"
-            className="text-sm rounded-3xl tracking-tight py-0.5 px-3 !btn-warning"
-            state={cancelingState}
-            onClick={submitCancelOrder}
-          >
-            Cancel
-          </TransactionButton>
-        </div>
+        </>
+      ) : (
+        <LoadingPlaceHolder className="mx-auto col-span-4" />
       )}
-    </div>
+    </li>
   );
 };

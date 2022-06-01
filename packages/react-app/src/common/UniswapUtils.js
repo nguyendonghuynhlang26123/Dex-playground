@@ -1,5 +1,5 @@
-import { parseEther } from '@ethersproject/units';
-import { FixedNumber } from 'ethers';
+import { parseEther, parseUnits } from '@ethersproject/units';
+import { BigNumber, FixedNumber } from 'ethers';
 import { toInteger } from './utils';
 
 const fixNumbers = (...args) => args.map((a) => FixedNumber.from(a));
@@ -11,7 +11,7 @@ export class UniswapUtils {
     return toInteger(fAmountA.mulUnsafe(fRB).divUnsafe(fRA).floor());
   }
 
-  static getAmmountIn(amountOut, rIn, rOut) {
+  static getAmountIn(amountOut, rIn, rOut) {
     const fAmountOut = FixedNumber.from(amountOut);
     const fRIn = FixedNumber.from(rIn);
     const fROut = FixedNumber.from(rOut);
@@ -20,7 +20,7 @@ export class UniswapUtils {
     return toInteger(numerator.divUnsafe(denominator).ceiling());
   }
 
-  static getAmmountOut(amountIn, rIn, rOut) {
+  static getAmountOut(amountIn, rIn, rOut) {
     const fAmountIn = FixedNumber.from(amountIn);
     const fRIn = FixedNumber.from(rIn);
     const fROut = FixedNumber.from(rOut);
@@ -35,6 +35,16 @@ export class UniswapUtils {
   static getRate(v0, v1) {
     const [fV0, fV1] = fixNumbers(v0, v1);
     if (!fV0.isZero()) return fV1.divUnsafe(fV0);
+    else throw new Error('UniswapUtils.getRate exception. Divide by 0');
+  }
+
+  // return v1*1unit/v0
+  static getPriceRate(v0, v1, units = 18) {
+    if (!v0._isBigNumber || !v1._isBigNumber) {
+      v0 = BigNumber.from(v0.toString());
+      v1 = BigNumber.from(v1.toString());
+    }
+    if (!v0.isZero()) return v1.mul(parseUnits('1', units)).div(v0);
     else throw new Error('UniswapUtils.getRate exception. Divide by 0');
   }
 

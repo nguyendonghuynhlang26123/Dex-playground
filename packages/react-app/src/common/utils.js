@@ -40,3 +40,13 @@ export const generateSecret = () => {
 export const classNames = (...args) => {
   return args.join(' ');
 };
+
+export const compareAddress = (address1, address2) => address1.toLowerCase() === address2.toLowerCase();
+
+// Format date as dd/mm/yyyy
+export function formatDate(date) {
+  function padTo2Digits(num) {
+    return num.toString().padStart(2, '0');
+  }
+  return [padTo2Digits(date.getDate()), padTo2Digits(date.getMonth() + 1), date.getFullYear()].join('/');
+}

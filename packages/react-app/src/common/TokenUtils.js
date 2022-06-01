@@ -33,12 +33,14 @@ export class TokenUtils {
         symbol: 'ETH',
         imageUrl: `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png`,
         balance: account ? await provider.getBalance(account) : null,
+        decimals: 18,
         address: tokenAddress,
       };
 
     const contract = getContract(abis.erc20, tokenAddress, provider);
     return {
       symbol: await contract.symbol(),
+      decimals: await contract.decimals(),
       imageUrl: mapTokenImage[tokenAddress.toLowerCase()],
       balance: account ? await contract.balanceOf(account) : null,
       address: tokenAddress,
