@@ -19,7 +19,6 @@ export const useLimitInputHandler = ({ r0, r1, debounceTime = 100 }) => {
   const [marketRate, setMarketRate] = useState(0);
 
   const reset = () => {
-    console.log('Reset');
     setInput(['', '']);
     setPrice([ZERO, ZERO]);
     setInputRate('');
@@ -41,7 +40,7 @@ export const useLimitInputHandler = ({ r0, r1, debounceTime = 100 }) => {
   const handleUserInputToken0 = async (input, _r0, _r1) => {
     //Start handling
     const inputInBN = parseEther(input.toString());
-    const outputInBN = BigNumber.from(UniswapUtils.getAmmountOut(inputInBN, _r0, _r1));
+    const outputInBN = BigNumber.from(UniswapUtils.getAmountOut(inputInBN, _r0, _r1));
     const output = prettyNum(outputInBN);
     const rate = UniswapUtils.getRate(inputInBN, outputInBN);
 

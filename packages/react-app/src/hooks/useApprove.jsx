@@ -9,8 +9,7 @@ export const useApprove = (tokenAddress, address, txName = '') => {
   });
 
   const approveToken = React.useCallback(() => {
-    console.log('log ~ file: useApprove.jsx ~ line 13 ~ approveToken ~ constants.MaxInt256', constants.MaxInt256);
-    return send(address, constants.MaxInt256);
+    return send(address, constants.MaxUint256);
   }, [address, send]);
 
   return [state, approveToken];

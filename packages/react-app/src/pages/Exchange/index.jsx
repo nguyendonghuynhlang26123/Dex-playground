@@ -31,7 +31,7 @@ const poolOptions = [
 
 const Exchange = () => {
   const { active, library: provider } = useEthers();
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [selectedIndex, setSelectedIndex] = useState(1);
   const [pair, setPair] = useState([addresses[4].one, addresses[4].two]);
   const [pairContractAddress, setPairContractAddress] = useState(addresses[4].pair);
   const factoryContract = getContract(abis.factory, addresses[4].factory, provider);

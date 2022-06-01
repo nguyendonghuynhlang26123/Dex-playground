@@ -29,7 +29,7 @@ export const useSwapInputHandle = ({ r0, r1, debounceTime = 100 }) => {
   useEffect(() => {
     if (r0 && r1 && debouncedValue0 && !isNaN(debouncedValue0) && Number(debouncedValue0)) {
       const amountIn = parseEther(debouncedValue0.toString());
-      const data = UniswapUtils.getAmmountOut(amountIn, r0, r1);
+      const data = UniswapUtils.getAmountOut(amountIn, r0, r1);
       const rate = UniswapUtils.getRate(amountIn, data.toString());
       setCurrentRate(rate.round(4).toString());
       setInput((prv) => [prv[0], '']);
@@ -40,7 +40,7 @@ export const useSwapInputHandle = ({ r0, r1, debounceTime = 100 }) => {
   useEffect(() => {
     if (r0 && r1 && debouncedValue1 && !isNaN(debouncedValue1) && Number(debouncedValue1)) {
       const amountOut = parseEther(debouncedValue1.toString());
-      const data = UniswapUtils.getAmmountIn(amountOut, r0, r1);
+      const data = UniswapUtils.getAmountIn(amountOut, r0, r1);
       const rate = UniswapUtils.getRate(data.toString(), amountOut);
       setCurrentRate(rate.round(4).toString());
       setInput((prv) => ['', prv[1]]);
