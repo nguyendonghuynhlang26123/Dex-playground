@@ -5,16 +5,12 @@ import { TransactionButton } from './TransactionButton';
 import { useApprove } from '../../hooks';
 import { RiLoader4Fill } from 'react-icons/ri';
 
-const MAX_APPROVE = constants.MaxInt256;
-const isInfiniteAllowance = (allowance) => {
-  return allowance;
-};
-export const ApprovalWrapper = ({ tokenAddress, target, amountToApprove = MAX_APPROVE, children }) => {
+const MAX_APPROVE = constants.MaxUint256;
+export const ApprovalWrapper = ({ tokenAddress, target, amountToApprove = constants.MaxInt256, children }) => {
   const { account } = useEthers();
 
   const token = useToken(tokenAddress);
   const allowance = useTokenAllowance(tokenAddress, account, target);
-  console.log('log ~ file: ApprovalWrapper.jsx ~ line 17 ~ ApprovalWrapper ~ allowance', allowance);
   const [approvalState, approveToken] = useApprove(tokenAddress, target, 'Token Approved');
   const loadCompleted = useMemo(() => token && allowance && approveToken, [token, allowance, approveToken]);
 
@@ -23,10 +19,7 @@ export const ApprovalWrapper = ({ tokenAddress, target, amountToApprove = MAX_AP
       {token && allowance && allowance.lt(amountToApprove) ? (
         <TransactionButton
           label={`Approve ${token.symbol}`}
-          onClick={(ev) => {
-            ev.preventDefault();
-            approveToken();
-          }}
+          onClick={approveToken}
           state={approvalState}
           className={`mt-2 mx-2.5 !py-3 !btn-success !rounded-[1rem]`}
         />

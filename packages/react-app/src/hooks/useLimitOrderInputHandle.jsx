@@ -28,16 +28,16 @@ export const useLimitInputHandler = ({ r0, r1, debounceTime = 100 }) => {
 
   useEffect(() => {
     if (r0 && r1) {
-      console.log('log ~ file: useLimitOrderInputHandle.jsx ~ line 32 ~ useEffect ~ r0 && r1', r0.toString(), r1.toString());
-      if (input0 && !isNaN(input0) && Number(input0)) {
+      if (input0 && !isNaN(+input0) && Number(input0)) {
         handleUserInputToken0(input0, r0, r1);
-      } else if (input1 && !isNaN(input1) && Number(input1)) {
+      } else if (input1 && !isNaN(+input1) && Number(input1)) {
         handleUserInputToken1(input1, r0, r1);
       }
     } else reset();
-  }, [r0?.toString(), r1?.toString()]);
+  }, [r0, r1]);
 
   const handleUserInputToken0 = async (input, _r0, _r1) => {
+    if (isNaN(+input)) return;
     //Start handling
     const inputInBN = parseEther(input.toString());
     const outputInBN = BigNumber.from(UniswapUtils.getAmountOut(inputInBN, _r0, _r1));
@@ -51,8 +51,9 @@ export const useLimitInputHandler = ({ r0, r1, debounceTime = 100 }) => {
     setMarketRate(rate);
   };
   const handleUserInputToken1 = async (output, _r0, _r1) => {
+    if (isNaN(+output)) return;
     const outputInBN = parseEther(output.toString());
-    const inputInBN = BigNumber.from(UniswapUtils.getAmmountIn(outputInBN, r0, r1));
+    const inputInBN = BigNumber.from(UniswapUtils.getAmountIn(outputInBN, r0, r1));
     const input = prettyNum(inputInBN);
     const rate = UniswapUtils.getRate(inputInBN, outputInBN);
 
@@ -79,9 +80,8 @@ export const useLimitInputHandler = ({ r0, r1, debounceTime = 100 }) => {
     return {
       value: input0,
       onChange: (ev) => {
-        const input = ev.target.value;
-        console.log('log ~ file: useLimitOrderInputHandle.jsx ~ line 81 ~ tokenInputProps ~ input', input);
-        if (isNaN(input)) return;
+        const input = ev.target.value.trim();
+        if (isNaN(+input)) return;
         if (!input) reset();
         else {
           setInput((prv) => [input, prv[1]]);
@@ -98,8 +98,8 @@ export const useLimitInputHandler = ({ r0, r1, debounceTime = 100 }) => {
     return {
       value: input1,
       onChange: (ev) => {
-        const output = ev.target.value;
-        if (isNaN(output)) return;
+        const output = ev.target.value.trim();
+        if (isNaN(+output)) return;
         if (!output) reset();
         else {
           setInput((prv) => [prv[0], output]);
@@ -116,8 +116,8 @@ export const useLimitInputHandler = ({ r0, r1, debounceTime = 100 }) => {
     return {
       value: rateInput,
       onChange: (ev) => {
-        const price = ev.target.value;
-        if (isNaN(price)) return;
+        const price = ev.target.value.trim();
+        if (isNaN(+price)) return;
         if (!price) {
           setInputRate('');
           setCurrentRate(FixedNumber.from(0));

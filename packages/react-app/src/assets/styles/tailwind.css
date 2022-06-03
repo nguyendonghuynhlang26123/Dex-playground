@@ -24,6 +24,11 @@
   .logo{
     font-family: 'Nailhead-Nova', sans-serif;
   }
+
+  .shining {
+    filter: blur(16px);
+  }
+
   #root, html, body {
     height: 100%;
     font-family: 'Poppins', sans-serif;

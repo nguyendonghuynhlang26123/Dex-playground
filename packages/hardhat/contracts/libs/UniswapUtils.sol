@@ -80,4 +80,19 @@ library UniswapUtils {
         uint denominator = _reserveIn.mul(1000).add(amountInWithFee);
         amountOut = numerator / denominator;
     }
+
+    /**
+     * @notice Given an output amount of an asset and pair reserves, returns the minimum input amount of the other asset
+     * @param _amountOut - uint of the output token's amount
+     * @param _reserveIn - uint of the input token's reserve
+     * @param _reserveOut - uint of the output token's reserve
+     * @return amountIn - Minium input
+     */
+    function getAmountIn(uint _amountOut, uint _reserveIn, uint _reserveOut) internal pure returns (uint amountIn) {
+        require(_amountOut > 0, 'UniswapUtils#getAmountIn: INSUFFICIENT_OUTPUT_AMOUNT');
+        require(_reserveIn > 0 && _reserveOut > 0, 'UniswapUtils#getAmountIn: INSUFFICIENT_LIQUIDITY');
+        uint numerator = _reserveIn.mul(_amountOut).mul(1000);
+        uint denominator = _reserveOut.sub(_amountOut).mul(997);
+        amountIn = (numerator / denominator).add(1);
+    }
 }

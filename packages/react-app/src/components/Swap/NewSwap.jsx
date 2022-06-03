@@ -97,29 +97,25 @@ export const NewSwap = () => {
     return prettyNum(result);
   };
 
-  const performSwap = useCallback(
-    (ev) => {
-      ev.preventDefault();
-      if (swapBy === 0) {
-        // Swap by Input
-        const amountIn = price0;
-        const amountOutMin = BigNumber.from(price1) // (100 - X)% desired output
-          .mul(10000 - slippage * 100)
-          .div(10000);
-        const dl = Math.floor(Date.now() / 1000) + deadline * toSec;
-        swapWithInput(amountIn, amountOutMin, [token0.address, token1.address], account, dl);
-      } else if (swapBy === 1) {
-        //Swap by output
-        const amountOut = price1;
-        const amountInMax = BigNumber.from(price0)
-          .mul(10000 + slippage * 100)
-          .div(10000);
-        const dl = Math.floor(Date.now() / 1000) + deadline * toSec;
-        swapWithOutput(amountOut, amountInMax, [token0.address, token1.address], account, dl);
-      } else toast.warn('Enter amount before swap');
-    },
-    [account, price0, price1, swapBy, swapWithInput, swapWithOutput, token0, token1, slippage, deadline, toSec]
-  );
+  const performSwap = useCallback(() => {
+    if (swapBy === 0) {
+      // Swap by Input
+      const amountIn = price0;
+      const amountOutMin = BigNumber.from(price1) // (100 - X)% desired output
+        .mul(10000 - slippage * 100)
+        .div(10000);
+      const dl = Math.floor(Date.now() / 1000) + deadline * toSec;
+      swapWithInput(amountIn, amountOutMin, [token0.address, token1.address], account, dl);
+    } else if (swapBy === 1) {
+      //Swap by output
+      const amountOut = price1;
+      const amountInMax = BigNumber.from(price0)
+        .mul(10000 + slippage * 100)
+        .div(10000);
+      const dl = Math.floor(Date.now() / 1000) + deadline * toSec;
+      swapWithOutput(amountOut, amountInMax, [token0.address, token1.address], account, dl);
+    } else toast.warn('Enter amount before swap');
+  }, [account, price0, price1, swapBy, swapWithInput, swapWithOutput, token0, token1, slippage, deadline, toSec]);
 
   return (
     <div>

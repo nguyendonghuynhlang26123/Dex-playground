@@ -27,7 +27,7 @@ export const useSwapInputHandle = ({ r0, r1, debounceTime = 100 }) => {
   };
 
   useEffect(() => {
-    if (r0 && r1 && debouncedValue0 && !isNaN(debouncedValue0) && Number(debouncedValue0)) {
+    if (r0 && r1 && debouncedValue0 && !isNaN(+debouncedValue0) && Number(debouncedValue0)) {
       const amountIn = parseEther(debouncedValue0.toString());
       const data = UniswapUtils.getAmountOut(amountIn, r0, r1);
       const rate = UniswapUtils.getRate(amountIn, data.toString());
@@ -38,7 +38,7 @@ export const useSwapInputHandle = ({ r0, r1, debounceTime = 100 }) => {
   }, [debouncedValue0, r0, r1]);
 
   useEffect(() => {
-    if (r0 && r1 && debouncedValue1 && !isNaN(debouncedValue1) && Number(debouncedValue1)) {
+    if (r0 && r1 && debouncedValue1 && !isNaN(+debouncedValue1) && Number(debouncedValue1)) {
       const amountOut = parseEther(debouncedValue1.toString());
       const data = UniswapUtils.getAmountIn(amountOut, r0, r1);
       const rate = UniswapUtils.getRate(data.toString(), amountOut);
@@ -50,7 +50,7 @@ export const useSwapInputHandle = ({ r0, r1, debounceTime = 100 }) => {
 
   useEffect(() => {
     if (r0 && r1) {
-      // const value = UniswapUtils.getAmmountOut(parseEther('1'), r0, r1);
+      // const value = UniswapUtils.getAmountOut(parseEther('1'), r0, r1);
       // setCurrentRate(prettyNum(value));
     } else {
       // Reset state if r0, r1 null to avoid inconsitent data
@@ -62,8 +62,8 @@ export const useSwapInputHandle = ({ r0, r1, debounceTime = 100 }) => {
     return {
       value: output0 ? prettyNum(output0, 18) : input0,
       onChange: (ev) => {
-        const value = ev.target.value;
-        if (isNaN(value)) return;
+        const value = ev.target.value.trim();
+        if (isNaN(+value)) return;
         setInput([value, '']);
         setOutput(['', '']);
         setSwapBy(0);
@@ -75,8 +75,8 @@ export const useSwapInputHandle = ({ r0, r1, debounceTime = 100 }) => {
     return {
       value: output1 ? prettyNum(output1, 18) : input1,
       onChange: (ev) => {
-        const value = ev.target.value;
-        if (isNaN(value)) return;
+        const value = ev.target.value.trim();
+        if (isNaN(+value)) return;
         if (value && r1 && BigNumber.from(parseEther(value)).gte(r1)) return; // Ouput should < r1 since it will be negative ...
         setInput(['', value]);
         setOutput(['', '']);

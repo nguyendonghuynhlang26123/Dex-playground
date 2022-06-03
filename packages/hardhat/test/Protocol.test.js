@@ -30,7 +30,7 @@ const mintToken = async (token, user, value) => {
     await token.connect(user).mint(_18digits(value));
   }
 };
-describe.only("Core Contract", function () {
+describe("Core Contract", function () {
   let owner;
   let user1;
   let user2;
@@ -47,7 +47,7 @@ describe.only("Core Contract", function () {
 
   let provider;
 
-  const AVG_ESTIMATE_EXECUTE_COST = BN.from("230000");
+  const AVG_ESTIMATE_EXECUTE_COST = BN.from("400000");
 
   beforeEach(async () => {
     [owner, user1, user2] = await ethers.getSigners();
@@ -461,7 +461,7 @@ describe.only("Core Contract", function () {
       vaultBalance2Snap.requireConstant();
     });
 
-    it("Verify Token->Token order. Current rate: 1ONE = 2TWO. Create order at 10ONE = 22TWO, it should match when 1ONE=25TWO", async function () {
+    it("Verify Token->Token order. Current rate: 1ONE = 2TWO. Create order at 10ONE = 22TWO, it should match when 1ONE=22TWO", async function () {
       const abiEncoder = new ethers.utils.AbiCoder();
       const secret = ethers.utils
         .hexlify(ethers.utils.randomBytes(21))
@@ -475,7 +475,6 @@ describe.only("Core Contract", function () {
         witnessAddress
       );
 
-      // Setup:
       const AMOUNT_IN = _18digits(10);
       const AMOUNT_OUT = _18digits(22);
       const moduleData = abiEncoder.encode(
@@ -499,43 +498,46 @@ describe.only("Core Contract", function () {
         core.connect(user1).createOrder(...orderData, witnessPrvKey)
       ).to.emit(core, "OrderCreated");
 
-      // 2. MAKE sure that 1 ONE > 2.2 TWO (+10%)
-      // 2a. Make sure pair ONE-ETH has price 1ONE > 0.0055 ETH
-      await owner.sendTransaction({
-        to: weth.address,
-        value: _18digits(0.5),
-      });
-      await uniswapMock.swap(
+      // 2. MAKE sure that 1 ONE > 2.2 TWO + execution fee
+      // 2a. Calculate expected output in token2:
+      const assumedExecutionFee = STANDARD_GAS_PRICE.mul(
+        AVG_ESTIMATE_EXECUTE_COST
+      );
+      const feeInToken2 = await uniswapMock.getAmountIn(
+        token2.address,
         weth.address,
+        assumedExecutionFee
+      );
+      const expectOutputAmount = AMOUNT_OUT.add(feeInToken2);
+      console.log(
+        "Expect output: " +
+          prettyNum(expectOutputAmount) +
+          "; fee = " +
+          prettyNum(feeInToken2) +
+          " TWO ( " +
+          prettyNum(assumedExecutionFee) +
+          " ETH)"
+      );
+
+      // 2b. Make sure that 1 ONE > {expectOutput} TWO
+      await token2.connect(owner).mint(_18digits(400));
+      await uniswapMock.swap(
+        token2.address,
         token1.address,
-        _18digits(0.5),
+        _18digits(400),
         owner.address
       );
-      const token1ToWeth = await uniswapMock.getAmountOut(
+      const token1ToToken2 = await uniswapMock.getAmountOut(
         token1.address,
-        weth.address,
+        token2.address,
         AMOUNT_IN
       );
-      console.log("SETUP ~ 10 ONE -> WETH", prettyNum(token1ToWeth));
-      // Make sure that price is 1ONE > 0.06 ETH
-      expect(token1ToWeth).to.gt(_18digits(0.102));
-
-      // 2b. Make sure pair WETH-TWO has price 0.10 ETH > 22 ETH
-      await token2.connect(owner).mint(_18digits(20));
-      await uniswapMock.swap(
-        token2.address,
-        weth.address,
-        _18digits(20),
-        owner.address
+      console.log(
+        "SETUP ~ 10 ONE -> {expectedOutput} TWO: ",
+        prettyNum(token1ToToken2)
       );
-      const wethToToken2 = await uniswapMock.getAmountOut(
-        weth.address,
-        token2.address,
-        _18digits(0.1)
-      );
-      console.log("SETUP ~ 0.1 WETH -> TWO", prettyNum(wethToToken2));
       // Make sure that price is 1ONE > 0.06 ETH
-      expect(wethToToken2).to.gt(_18digits(22));
+      expect(token1ToToken2).to.gte(expectOutputAmount);
 
       // 3. Get all estimation needed
       const signature = sign(ethers, user2.address, witnessPrvKey);
@@ -550,7 +552,7 @@ describe.only("Core Contract", function () {
           signature,
           abiEncoder.encode(
             ["address", "address", "uint256"],
-            [handlerUniswap.address, user2.address, AVG_ESTIMATE_EXECUTE_COST]
+            [handlerUniswap.address, user2.address, assumedExecutionFee]
           )
         );
       console.log(
@@ -595,7 +597,14 @@ describe.only("Core Contract", function () {
       const bought = (await token2.balanceOf(user1.address)).sub(
         user1PrvBalanceOne
       );
-      expect(bought).to.be.gt(AMOUNT_OUT);
+      console.log(
+        "log ~ file: Protocol.test.js ~ line 600 ~ bought",
+        prettyNum(bought)
+      );
+      expect(
+        bought,
+        "Users must received an amount they requested for"
+      ).to.be.gt(AMOUNT_OUT);
       console.log(`Order matched and bought ${prettyNum(bought)} TWO for user`);
 
       // Verify that executor's balance is secured (may gains more than spent but not in loss!)
