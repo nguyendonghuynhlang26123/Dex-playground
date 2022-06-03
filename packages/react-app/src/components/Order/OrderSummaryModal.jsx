@@ -62,7 +62,7 @@ export const OrderSummaryModal = ({ inputAddress, outputAddress, inputAmount, ou
   }, [inputAmount, outputAmount, inputToken]);
   const estimateGasInEth = useMemo(() => {
     if (gasPrice) {
-      return gasPrice.mul(envConfig.protocolAvgGas);
+      return gasPrice.add(envConfig.protocolTips).mul(envConfig.protocolAvgGas);
     }
   }, [gasPrice]);
   const estimateGasInInputToken = useMemo(() => {

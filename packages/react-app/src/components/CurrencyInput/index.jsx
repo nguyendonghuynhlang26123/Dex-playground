@@ -62,6 +62,14 @@ export const CurrencyInput = ({ provider, account, label, tokenAddress, onAddres
             onFocus={() => setFocusState(true)}
             onBlur={() => setFocusState(false)}
             placeholder="0.0"
+            type="text"
+            pattern="^[0-9]*[.,]?[0-9]*$"
+            minLength="1"
+            maxLength="79"
+            spellCheck="false"
+            inputMode="decimal"
+            autoComplete="off"
+            autoCorrect="off"
           />
           <button
             className=" flex flex-row items-center rounded-full py-1 px-3 bg-sky-50 border border-gray-200 hover:bg-gray-100"

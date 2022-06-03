@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
 export const TransactionButton = ({ onClick, label, className, state, disabled = false }) => {
@@ -21,6 +21,11 @@ export const TransactionButton = ({ onClick, label, className, state, disabled =
     else console.log(state);
   }, [state]);
 
+  const handleClick = (ev) => {
+    ev.preventDefault();
+    onClick();
+  };
+
   return isLoading ? (
     <button className={`flex justify-center btn-primary hover:scale-100 px-2 py-1.5 opacity-60 ${className}`} disabled>
       <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -34,7 +39,7 @@ export const TransactionButton = ({ onClick, label, className, state, disabled =
       {loadingLabel}
     </button>
   ) : (
-    <button className={`btn-primary px-2 py-1.5 ${className} disabled:opacity-60`} onClick={onClick} disabled={Boolean(disabled)}>
+    <button className={`btn-primary px-2 py-1.5 ${className} disabled:opacity-60`} onClick={handleClick} disabled={Boolean(disabled)}>
       {label}
     </button>
   );

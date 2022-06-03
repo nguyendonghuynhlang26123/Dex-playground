@@ -17,6 +17,8 @@ import { OrderContainer } from '../Order/OrderContainer';
 //import { AbiCoder } from '@ethersproject/abi';
 
 import { ethers } from 'ethers';
+import { Modal } from '../Modal';
+import { OrderSummaryModal } from '../Order/OrderSummaryModal';
 
 export const Protocol = () => {
   const { library, account } = useEthers();
@@ -56,12 +58,14 @@ export const Protocol = () => {
 
   // Msc.
   const [rateFocused, setRateFocused] = useState(false);
+  const [confirmPlaceOrder, showConfirmPlaceOrder] = useState(false);
   const abiEncoder = new ethers.utils.AbiCoder();
 
   useEffect(() => {
     if (swapError) {
       setError(swapError);
     } else if (price0 && price1 && token0 && r1) {
+      console.log('log ~ file: index.jsx ~ line 68 ~ useEffect ~ price0', price0);
       if (price0.isZero() || price1.isZero()) setError('Input invalid ');
       else if (price0.gt(token0.balance)) setError("Insufficient user's balance");
       else if (price1.gt(r1)) setError('Insufficient liquidity');
@@ -98,6 +102,7 @@ export const Protocol = () => {
   const placeLimitOrder = useCallback(
     async (ev) => {
       ev.preventDefault();
+      showConfirmPlaceOrder(false);
       if (price0 && price1 && address0 && address1 && account) {
         const [witnessSecret, witness] = generateSecret();
         const orderParams = [
@@ -172,10 +177,29 @@ export const Protocol = () => {
         <ErrorWrapper error={error}>
           {token0 && (
             <ApprovalWrapper tokenAddress={address0} target={addresses[4].coreProtocol}>
-              <TransactionButton className="my-2 mx-2.5 !py-3 !rounded-[1rem]" label="Place" onClick={placeLimitOrder} state={placeOrderState} />
+              <TransactionButton
+                className="my-2 mx-2.5 !py-3 !rounded-[1rem]"
+                label="Place"
+                onClick={() => showConfirmPlaceOrder(true)}
+                state={placeOrderState}
+              />
             </ApprovalWrapper>
           )}
         </ErrorWrapper>
+        <Modal isOpen={confirmPlaceOrder} closeModal={() => showConfirmPlaceOrder(false)} title="Order summary">
+          <OrderSummaryModal
+            inputAddress={address0}
+            outputAddress={address1}
+            inputAmount={price0}
+            outputAmount={price1}
+            provider={library}
+            account={account}
+            factoryAddress={addresses[4].factory}
+          />
+          <button className={`btn-primary px-2 py-2 w-full my-2 `} onClick={placeLimitOrder}>
+            Submit order
+          </button>
+        </Modal>
       </form>
     </div>
   );

@@ -5,5 +5,5 @@ export const NETWORK_NAMES: { [key: string]: string } = {
   '4': 'rinkeby',
 };
 
-export const BASE_FEE = ethers.BigNumber.from('1000000000000000');
-export const TIPS = ethers.BigNumber.from('2000000000');
+export const AVG_GAS = ethers.BigNumber.from('400000');
+export const TIPS = ethers.BigNumber.from('1000000000'); //1gwei

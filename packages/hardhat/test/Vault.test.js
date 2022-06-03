@@ -144,7 +144,7 @@ describe("Vault Contract", function () {
     await vaultBalanceSnap.requireConstant();
   });
 
-  it.only("Vault should revert if user not approve the token transfer yet", async function () {
+  it("Vault should revert if user not approve the token transfer yet", async function () {
     const KEY = toBytes32("KEY");
     const amountTesting = BN.from(_18digits("100"));
 

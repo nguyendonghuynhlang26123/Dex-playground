@@ -29,15 +29,15 @@ export const OpenOrderCard = ({ provider, order, handleClick }) => {
   useEffect(() => {
     if (inputAddress) TokenUtils.getTokenInfo(provider, inputAddress).then(setInputToken);
     if (outputAddress) TokenUtils.getTokenInfo(provider, outputAddress).then(setOutputToken);
+    return () => {
+      setInputToken(null);
+      setOutputToken(null);
+    };
   }, [inputAddress, outputAddress]);
 
-  const submitCancelOrder = useCallback(
-    (ev) => {
-      ev.preventDefault();
-      cancelOrderTx(order.module, order.inputToken, order.owner, order.witness, order.amount, order.data);
-    },
-    [order]
-  );
+  const submitCancelOrder = useCallback(() => {
+    cancelOrderTx(order.module, order.inputToken, order.owner, order.witness, order.amount, order.data);
+  }, [order]);
 
   const onClickHandler = useCallback(
     (ev) => {

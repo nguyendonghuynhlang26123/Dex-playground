@@ -5,7 +5,8 @@ export const envConfig = {
   slippage: 0.1,
   deadline: 30,
   allowNetworks: [Rinkeby.chainId],
-  protocolAvgGas: 300000,
+  protocolAvgGas: 400000,
+  protocolTips: 1000000000,
 };
 
 export const networkConfig = {

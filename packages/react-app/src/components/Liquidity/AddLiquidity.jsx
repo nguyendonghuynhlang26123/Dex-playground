@@ -50,22 +50,18 @@ export const AddLiquidity = ({ token0, token1, token0Address, token1Address, tok
     [totalLPToken, r0]
   );
 
-  const provideLiquidity = useCallback(
-    (ev) => {
-      ev.preventDefault();
-      const amountDesired0 = price0;
-      const amountDesired1 = price1;
-      const amountMin0 = BigNumber.from(price0) // (100 - slippage)%
-        .mul(10000 - slippage * 100)
-        .div(10000);
-      const amountMin1 = BigNumber.from(price1) // (100 - slippage)%
-        .mul(10000 - slippage * 100)
-        .div(10000);
-      const dl = Math.floor(Date.now() / 1000) + deadline * toSec;
-      submitAddLiquidity(token0Address, token1Address, amountDesired0, amountDesired1, amountMin0, amountMin1, account, dl);
-    },
-    [price0, price1, slippage, deadline, toSec, submitAddLiquidity, token0Address, token1Address, account]
-  );
+  const provideLiquidity = useCallback(() => {
+    const amountDesired0 = price0;
+    const amountDesired1 = price1;
+    const amountMin0 = BigNumber.from(price0) // (100 - slippage)%
+      .mul(10000 - slippage * 100)
+      .div(10000);
+    const amountMin1 = BigNumber.from(price1) // (100 - slippage)%
+      .mul(10000 - slippage * 100)
+      .div(10000);
+    const dl = Math.floor(Date.now() / 1000) + deadline * toSec;
+    submitAddLiquidity(token0Address, token1Address, amountDesired0, amountDesired1, amountMin0, amountMin1, account, dl);
+  }, [price0, price1, slippage, deadline, toSec, submitAddLiquidity, token0Address, token1Address, account]);
 
   return (
     <div className="w-full">

@@ -76,8 +76,7 @@ contract UniswapV2Handler is IHandler {
             bought = _swap(inputToken, outputToken, amount, msg.sender);
         } else if (outputToken == weth || outputToken == ProtocolUtils.ETH_ADDRESS) {
             // Swap inputToken -> WETH
-            bought = _swap(inputToken, weth, amount, address(this));
-            console.log("Bought: ", bought);
+            bought = _swap(inputToken, weth, amount, address(this)); 
             // Convert from WETH to ETH if necessary
             if (outputToken == ProtocolUtils.ETH_ADDRESS) {
                 WETH.withdraw(bought);
@@ -89,16 +88,23 @@ contract UniswapV2Handler is IHandler {
             bought = bought.sub(fee);
             ProtocolUtils.transfer(IERC20(outputToken), msg.sender, bought);
         } else {
-            // Swap inputToken -> WETH -> outputToken
-            //  - inputToken -> WETH
-            bought = _swap(inputToken, weth, amount, address(this));
-            console.log("Bought %s WETH", bought);
-            // Withdraw fee
-            WETH.withdraw(fee);
-            console.log("Without fee = %s WETH", bought.sub(fee));
-            // - WETH -> outputToken
-            bought = _swap(weth, outputToken, bought.sub(fee), msg.sender);
-            console.log("Bought %s TWO", bought);
+            console.log("Fee in eth: %s", fee);
+            // 1. Swap inputToken -> outputToken
+            bought = _swap(inputToken, outputToken, amount, address(this)); 
+            // 2. Swap outputToken -> fee ETH (auto revert if outputToken is insufficient )
+            uint256 feeInOutputToken = _extractFee(outputToken, fee);
+            // 3. Transfer token back to the user 
+            bought = bought.sub(feeInOutputToken);
+            console.log("~ bought", bought);
+            ProtocolUtils.transfer(IERC20(outputToken), msg.sender, bought);
+
+            // // Swap inputToken -> WETH -> outputToken
+            // //  - inputToken -> WETH
+            // bought = _swap(inputToken, weth, amount, address(this)); 
+            // // Withdraw fee
+            // WETH.withdraw(fee); 
+            // // - WETH -> outputToken
+            // bought = _swap(weth, outputToken, bought.sub(fee), msg.sender);
         }
 
         // Send fee to relayer
@@ -131,25 +137,26 @@ contract UniswapV2Handler is IHandler {
 
         if (inputToken == weth || inputToken == ProtocolUtils.ETH_ADDRESS) {
             if (_inputAmount <= fee) {
-                 return false;
+                return false;
             }
 
-            return _estimate(weth, outputToken, _inputAmount.sub(fee)) >= _minReturn;
+            return _estimate(weth, outputToken, _inputAmount.sub(fee), true) >= _minReturn;
         } else if (outputToken == weth || outputToken == ProtocolUtils.ETH_ADDRESS) {
-            uint256 bought = _estimate(inputToken, weth, _inputAmount);
+            uint256 bought = _estimate(inputToken, weth, _inputAmount, true);
 
-            if (bought <= fee) {
-                 return false;
-            }
-
-            return bought.sub(fee) >= _minReturn;
-        } else {
-            uint256 bought = _estimate(inputToken, weth, _inputAmount);
             if (bought <= fee) {
                 return false;
             }
 
-            return _estimate(weth, outputToken, bought.sub(fee)) >= _minReturn;
+            return bought.sub(fee) >= _minReturn;
+        } else {
+            uint256 bought = _estimate(inputToken, outputToken, _inputAmount, true);
+            uint256 feeInOuput = _estimate(outputToken, weth, fee, true);
+            if (bought <= feeInOuput) {
+                return false;
+            }
+
+            return bought.sub(feeInOuput) >= _minReturn;
         }
     }
 
@@ -184,21 +191,22 @@ contract UniswapV2Handler is IHandler {
                 return (false, 0);
             }
 
-            bought = _estimate(weth, outputToken, _inputAmount.sub(fee));
+            bought = _estimate(weth, outputToken, _inputAmount.sub(fee), true);
         } else if (outputToken == weth || outputToken == ProtocolUtils.ETH_ADDRESS) {
-            bought = _estimate(inputToken, weth, _inputAmount);
-            if (bought <= fee) {
-                 return (false, 0);
-            }
-
-            bought = bought.sub(fee);
-        } else {
-            bought = _estimate(inputToken, weth, _inputAmount);
+            bought = _estimate(inputToken, weth, _inputAmount, true);
             if (bought <= fee) {
                 return (false, 0);
             }
 
-            bought = _estimate(weth, outputToken, bought.sub(fee));
+            bought = bought.sub(fee);
+        } else {
+            bought = _estimate(inputToken, outputToken, _inputAmount, true);
+            uint256 feeInOuput = _estimate(outputToken, weth, fee, true);
+            if (bought <= feeInOuput) {
+                return (false, 0);
+            }
+
+            bought = bought.sub(feeInOuput);
         }
         return (bought >= _minReturn, bought);
     }
@@ -207,10 +215,11 @@ contract UniswapV2Handler is IHandler {
      * @notice Estimate output token amount
      * @param _inputToken - Address of the input token
      * @param _outputToken - Address of the output token
-     * @param _inputAmount - uint256 of the input token amount
+     * @param _amount - uint256 of the token amount
+     * @param _isInput - a flag to determine _amount is input or output
      * @return bought - Amount of output token bought
      */
-    function _estimate(address _inputToken, address _outputToken, uint256 _inputAmount) internal view returns (uint256 bought) {
+    function _estimate(address _inputToken, address _outputToken, uint256 _amount, bool _isInput) internal view returns (uint256 bought) {
         // Get uniswap trading pair
         (address token0, address token1) = UniswapUtils.sortTokens(_inputToken, _outputToken);
         IUniswapV2Pair pair = IUniswapV2Pair(UniswapUtils.pairForSorted(FACTORY, token0, token1, FACTORY_CODE_HASH));
@@ -228,11 +237,13 @@ contract UniswapV2Handler is IHandler {
             reserveOut = reserve0;
         }
 
-        bought = UniswapUtils.getAmountOut(_inputAmount, reserveIn, reserveOut);
+        if (_isInput)
+            bought = UniswapUtils.getAmountOut(_amount, reserveIn, reserveOut);
+        else bought = UniswapUtils.getAmountIn(_amount, reserveIn, reserveOut);
     }
 
     /**
-     * @notice Swap input token to output token
+     * @notice Swap input token to output token with exact input
      * @param _inputToken - Address of the input token
      * @param _outputToken - Address of the output token
      * @param _inputAmount - uint256 of the input token amount
@@ -243,7 +254,6 @@ contract UniswapV2Handler is IHandler {
         // Get uniswap trading pair
         (address token0, address token1) = UniswapUtils.sortTokens(_inputToken, _outputToken);
         IUniswapV2Pair pair = IUniswapV2Pair(UniswapUtils.pairForSorted(FACTORY, token0, token1, FACTORY_CODE_HASH));
-        console.log("Uniswap pair = ", address(pair), _inputToken, _outputToken);
 
         uint256 inputAmount = _inputAmount;
         uint256 prevPairBalance;
@@ -284,5 +294,58 @@ contract UniswapV2Handler is IHandler {
 
         // Execute swap
         pair.swap(amount0Out, amount1Out, _recipient, bytes(""));
+    }
+
+    /**
+     * @notice Swap input token to exact execution cost in WETH. Then withdraw the execution cost.   
+     * @param _inputToken - Address of token will be used to pay cost
+     * @param _fee - The amount of execution cost in WETH
+     * @return feeExtracted - The equivalent amount of _fee in Input token 
+     */
+    function _extractFee(address _inputToken, uint256 _fee) internal returns (uint256 feeExtracted) {
+        // Get uniswap trading pair
+        address weth = address(WETH);
+        (address token0, address token1) = UniswapUtils.sortTokens(_inputToken, weth);
+        IUniswapV2Pair pair = IUniswapV2Pair(UniswapUtils.pairForSorted(FACTORY, token0, token1, FACTORY_CODE_HASH));
+
+        // Get current reserves
+        (uint112 reserve0, uint112 reserve1,) = pair.getReserves();
+        // Optimal amounts for uniswap trade
+        {
+            uint256 reserveIn; uint256 reserveOut;
+            if (_inputToken == token0) {
+                reserveIn = reserve0;
+                reserveOut = reserve1;
+            } else {
+                reserveIn = reserve1;
+                reserveOut = reserve0;
+            }
+            
+            console.log("Reserves %s - %s",reserveIn, reserveOut); 
+            feeExtracted = UniswapUtils.getAmountIn(_fee, reserveIn, reserveOut);
+        }
+
+
+        uint256 prvBalance = ProtocolUtils.balanceOf(IERC20(_inputToken), address(this)); 
+    
+        // Determine if output amount is token1 or token0
+        uint256 amount1Out; uint256 amount0Out;
+        if (_inputToken == token0) {
+            amount1Out = _fee;
+        } else {
+            amount0Out = _fee;
+        }
+        require(SafeERC20.transfer(IERC20(_inputToken), address(pair), feeExtracted), "UniswapV2Handler#_extractFee: ERROR_SENDING_TOKENS");
+        console.log("Fee Extracted %s",feeExtracted);
+        console.log("Swap input %s - %s",amount0Out, amount1Out); 
+        pair.swap(amount0Out, amount1Out, address(this), bytes(""));
+
+        // Check current balance 
+        uint256 curBalance = ProtocolUtils.balanceOf(IERC20(_inputToken), address(this)); 
+        console.log("Balance prv: %s; cur: %s, delta %s", prvBalance, curBalance, prvBalance.sub(curBalance) ); 
+        feeExtracted = prvBalance.sub(curBalance);
+        
+        // Withdraw fee
+        WETH.withdraw(_fee); 
     }
 }

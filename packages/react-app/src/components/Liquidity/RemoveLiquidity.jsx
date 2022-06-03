@@ -44,20 +44,16 @@ export const RemoveLiquidity = ({ token0, token1, token0Address, token1Address, 
   const slippage = useSelector((state) => state.slippage.value);
   const { value: deadline, toSec } = useSelector((state) => state.deadline);
 
-  const removeLiquidity = useCallback(
-    (ev) => {
-      ev.preventDefault();
-      const amountMin0 = BigNumber.from(balance0Received) // (100 - slippage)%
-        .mul(10000 - slippage * 100)
-        .div(10000);
-      const amountMin1 = BigNumber.from(balance1Received) // (100 - slippage)%
-        .mul(10000 - slippage * 100)
-        .div(10000);
-      const dl = Math.floor(Date.now() / 1000) + deadline * toSec;
-      submitRemoveLiquidity(token0Address, token1Address, lpDesired, amountMin0, amountMin1, account, dl);
-    },
-    [balance0Received, balance1Received, slippage, deadline, toSec, submitRemoveLiquidity, token0Address, token1Address, lpDesired, account]
-  );
+  const removeLiquidity = useCallback(() => {
+    const amountMin0 = BigNumber.from(balance0Received) // (100 - slippage)%
+      .mul(10000 - slippage * 100)
+      .div(10000);
+    const amountMin1 = BigNumber.from(balance1Received) // (100 - slippage)%
+      .mul(10000 - slippage * 100)
+      .div(10000);
+    const dl = Math.floor(Date.now() / 1000) + deadline * toSec;
+    submitRemoveLiquidity(token0Address, token1Address, lpDesired, amountMin0, amountMin1, account, dl);
+  }, [balance0Received, balance1Received, slippage, deadline, toSec, submitRemoveLiquidity, token0Address, token1Address, lpDesired, account]);
 
   return (
     <div className="my-2">

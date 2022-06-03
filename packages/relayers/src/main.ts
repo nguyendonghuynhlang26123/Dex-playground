@@ -1,4 +1,4 @@
-import { BASE_FEE, TIPS } from './utils/constants';
+import { TIPS, AVG_GAS } from './utils/constants';
 import { Order } from './types';
 import { ethers, Wallet } from 'ethers';
 import { log, getEnvConfig, getOpenOrders } from './utils';
@@ -70,6 +70,12 @@ const start = async () => {
   const handleOrder = async (order: Order) => {
     log.info(`Trying to execute order ${order.id}`);
     const signature = await sign(account.address, order.secret);
+
+    // 2. Check everything in order not to wasting any tx cost for a reverted transaction
+    // 2a. Estimate the gas sender have to pay
+    let gasPrice = TIPS.add(await provider.getGasPrice());
+    let avgFee = AVG_GAS.mul(gasPrice);
+
     let executeParams = await getOrderExecutionParams(
       order,
       signature,
@@ -78,15 +84,16 @@ const start = async () => {
         [
           envConfig.LIMIT_ORDER_UNISWAP_HANDLER,
           account.address,
-          BASE_FEE.toString(),
+          avgFee.toString(),
         ]
       )
     );
 
-    // 2. Check everything in order not to wasting any tx cost for a reverted transaction
-    // 2a. Estimate the gas sender have to pay
-    let gasPrice = TIPS.add(await provider.getGasPrice());
-
+    log.debug(
+      `Try to estimate execution with fee = ${ethers.utils.formatEther(
+        avgFee.toString()
+      )}. Gas price: ${ethers.utils.formatUnits(gasPrice, 'gwei')} gwei`
+    );
     let estimatedGas = await estimateGasExecution(executeParams, gasPrice);
     if (!estimatedGas) return;
 
@@ -96,7 +103,7 @@ const start = async () => {
       );
       return;
     }
-    const fee = estimatedGas.mul(gasPrice).add(BASE_FEE);
+    const fee = estimatedGas.mul(gasPrice);
 
     log.debug(
       `Estimation complete, estimated fee for this order: ${ethers.utils.formatEther(
@@ -164,6 +171,7 @@ const start = async () => {
 
   const handleOrderJob = async () => {
     // 1. Fetch all order
+    let countFilledOrders = 0;
     const openOrders = await getOpenOrders(envConfig.graphUrl);
 
     log.info('-------------------------\n');
@@ -192,13 +200,13 @@ const start = async () => {
         //   async () => await handleOrder(order),
         //   Number(process.env.ORDERS_CHECK_LOOP_TIME) || 15000
         // );
-      }
+      } else countFilledOrders++;
     }
 
     const currentBalance = await provider.getBalance(account.address);
     const diff = currentBalance.sub(accountInitBalance);
     log.info(
-      `Finish watching round. Current balance: ${ethers.utils.formatUnits(
+      `Finish watching round. Filled orders: ${countFilledOrders}. Current balance: ${ethers.utils.formatUnits(
         currentBalance
       )} (${ethers.utils.formatEther(diff)} ETH)`
     );
