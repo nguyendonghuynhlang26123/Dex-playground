@@ -77,58 +77,10 @@ contract UniswapV1Handler is IHandler {
     }
 
     /**
-     * @notice Check whether can handle an order execution
-     * @param _inputToken - Address of the input token
-     * @param _outputToken - Address of the output token
-     * @param _inputAmount - uint256 of the input token amount
-     * @param _minReturn - uint256 of the min return amount of output token
-     * @param _data - Bytes of arbitrary data
-     * @return bool - Whether the execution can be handled or not
-     */
-    function canHandle(
-        IERC20 _inputToken,
-        IERC20 _outputToken,
-        uint256 _inputAmount,
-        uint256 _minReturn,
-        bytes calldata _data
-    ) external override view returns (bool) {
-        (,,uint256 fee) = abi.decode(_data, (address, address, uint256));
-
-        uint256 bought;
-
-        if (address(_inputToken) == ETH_ADDRESS) {
-            if (_inputAmount <= fee) {
-                return false;
-            }
-
-            uint256 sell = _inputAmount.sub(fee);
-            bought = _outEthToToken(uniswapFactory, _outputToken, sell);
-        } else if (address(_outputToken) == ETH_ADDRESS) {
-            bought = _outTokenToEth(uniswapFactory ,_inputToken, _inputAmount);
-
-            if (bought <= fee) {
-                return false;
-            }
-
-            bought = bought.sub(fee);
-        } else {
-            uint256 boughtEth =  _outTokenToEth(uniswapFactory, _inputToken, _inputAmount);
-            if (boughtEth <= fee) {
-                return false;
-            }
-
-            bought = _outEthToToken(uniswapFactory, _outputToken, boughtEth.sub(fee));
-        }
-
-        return bought >= _minReturn;
-    }
-
-    /**
      * @notice Simulate an order execution
      * @param _inputToken - Address of the input token
      * @param _outputToken - Address of the output token
      * @param _inputAmount - uint256 of the input token amount
-     * @param _minReturn - uint256 of the min return amount of output token
      * @param _data - Bytes of arbitrary data
      * @return bool - Whether the execution can be handled or not
      * @return uint256 - Amount of output token bought
@@ -137,9 +89,8 @@ contract UniswapV1Handler is IHandler {
         IERC20 _inputToken,
         IERC20 _outputToken,
         uint256 _inputAmount,
-        uint256 _minReturn,
         bytes calldata _data
-    ) external view returns (bool, uint256) {
+    ) external override view returns (bool, uint256) {
         (,,uint256 fee) = abi.decode(_data, (address, address, uint256));
 
         uint256 bought;
@@ -168,7 +119,7 @@ contract UniswapV1Handler is IHandler {
             bought = _outEthToToken(uniswapFactory, _outputToken, boughtEth.sub(fee));
         }
 
-        return (bought >= _minReturn, bought);
+        return (bought >= 0, bought);
     }
 
     /**

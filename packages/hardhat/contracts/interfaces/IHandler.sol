@@ -25,19 +25,18 @@ interface IHandler {
     ) external payable returns (uint256 bought);
 
     /**
-     * @notice Check whether can handle an order execution
+     * @notice Simulate an order execution
      * @param _inputToken - Address of the input token
      * @param _outputToken - Address of the output token
      * @param _inputAmount - uint256 of the input token amount
-     * @param _minReturn - uint256 of the min return amount of output token
      * @param _data - Bytes of arbitrary data
      * @return bool - Whether the execution can be handled or not
+     * @return uint256 - Amount of output token espected to be bought
      */
-    function canHandle(
+    function simulate(
         IERC20 _inputToken,
         IERC20 _outputToken,
         uint256 _inputAmount,
-        uint256 _minReturn,
         bytes calldata _data
-    ) external view returns (bool);
+    ) external view returns (bool, uint256);
 }

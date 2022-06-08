@@ -21,8 +21,7 @@ export default {
     pair: '0xF49266Fbc2b1f4785CA1f56AD55f63fa9d3300F2',
     weth: '0xc778417E063141139Fce010982780140Aa0cD5Ab',
 
-    coreProtocol: '0xa9cd06edf421373f7dd86fb26268c7995a872327',
-    limitOrderModule: '0xdf84e38277bd7634efc132c9caf71a8a12484a09',
-    loUniswapHandler: '0x1931ef747c1ff9b5290409684e35ed95e0d76066',
+    coreProtocol: '0xB8Cd8281512174DB05707ffe7Bd310f83Ec5cC56',
+    entryOrderModule: '0x677DBF4f615d7C21407F8594aC5b65c20Cb681a7',
   },
 };

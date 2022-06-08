@@ -6,7 +6,7 @@ dataSources:
     name: OrderProtocol
     network: rinkeby
     source:
-      address: '0xA9cd06EDF421373F7dD86Fb26268C7995A872327'
+      address: '0xB8Cd8281512174DB05707ffe7Bd310f83Ec5cC56'
       abi: OrderProtocol
       startBlock: 10647012
     mapping:

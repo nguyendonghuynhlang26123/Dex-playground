@@ -1,6 +1,6 @@
 import { Tab } from '@headlessui/react';
 import { useEthers } from '@usedapp/core';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Swap } from '../../components/Swap';
 import { classNames, getContract } from '../../common/utils';
 import { ConfigButton } from '../../components/SwapConfig/ConfigButton';
@@ -9,6 +9,8 @@ import { Liquidity } from '../../components/Liquidity';
 import { abis, addresses } from '@dex/contracts';
 import { OptionDropDown } from '../../components/Dropdown';
 import { OrderContainer } from '../../components/Order/OrderContainer';
+import { MdOutlineAccountBalanceWallet } from 'react-icons/md';
+import { envConfig, networkNames } from '../../common/config';
 // In real production, we should let user define which pool they want to interact with.
 // But again, in our project this is not important
 const poolOptions = [
@@ -30,13 +32,14 @@ const poolOptions = [
 ];
 
 const Exchange = () => {
-  const { active, library: provider } = useEthers();
+  const { account, chainId, library: provider } = useEthers();
   const [selectedIndex, setSelectedIndex] = useState(1);
   const [pair, setPair] = useState([addresses[4].one, addresses[4].two]);
   const [pairContractAddress, setPairContractAddress] = useState(addresses[4].pair);
   const factoryContract = getContract(abis.factory, addresses[4].factory, provider);
 
   const options = ['Swap', 'Order', 'Liquidity'];
+  const [connectionError, setConnectionError] = useState(null);
 
   const handleChangePair = async (pair) => {
     const pairAddress = await factoryContract.getPair(pair[0], pair[1]);
@@ -45,6 +48,14 @@ const Exchange = () => {
       setPair(pair);
     }
   };
+
+  useEffect(() => {
+    if (!account) setConnectionError('Please connect to your wallet to use the service');
+    else if (chainId && !envConfig.allowNetworks.includes(chainId)) {
+      const supportChainNames = envConfig.allowNetworks.map((id) => networkNames[id]);
+      setConnectionError('This chain is not supported! Please switch to the following chains: ' + supportChainNames.join(', '));
+    } else setConnectionError(null);
+  }, [account, chainId]);
 
   return (
     <div>
@@ -74,28 +85,35 @@ const Exchange = () => {
             </div>
           </div>
 
-          <Tab.Panels>
-            <Tab.Panel>
-              <Swap />
-            </Tab.Panel>
-            <Tab.Panel>
-              <Protocol />
-            </Tab.Panel>
-            <Tab.Panel>
-              <div className="mx-2 pt-2 min-h-48">
-                <OptionDropDown options={poolOptions} onSelect={(option) => handleChangePair(option.value)} />
-                {pair[0] && pair[1] && pairContractAddress ? (
-                  <Liquidity token0Address={pair[0]} token1Address={pair[1]} pairAddress={pairContractAddress} />
-                ) : (
-                  <> Loading...</>
-                )}
-              </div>
-            </Tab.Panel>
-          </Tab.Panels>
+          {connectionError ? (
+            <div className="flex justify-center items-center h-64 flex-col gap-1 text-sky-400">
+              <MdOutlineAccountBalanceWallet className="h-20 w-20 " />
+              <p className="text-center px-6">{connectionError}</p>
+            </div>
+          ) : (
+            <Tab.Panels>
+              <Tab.Panel>
+                <Swap />
+              </Tab.Panel>
+              <Tab.Panel>
+                <Protocol />
+              </Tab.Panel>
+              <Tab.Panel>
+                <div className="mx-2 pt-2 min-h-48">
+                  <OptionDropDown options={poolOptions} onSelect={(option) => handleChangePair(option.value)} />
+                  {pair[0] && pair[1] && pairContractAddress ? (
+                    <Liquidity token0Address={pair[0]} token1Address={pair[1]} pairAddress={pairContractAddress} />
+                  ) : (
+                    <> Loading...</>
+                  )}
+                </div>
+              </Tab.Panel>
+            </Tab.Panels>
+          )}
         </Tab.Group>
       </div>
 
-      {selectedIndex === 1 ? (
+      {selectedIndex === 1 && !connectionError ? (
         <div className="relative">
           <div className="absolute inset-0 bg-sky-200 rounded-3xl shining " />
           <OrderContainer />

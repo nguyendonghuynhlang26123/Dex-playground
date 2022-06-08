@@ -113,59 +113,10 @@ contract UniswapV2Handler is IHandler {
     }
 
     /**
-     * @notice Check whether can handle an order execution
+     * @notice Simulate an order execution. Note that min/max return is not checked yet 
      * @param _inputToken - Address of the input token
      * @param _outputToken - Address of the output token
      * @param _inputAmount - uint256 of the input token amount
-     * @param _minReturn - uint256 of the min return amount of output token
-     * @param _data - Bytes of arbitrary data
-     * @return bool - Whether the execution can be handled or not
-     */
-    function canHandle(
-        IERC20 _inputToken,
-        IERC20 _outputToken,
-        uint256 _inputAmount,
-        uint256 _minReturn,
-        bytes calldata _data
-    ) external override view returns (bool) {
-        address inputToken = address(_inputToken);
-        address outputToken = address(_outputToken);
-        address weth = address(WETH);
-
-        // Decode extra data
-        (,, uint256 fee) = abi.decode(_data, (address, address, uint256));
-
-        if (inputToken == weth || inputToken == ProtocolUtils.ETH_ADDRESS) {
-            if (_inputAmount <= fee) {
-                return false;
-            }
-
-            return _estimate(weth, outputToken, _inputAmount.sub(fee), true) >= _minReturn;
-        } else if (outputToken == weth || outputToken == ProtocolUtils.ETH_ADDRESS) {
-            uint256 bought = _estimate(inputToken, weth, _inputAmount, true);
-
-            if (bought <= fee) {
-                return false;
-            }
-
-            return bought.sub(fee) >= _minReturn;
-        } else {
-            uint256 bought = _estimate(inputToken, outputToken, _inputAmount, true);
-            uint256 feeInOuput = _estimate(outputToken, weth, fee, true);
-            if (bought <= feeInOuput) {
-                return false;
-            }
-
-            return bought.sub(feeInOuput) >= _minReturn;
-        }
-    }
-
-    /**
-     * @notice Simulate an order execution
-     * @param _inputToken - Address of the input token
-     * @param _outputToken - Address of the output token
-     * @param _inputAmount - uint256 of the input token amount
-     * @param _minReturn - uint256 of the min return amount of output token
      * @param _data - Bytes of arbitrary data
      * @return bool - Whether the execution can be handled or not
      * @return uint256 - Amount of output token bought
@@ -174,9 +125,8 @@ contract UniswapV2Handler is IHandler {
         IERC20 _inputToken,
         IERC20 _outputToken,
         uint256 _inputAmount,
-        uint256 _minReturn,
         bytes calldata _data
-    ) external view returns (bool, uint256) {
+    ) external override view returns (bool, uint256) {
         address inputToken = address(_inputToken);
         address outputToken = address(_outputToken);
         address weth = address(WETH);
@@ -201,14 +151,14 @@ contract UniswapV2Handler is IHandler {
             bought = bought.sub(fee);
         } else {
             bought = _estimate(inputToken, outputToken, _inputAmount, true);
-            uint256 feeInOuput = _estimate(outputToken, weth, fee, true);
+            uint256 feeInOuput = _estimate(outputToken, weth, fee, false);
             if (bought <= feeInOuput) {
                 return (false, 0);
             }
 
             bought = bought.sub(feeInOuput);
         }
-        return (bought >= _minReturn, bought);
+        return (bought >= 0, bought);
     }
 
     /**

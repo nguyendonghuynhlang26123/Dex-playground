@@ -8,7 +8,6 @@ export const getEnvConfig = () => {
 
   const CORE_CONTRACT = process.env.CORE_CONTRACT;
 
-  const LIMIT_ORDER_CONTRACT = process.env.LIMIT_ORDER_CONTRACT;
   const LIMIT_ORDER_UNISWAP_HANDLER = process.env.LIMIT_ORDER_UNISWAP_HANDLER;
 
   let SENDER_PRIVKEY = process.env.SENDER_PRIVATE_KEY;
@@ -29,8 +28,6 @@ export const getEnvConfig = () => {
   }
 
   if (!CORE_CONTRACT) throw new Error('Please provide core contract address');
-  if (!LIMIT_ORDER_CONTRACT)
-    throw new Error('Please provide limit order module contract address');
   if (!SENDER_PRIVKEY)
     throw new Error("Please difine sender's private key to sign transactions");
   else {
@@ -51,7 +48,6 @@ export const getEnvConfig = () => {
     graphUrl,
     checkInterval: orderCheckInterval,
     CORE_CONTRACT,
-    LIMIT_ORDER_CONTRACT,
     SENDER_PRIVKEY,
     LIMIT_ORDER_UNISWAP_HANDLER,
     MAX_GAS_PRICE,

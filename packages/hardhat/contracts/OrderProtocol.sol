@@ -3,16 +3,14 @@ pragma solidity ^0.6.8;
 
 import "./libs/SafeMath.sol";
 import "./libs/ECDSA.sol";
-import "./libs/Fabric.sol";
 import "./interfaces/IModule.sol";
 import "./interfaces/IERC20.sol"; 
 import "./Vault.sol";
+import "./access/ProtocolAccessControl.sol"; 
 
 /// @notice Core contract used to create, cancel and execute orders.
-contract OrderProtocol is Vault { 
+contract OrderProtocol is Vault, ProtocolAccessControl { 
     using SafeMath for uint256;
-
-    bytes32 public constant PASS_PHRASE = "2022001812713618127252"; 
 
     // Events
     event OrderCreated(
@@ -145,7 +143,7 @@ contract OrderProtocol is Vault {
         bytes calldata _data,
         bytes calldata _signature,
         bytes calldata _auxData
-    ) external {
+    ) external onlyRelayers {
         // Calculate witness using signature
         address witness = _recoverSigner(_signature);
 

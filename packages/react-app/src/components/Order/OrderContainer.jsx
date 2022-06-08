@@ -36,7 +36,7 @@ export const OrderContainer = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
 
   const { loading, error, data } = useQuery(GET_ORDERS_BY_USER_AND_MODULE, {
-    variables: { account: account ? account.toLowerCase() : '', module: addresses[4].limitOrderModule },
+    variables: { account: account ? account.toLowerCase() : '', module: addresses[4].entryOrderModule?.toLowerCase() },
     pollInterval: 5000,
   });
 
@@ -49,7 +49,7 @@ export const OrderContainer = () => {
   }, [data]);
   const canceledOrders = useMemo(() => {
     if (data && data.orders) {
-      return data.orders.filter((o) => o.status === 'open');
+      return data.orders.filter((o) => o.status === 'canceled');
     }
     return [];
   }, [data]);
