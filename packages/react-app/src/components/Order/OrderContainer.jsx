@@ -49,7 +49,7 @@ export const OrderContainer = () => {
   }, [data]);
   const canceledOrders = useMemo(() => {
     if (data && data.orders) {
-      return data.orders.filter((o) => o.status === 'canceled');
+      return data.orders.filter((o) => o.status === 'cancelled');
     }
     return [];
   }, [data]);

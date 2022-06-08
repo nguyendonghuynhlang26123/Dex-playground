@@ -64,7 +64,7 @@ export const OpenOrderCard = ({ provider, order, handleClick }) => {
           <div className="flex justify-center items-center">
             <TransactionButton
               label="Cancel"
-              className="text-sm rounded-3xl tracking-tight py-0.5 px-3 !btn-warning !shadow-none"
+              className="text-sm rounded-3xl tracking-tight py-0.5 px-3 !btn-warning !shadow-none z-10"
               state={cancelingState}
               onClick={submitCancelOrder}
             />
