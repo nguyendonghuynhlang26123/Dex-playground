@@ -15,7 +15,7 @@ export const OpenOrderCard = ({ provider, order, handleClick }) => {
   const inputAddress = order.inputToken;
   const inputAmount = BigNumber.from(order.amount);
   const createdAt = moment(new Date(order.updatedAt * 1000)).fromNow();
-  const [outputAddress, outputAmount] = abiEncoder.decode(['address', 'uint256'], order.data);
+  const [outputAddress, outputAmount, maxOutputAmount] = abiEncoder.decode(['address', 'uint256', 'uint256'], order.data);
 
   const [inputToken, setInputToken] = useState();
   const [outputToken, setOutputToken] = useState();
@@ -47,9 +47,10 @@ export const OpenOrderCard = ({ provider, order, handleClick }) => {
         outputAddress,
         inputAmount,
         outputAmount,
+        maxOutputAmount,
       });
     },
-    [inputAddress, outputAddress, inputAmount, outputAmount]
+    [inputAddress, outputAddress, inputAmount, outputAmount, maxOutputAmount]
   );
 
   return (

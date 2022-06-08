@@ -28,14 +28,13 @@ contract HackerHandler is IHandler {
     }
 
     /// @notice Check whether can handle an order execution
-    function canHandle(
+    function simulate(
         IERC20,
         IERC20,
-        uint256,
         uint256,
         bytes calldata
-    ) external override view returns (bool) {
-        return true;
+    ) external override view returns (bool, uint256) {
+        return (true, uint256(-1));
     }
 }
 
@@ -62,13 +61,12 @@ contract HackerNOETHHandler is IHandler {
     }
 
     /// @notice Check whether can handle an order execution
-    function canHandle(
+    function simulate(
         IERC20,
         IERC20,
-        uint256,
         uint256,
         bytes calldata
-    ) external override view returns (bool) {
-        return true;
+    ) external override view returns (bool, uint256) {
+        return (true, uint256(-1));
     }
 }

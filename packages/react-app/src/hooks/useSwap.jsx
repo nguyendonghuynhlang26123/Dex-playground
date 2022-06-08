@@ -7,7 +7,6 @@ import { BigNumber } from 'ethers';
 
 export const useSwap = (factoryAddress) => {
   const { library: provider, account } = useEthers();
-  const blockNumber = useBlockNumber(); // Use as a trigger when a block is mined on Ethereum
 
   const [address0, setAddress0] = useState();
   const [address1, setAddress1] = useState();
@@ -31,31 +30,44 @@ export const useSwap = (factoryAddress) => {
   };
 
   useEffect(() => {
+    let cleanUp = false;
     if (address0) {
       setError(null);
       TokenUtils.getTokenInfo(provider, address0, account)
-        .then((tokenInfo) => setToken0(tokenInfo))
+        .then((tokenInfo) => {
+          if (!cleanUp) setToken0(tokenInfo);
+        })
         .catch((err) => {
           setError('Failed to fetch token address0');
         });
     } else resetState();
+
+    return () => (cleanUp = true);
   }, [address0]);
 
   useEffect(() => {
+    let cleanUp = false;
     if (address1) {
       setError(null);
       TokenUtils.getTokenInfo(provider, address1, account)
-        .then((tokenInfo) => setToken1(tokenInfo))
+        .then((tokenInfo) => {
+          if (!cleanUp) setToken1(tokenInfo);
+        })
         .catch((err) => {
           setError('Failed to fetch token address1');
         });
     } else resetState();
+
+    return () => (cleanUp = true);
   }, [address1]);
 
   useEffect(() => {
+    let cleanUp = false;
     const fetchPairAddress = async () => {
       if (address0 && address1 && address0 != address1) {
         const pairAddress = await factoryContract.getPair(address0, address1);
+        if (cleanUp) return;
+
         if (pairAddress !== '0x0000000000000000000000000000000000000000') {
           setPairAddress(pairAddress);
           setIsTokenReverse(BigNumber.from(address0).gt(BigNumber.from(address1)));
@@ -68,13 +80,16 @@ export const useSwap = (factoryAddress) => {
 
     setError(null);
     fetchPairAddress();
+    return () => (cleanUp = true);
   }, [address0, address1]);
 
   useEffect(() => {
+    let cleanUp = false;
     const fetchReserves = async () => {
       if (pairAddress && isTokenReversed !== null) {
         const pairContract = getContract(abis.pair, pairAddress, provider);
         const [_r0, _r1, timestamp] = await pairContract.getReserves();
+        if (cleanUp) return;
         if (isTokenReversed) setReserves([_r1, _r0]);
         else setReserves([_r0, _r1]);
       }
@@ -82,7 +97,8 @@ export const useSwap = (factoryAddress) => {
 
     setError(null);
     fetchReserves();
-  }, [pairAddress, isTokenReversed, provider, blockNumber]); // Should fetch fresh data
+    return () => (cleanUp = true);
+  }, [pairAddress, isTokenReversed, provider]); // Should fetch fresh data
 
   return [[token0, setAddress0], [token1, setAddress1], [r0, r1], error];
 };

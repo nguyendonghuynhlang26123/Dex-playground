@@ -16,3 +16,11 @@ export const networkConfig = {
   },
   networks: [Rinkeby],
 };
+
+export const networkNames = {
+  1: 'mainnet',
+  3: 'rinkeby',
+  4: 'rinkeby',
+  5: 'goerli',
+  42: 'kovan',
+};

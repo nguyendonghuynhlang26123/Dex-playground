@@ -3,8 +3,7 @@ pragma solidity ^0.6.8;
 
 import "./libs/SafeMath.sol"; 
 import "./interfaces/IERC20.sol"; 
-import "./libs/ProtocolUtils.sol"; 
-import "hardhat/console.sol";
+import "./libs/ProtocolUtils.sol";  
 
 
 contract Vault {
@@ -47,7 +46,6 @@ contract Vault {
 
         address token = _tokens[_key];
         amount = _deposits[_key];
-        console.log("Is eth: " , token == ETH_ADDRESS, token);
         require(ProtocolUtils.balanceOf(IERC20(token), address(this)) >= amount, "VaultContract: INSUFFICIENT_FUND");
 
         delete _deposits[_key];

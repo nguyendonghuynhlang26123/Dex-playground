@@ -40,14 +40,14 @@ describe("Core Contract", function () {
   let weth;
 
   let core;
-  let limitOrderModule;
+  let entryOrderModule;
   let handlerUniswap;
 
   let uniswapMock;
 
   let provider;
 
-  const AVG_ESTIMATE_EXECUTE_COST = BN.from("400000");
+  const AVG_ESTIMATE_EXECUTE_COST = STANDARD_GAS_PRICE.mul(BN.from("400000"));
 
   beforeEach(async () => {
     [owner, user1, user2] = await ethers.getSigners();
@@ -146,16 +146,20 @@ describe("Core Contract", function () {
 
     // Setup contract protocol
     const Core = await ethers.getContractFactory("OrderProtocol");
-    const LimitOrder = await ethers.getContractFactory("LimitOrders");
+    const EntryOrder = await ethers.getContractFactory("EntryOrders");
     core = await Core.deploy();
-    limitOrderModule = await LimitOrder.deploy();
+    entryOrderModule = await EntryOrder.deploy();
     await core.deployed();
-    await limitOrderModule.deployed();
+    await entryOrderModule.deployed();
+
     console.log("OrderProtocol contract is deployed to:", core.address);
     console.log(
-      "LimitOrder Module contract is deployed to:",
-      limitOrderModule.address
+      "EntryOrder Module contract is deployed to:",
+      entryOrderModule.address
     );
+
+    // Register relayer role
+    await core.connect(owner).grantRelayerRole(user2.address);
 
     // Uniswap handler:
     const UniswapHandler = await ethers.getContractFactory("UniswapV2Handler");
@@ -171,7 +175,7 @@ describe("Core Contract", function () {
     );
   });
 
-  describe("UniswapV2 Order flow", async function () {
+  describe("Entry order: Limit order usage flow", async function () {
     it("Verify ETH->Token order. Current rate: 1ETH = 100 ONE. Create order at 1ETH = 120TWO, it should match when 1ETH >= 120.5TWO", async function () {
       const abiEncoder = new ethers.utils.AbiCoder();
       const secret = ethers.utils
@@ -188,11 +192,11 @@ describe("Core Contract", function () {
 
       // Setup:
       const moduleData = abiEncoder.encode(
-        ["address", "uint256"],
-        [token1.address, _18digits(120)]
+        ["address", "uint256", "uint256"],
+        [token1.address, _18digits(120), ethers.constants.MaxUint256]
       );
       const orderData = [
-        limitOrderModule.address,
+        entryOrderModule.address,
         ETH_ADDRESS,
         user1.address,
         witnessAddress,
@@ -211,7 +215,7 @@ describe("Core Contract", function () {
         core.address,
         "Vault's ONE"
       );
-      const vaulltEthSnap = await etherSnap(core.address, "Vault's ETH");
+      const vaultEthSnap = await etherSnap(core.address, "Vault's ETH");
 
       // ** SETUP
       // 1. Create order 1 ETH = 120 ONE
@@ -223,7 +227,7 @@ describe("Core Contract", function () {
 
       await userBalance1Snap.requireConstant();
       await userEthSnap.requireDecrease(_18digits(1), true);
-      await vaulltEthSnap.requireIncrease(_18digits(1));
+      await vaultEthSnap.requireIncrease(_18digits(1));
       await vaultBalance1Snap.requireConstant();
 
       // 2 MAKE sure that 1 ETH > 120 ONE
@@ -243,11 +247,13 @@ describe("Core Contract", function () {
       expect(wethToToken1Rate).to.gt(BN.from(_18digits(120)));
 
       // 3. Get all estimation needed
+      const module = entryOrderModule.address;
+      console.log("log ~ file: Protocol.test.js ~ line 272 ~ module", module);
       const signature = sign(ethers, user2.address, witnessPrvKey);
       const estimateGas = await core
         .connect(user2)
         .estimateGas.executeOrder(
-          limitOrderModule.address,
+          entryOrderModule.address,
           ETH_ADDRESS,
           user1.address,
           _18digits(1),
@@ -283,7 +289,7 @@ describe("Core Contract", function () {
         core
           .connect(user2)
           .executeOrder(
-            limitOrderModule.address,
+            entryOrderModule.address,
             ETH_ADDRESS,
             user1.address,
             _18digits(1),
@@ -309,7 +315,7 @@ describe("Core Contract", function () {
       );
 
       // Verify assets in vault
-      vaulltEthSnap.requireConstant();
+      vaultEthSnap.requireConstant();
       vaultBalance1Snap.requireConstant();
     });
 
@@ -331,11 +337,11 @@ describe("Core Contract", function () {
       const AMOUNT_IN = _18digits(100);
       const AMOUNT_OUT = _18digits(0.8);
       const moduleData = abiEncoder.encode(
-        ["address", "uint256"],
-        [ETH_ADDRESS, AMOUNT_OUT]
+        ["address", "uint256", "uint256"],
+        [ETH_ADDRESS, AMOUNT_OUT, ethers.constants.MaxUint256]
       );
       const orderData = [
-        limitOrderModule.address,
+        entryOrderModule.address,
         token2.address,
         user1.address,
         witnessAddress,
@@ -354,7 +360,7 @@ describe("Core Contract", function () {
         core.address,
         "Vault's TWO"
       );
-      const vaulltEthSnap = await etherSnap(core.address, "Vault's ETH");
+      const vaultEthSnap = await etherSnap(core.address, "Vault's ETH");
 
       // ** SETUP
       // 1. Create order 1 ONE = 0.008 ETH
@@ -366,7 +372,7 @@ describe("Core Contract", function () {
 
       await userEthSnap.reset();
       await userBalance2Snap.requireConstant();
-      await vaulltEthSnap.requireConstant();
+      await vaultEthSnap.requireConstant();
       await vaultBalance2Snap.requireIncrease(AMOUNT_IN);
 
       // 2. MAKE sure that 1 TWO > 0.008 ETH
@@ -394,7 +400,7 @@ describe("Core Contract", function () {
       const estimateGas = await core
         .connect(user2)
         .estimateGas.executeOrder(
-          limitOrderModule.address,
+          entryOrderModule.address,
           token2.address,
           user1.address,
           AMOUNT_IN,
@@ -431,7 +437,7 @@ describe("Core Contract", function () {
         core
           .connect(user2)
           .executeOrder(
-            limitOrderModule.address,
+            entryOrderModule.address,
             token2.address,
             user1.address,
             AMOUNT_IN,
@@ -457,7 +463,7 @@ describe("Core Contract", function () {
       );
 
       // Verify assets in vault
-      vaulltEthSnap.requireConstant();
+      vaultEthSnap.requireConstant();
       vaultBalance2Snap.requireConstant();
     });
 
@@ -478,11 +484,11 @@ describe("Core Contract", function () {
       const AMOUNT_IN = _18digits(10);
       const AMOUNT_OUT = _18digits(22);
       const moduleData = abiEncoder.encode(
-        ["address", "uint256"],
-        [token2.address, AMOUNT_OUT]
+        ["address", "uint256", "uint256"],
+        [token2.address, AMOUNT_OUT, ethers.constants.MaxUint256]
       );
       const orderData = [
-        limitOrderModule.address,
+        entryOrderModule.address,
         token1.address,
         user1.address,
         witnessAddress,
@@ -500,13 +506,10 @@ describe("Core Contract", function () {
 
       // 2. MAKE sure that 1 ONE > 2.2 TWO + execution fee
       // 2a. Calculate expected output in token2:
-      const assumedExecutionFee = STANDARD_GAS_PRICE.mul(
-        AVG_ESTIMATE_EXECUTE_COST
-      );
       const feeInToken2 = await uniswapMock.getAmountIn(
         token2.address,
         weth.address,
-        assumedExecutionFee
+        AVG_ESTIMATE_EXECUTE_COST
       );
       const expectOutputAmount = AMOUNT_OUT.add(feeInToken2);
       console.log(
@@ -515,7 +518,7 @@ describe("Core Contract", function () {
           "; fee = " +
           prettyNum(feeInToken2) +
           " TWO ( " +
-          prettyNum(assumedExecutionFee) +
+          prettyNum(AVG_ESTIMATE_EXECUTE_COST) +
           " ETH)"
       );
 
@@ -544,7 +547,7 @@ describe("Core Contract", function () {
       const estimateGas = await core
         .connect(user2)
         .estimateGas.executeOrder(
-          limitOrderModule.address,
+          entryOrderModule.address,
           token1.address,
           user1.address,
           AMOUNT_IN,
@@ -552,7 +555,7 @@ describe("Core Contract", function () {
           signature,
           abiEncoder.encode(
             ["address", "address", "uint256"],
-            [handlerUniswap.address, user2.address, assumedExecutionFee]
+            [handlerUniswap.address, user2.address, AVG_ESTIMATE_EXECUTE_COST]
           )
         );
       console.log(
@@ -580,7 +583,7 @@ describe("Core Contract", function () {
         core
           .connect(user2)
           .executeOrder(
-            limitOrderModule.address,
+            entryOrderModule.address,
             token1.address,
             user1.address,
             AMOUNT_IN,
@@ -605,6 +608,556 @@ describe("Core Contract", function () {
         bought,
         "Users must received an amount they requested for"
       ).to.be.gt(AMOUNT_OUT);
+      console.log(`Order matched and bought ${prettyNum(bought)} TWO for user`);
+
+      // Verify that executor's balance is secured (may gains more than spent but not in loss!)
+      expect(await provider.getBalance(user2.address)).to.be.gte(
+        relayerPrvBalance
+      );
+    });
+
+    it("Verify Limit order when current price above limit price. Current rate: 1ONE = 2TWO. Create order at 10ONE = 10TWO, it should be matched immediately!", async function () {
+      const abiEncoder = new ethers.utils.AbiCoder();
+      const secret = ethers.utils
+        .hexlify(ethers.utils.randomBytes(21))
+        .replace("0x", "");
+      const fullSecret = `2022001812713618127252${secret}`;
+      const { privateKey: witnessPrvKey, address: witnessAddress } =
+        new ethers.Wallet(fullSecret);
+      console.log(
+        "witnessPrvKey, witnessAddress: ",
+        witnessPrvKey,
+        witnessAddress
+      );
+
+      const AMOUNT_IN = _18digits(10);
+      const AMOUNT_OUT = _18digits(10);
+      const moduleData = abiEncoder.encode(
+        ["address", "uint256", "uint256"],
+        [token2.address, AMOUNT_OUT, ethers.constants.MaxUint256]
+      );
+      const orderData = [
+        entryOrderModule.address,
+        token1.address,
+        user1.address,
+        witnessAddress,
+        AMOUNT_IN,
+        moduleData,
+      ];
+
+      // ** SETUP
+      await token1.connect(user1).mint(AMOUNT_IN);
+      await token1.connect(user1).approve(core.address, APPROVE_VALUE);
+      await expect(
+        core.connect(user1).createOrder(...orderData, witnessPrvKey)
+      ).to.emit(core, "OrderCreated");
+      // Get all estimation needed
+      const signature = sign(ethers, user2.address, witnessPrvKey);
+      const estimateGas = await core
+        .connect(user2)
+        .estimateGas.executeOrder(
+          entryOrderModule.address,
+          token1.address,
+          user1.address,
+          AMOUNT_IN,
+          moduleData,
+          signature,
+          abiEncoder.encode(
+            ["address", "address", "uint256"],
+            [handlerUniswap.address, user2.address, AVG_ESTIMATE_EXECUTE_COST]
+          )
+        );
+      console.log(
+        `Estimate Gas Execution: ${estimateGas} gas -> ${prettyNum(
+          STANDARD_GAS_PRICE.mul(estimateGas)
+        )} ETH `
+      );
+
+      // ** VERIFY EXECUTION
+      const relayerPrvBalance = await provider.getBalance(user2.address);
+      const user1PrvBalanceOne = await token2.balanceOf(user1.address);
+      const executeData = abiEncoder.encode(
+        ["address", "address", "uint256"],
+        [
+          handlerUniswap.address,
+          user2.address,
+          STANDARD_GAS_PRICE.mul(estimateGas),
+        ]
+      );
+      expect(
+        await core.connect(user2).canExecuteOrder(...orderData, executeData),
+        "Order should be executed"
+      ).to.eq(true);
+      await expect(
+        core
+          .connect(user2)
+          .executeOrder(
+            entryOrderModule.address,
+            token1.address,
+            user1.address,
+            AMOUNT_IN,
+            moduleData,
+            signature,
+            executeData,
+            {
+              gasPrice: STANDARD_GAS_PRICE,
+            }
+          )
+      ).to.emit(core, "OrderExecuted");
+
+      // Verify that user's order is matched
+      const bought = (await token2.balanceOf(user1.address)).sub(
+        user1PrvBalanceOne
+      );
+      expect(
+        bought,
+        "Users must received an amount they requested for"
+      ).to.be.gt(AMOUNT_OUT);
+      console.log(`Order matched and bought ${prettyNum(bought)} TWO for user`);
+
+      // Verify that executor's balance is secured (may gains more than spent but not in loss!)
+      expect(await provider.getBalance(user2.address)).to.be.gte(
+        relayerPrvBalance
+      );
+    });
+  });
+
+  describe("Entry order: Entry order usage flow", async function () {
+    it("Verify ETH->Token order. Current rate: 1ETH = 100 ONE. Create stop order at 75TWO <= 1ETH <= 80TWO, it should match when 73 TWO <= 1ETH <= 82TWO", async function () {
+      const abiEncoder = new ethers.utils.AbiCoder();
+      const secret = ethers.utils
+        .hexlify(ethers.utils.randomBytes(21))
+        .replace("0x", "");
+      const fullSecret = `2022001812713618127252${secret}`;
+      const { privateKey: witnessPrvKey, address: witnessAddress } =
+        new ethers.Wallet(fullSecret);
+
+      // Setup:
+      const AMOUNT_IN = _18digits(1);
+      const AMOUNT_OUT_MIN = _18digits(75);
+      const AMOUNT_OUT_MAX = _18digits(80);
+      const moduleData = abiEncoder.encode(
+        ["address", "uint256", "uint256"],
+        [token1.address, AMOUNT_OUT_MIN, AMOUNT_OUT_MAX]
+      );
+      const orderData = [
+        entryOrderModule.address,
+        ETH_ADDRESS,
+        user1.address,
+        witnessAddress,
+        AMOUNT_IN,
+        moduleData,
+      ];
+
+      const userBalance1Snap = await balanceSnap(
+        token1,
+        user1.address,
+        "User1's ONE"
+      );
+      const userEthSnap = await etherSnap(user1.address, "User1's ETH");
+      const vaultBalance1Snap = await balanceSnap(
+        token1,
+        core.address,
+        "Vault's ONE"
+      );
+      const vaultEthSnap = await etherSnap(core.address, "Vault's ETH");
+
+      // ** SETUP
+      // 1. Create order 1 ETH = 80 ONE
+      await expect(
+        core.connect(user1).createOrder(...orderData, witnessPrvKey, {
+          value: AMOUNT_IN,
+        })
+      ).to.emit(core, "OrderCreated");
+
+      await userBalance1Snap.requireConstant();
+      await userEthSnap.requireDecrease(AMOUNT_IN, true);
+      await vaultEthSnap.requireIncrease(AMOUNT_IN);
+      await vaultBalance1Snap.requireConstant();
+
+      // 2 MAKE sure that 1 ETH <= 80 ONE
+      const SETUP_INPUT = _18digits(0.18);
+      await weth.connect(owner).deposit({
+        value: SETUP_INPUT,
+      });
+      await uniswapMock.swap(
+        weth.address,
+        token1.address,
+        SETUP_INPUT,
+        owner.address
+      );
+      const wethToToken1Rate = await uniswapMock.getExchangeRate(
+        weth.address,
+        token1.address
+      );
+      console.log("SETUP ~ wethToToken1Rate", prettyNum(wethToToken1Rate));
+      // Make sure that price is 1 ETH > 120 ONE
+      expect(wethToToken1Rate, "Expect setup price")
+        .to.gt(AMOUNT_OUT_MIN)
+        .and.lt(AMOUNT_OUT_MAX);
+
+      // 3. Get all estimation needed
+      const signature = sign(ethers, user2.address, witnessPrvKey);
+      const estimateGas = await core
+        .connect(user2)
+        .estimateGas.executeOrder(
+          entryOrderModule.address,
+          ETH_ADDRESS,
+          user1.address,
+          AMOUNT_IN,
+          moduleData,
+          signature,
+          abiEncoder.encode(
+            ["address", "address", "uint256"],
+            [handlerUniswap.address, user2.address, AVG_ESTIMATE_EXECUTE_COST]
+          )
+        );
+      console.log(
+        `Estimate Gas Execution: ${estimateGas} gas -> ${prettyNum(
+          STANDARD_GAS_PRICE.mul(estimateGas)
+        )} ETH `
+      );
+
+      // ** VERIFY EXECUTION
+      const relayerPrvBalance = await provider.getBalance(user2.address);
+      const user1PrvBalanceOne = await token1.balanceOf(user1.address);
+      const executeData = abiEncoder.encode(
+        ["address", "address", "uint256"],
+        [
+          handlerUniswap.address,
+          user2.address,
+          STANDARD_GAS_PRICE.mul(estimateGas),
+        ]
+      );
+      expect(
+        await core.connect(user2).canExecuteOrder(...orderData, executeData),
+        "Order should be executed"
+      ).to.eq(true);
+      await expect(
+        core
+          .connect(user2)
+          .executeOrder(
+            entryOrderModule.address,
+            ETH_ADDRESS,
+            user1.address,
+            AMOUNT_IN,
+            moduleData,
+            signature,
+            executeData,
+            {
+              gasPrice: STANDARD_GAS_PRICE,
+            }
+          )
+      ).to.emit(core, "OrderExecuted");
+
+      // Verify that user's order is matched
+      const bought = (await token1.balanceOf(user1.address)).sub(
+        user1PrvBalanceOne
+      );
+      expect(bought, "Expect amount user received must be in entry range")
+        .to.be.lt(AMOUNT_OUT_MAX)
+        .and.gt(AMOUNT_OUT_MIN);
+      console.log(`Order matched and bought ${prettyNum(bought)} ONE for user`);
+
+      // Verify that executor's balance is secured (may gains more than spent but not in loss!)
+      expect(await provider.getBalance(user2.address)).to.be.gte(
+        relayerPrvBalance
+      );
+
+      // Verify assets in vault
+      vaultEthSnap.requireConstant();
+      vaultBalance1Snap.requireConstant();
+    });
+
+    it("Verify Token->ETH order. Current rate: 100TWO = 0.1995 ETH. Create order at 0.15ETH <= 100TWO <= 0.18ETH, it should match when 100TWO = 0.175ETH", async function () {
+      const abiEncoder = new ethers.utils.AbiCoder();
+      const secret = ethers.utils
+        .hexlify(ethers.utils.randomBytes(21))
+        .replace("0x", "");
+      const fullSecret = `2022001812713618127252${secret}`;
+      const { privateKey: witnessPrvKey, address: witnessAddress } =
+        new ethers.Wallet(fullSecret);
+      console.log(
+        "witnessPrvKey, witnessAddress: ",
+        witnessPrvKey,
+        witnessAddress
+      );
+
+      // Setup:
+      const AMOUNT_IN = _18digits(100);
+      const AMOUNT_OUT_MIN = _18digits(0.15);
+      const AMOUNT_OUT_MAX = _18digits(0.18);
+      const moduleData = abiEncoder.encode(
+        ["address", "uint256", "uint256"],
+        [ETH_ADDRESS, AMOUNT_OUT_MIN, AMOUNT_OUT_MAX]
+      );
+      const orderData = [
+        entryOrderModule.address,
+        token2.address,
+        user1.address,
+        witnessAddress,
+        AMOUNT_IN,
+        moduleData,
+      ];
+
+      const userBalance2Snap = await balanceSnap(
+        token2,
+        user1.address,
+        "User1's TWO"
+      );
+      const userEthSnap = await etherSnap(user1.address, "User1's ETH");
+      const vaultBalance2Snap = await balanceSnap(
+        token2,
+        core.address,
+        "Vault's TWO"
+      );
+      const vaultEthSnap = await etherSnap(core.address, "Vault's ETH");
+
+      // ** SETUP
+      // 1. Create order
+      await token2.connect(user1).mint(AMOUNT_IN);
+      await token2.connect(user1).approve(core.address, APPROVE_VALUE);
+      await expect(
+        core.connect(user1).createOrder(...orderData, witnessPrvKey)
+      ).to.emit(core, "OrderCreated");
+
+      await userEthSnap.reset();
+      await userBalance2Snap.requireConstant();
+      await vaultEthSnap.requireConstant();
+      await vaultBalance2Snap.requireIncrease(AMOUNT_IN);
+
+      // 2. MAKE sure that 0.3ETH <= 100TWO <= 0.4ETH
+      const AMOUNT_SETUP = _18digits(30);
+      await token2.connect(owner).mint(AMOUNT_SETUP);
+      await uniswapMock.swap(
+        token2.address,
+        weth.address,
+        AMOUNT_SETUP,
+        owner.address
+      );
+      const token2ToWeth = await uniswapMock.getAmountOut(
+        token2.address,
+        weth.address,
+        AMOUNT_IN
+      );
+      console.log("SETUP ~ 100 token2 -> WETH", prettyNum(token2ToWeth));
+      // Make sure that price is 1 ETH > 120 ONE
+      expect(token2ToWeth, "Make sure setup price is correct")
+        .to.gte(AMOUNT_OUT_MIN)
+        .and.lte(AMOUNT_OUT_MAX);
+
+      // 3. Get all estimation needed
+      const signature = sign(ethers, user2.address, witnessPrvKey);
+      const estimateGas = await core
+        .connect(user2)
+        .estimateGas.executeOrder(
+          entryOrderModule.address,
+          token2.address,
+          user1.address,
+          AMOUNT_IN,
+          moduleData,
+          signature,
+          abiEncoder.encode(
+            ["address", "address", "uint256"],
+            [handlerUniswap.address, user2.address, AVG_ESTIMATE_EXECUTE_COST]
+          )
+        );
+      console.log(
+        `Estimate Gas Execution: ${estimateGas} gas -> ${prettyNum(
+          STANDARD_GAS_PRICE.mul(estimateGas)
+        )} ETH `
+      );
+
+      // ** VERIFY EXECUTION
+      const relayerPrvBalance = await provider.getBalance(user2.address);
+      const user1PrvBalanceOne = await provider.getBalance(user1.address);
+      const executeData = abiEncoder.encode(
+        ["address", "address", "uint256"],
+        [
+          handlerUniswap.address,
+          user2.address,
+          STANDARD_GAS_PRICE.mul(estimateGas),
+        ]
+      );
+      expect(
+        await core.connect(user2).canExecuteOrder(...orderData, executeData),
+        "Order should be executed"
+      ).to.eq(true);
+
+      await expect(
+        core
+          .connect(user2)
+          .executeOrder(
+            entryOrderModule.address,
+            token2.address,
+            user1.address,
+            AMOUNT_IN,
+            moduleData,
+            signature,
+            executeData,
+            {
+              gasPrice: STANDARD_GAS_PRICE,
+            }
+          )
+      ).to.emit(core, "OrderExecuted");
+
+      // Verify that user's order is matched
+      const bought = (await provider.getBalance(user1.address)).sub(
+        user1PrvBalanceOne
+      );
+      expect(bought, "User must received amount that they want")
+        .to.be.gte(AMOUNT_OUT_MIN)
+        .and.lte(AMOUNT_OUT_MAX);
+      console.log(`Order matched and bought ${prettyNum(bought)} ONE for user`);
+
+      // Verify that executor's balance is secured (may gains more than spent but not in loss!)
+      expect(await provider.getBalance(user2.address)).to.be.gte(
+        relayerPrvBalance
+      );
+
+      // Verify assets in vault
+      vaultEthSnap.requireConstant();
+      vaultBalance2Snap.requireConstant();
+    });
+
+    it("Verify Token->Token order. Current rate: 1ONE = 2TWO. Create order at 10TWO <= 10ONE <= 15TWO, it should match when 10ONE=12TWO", async function () {
+      const abiEncoder = new ethers.utils.AbiCoder();
+      const secret = ethers.utils
+        .hexlify(ethers.utils.randomBytes(21))
+        .replace("0x", "");
+      const fullSecret = `2022001812713618127252${secret}`;
+      const { privateKey: witnessPrvKey, address: witnessAddress } =
+        new ethers.Wallet(fullSecret);
+      console.log(
+        "witnessPrvKey, witnessAddress: ",
+        witnessPrvKey,
+        witnessAddress
+      );
+
+      const AMOUNT_IN = _18digits(10);
+      const AMOUNT_OUT_MIN = _18digits(10);
+      const AMOUNT_OUT_MAX = _18digits(15);
+      const moduleData = abiEncoder.encode(
+        ["address", "uint256", "uint256"],
+        [token2.address, AMOUNT_OUT_MIN, AMOUNT_OUT_MAX]
+      );
+      const orderData = [
+        entryOrderModule.address,
+        token1.address,
+        user1.address,
+        witnessAddress,
+        AMOUNT_IN,
+        moduleData,
+      ];
+
+      // ** SETUP
+      // 1. Create order 1 ONE = 2.2 TWO
+      await token1.connect(user1).mint(AMOUNT_IN);
+      await token1.connect(user1).approve(core.address, APPROVE_VALUE);
+      await expect(
+        core.connect(user1).createOrder(...orderData, witnessPrvKey)
+      ).to.emit(core, "OrderCreated");
+
+      // 2. MAKE sure that 1 ONE > 2.2 TWO + execution fee
+      // 2a. Calculate expected output in token2:
+      const feeInToken2 = await uniswapMock.getAmountIn(
+        token2.address,
+        weth.address,
+        AVG_ESTIMATE_EXECUTE_COST
+      );
+      console.log(
+        "fee = " +
+          prettyNum(feeInToken2) +
+          " TWO ( " +
+          prettyNum(AVG_ESTIMATE_EXECUTE_COST) +
+          " ETH)"
+      );
+
+      // 2b. Make sure drop to 10 ONE = 12 TWO + {feeInToken2}
+      const AMOUNT_SETUP = _18digits(90);
+      await token1.connect(owner).mint(AMOUNT_SETUP);
+      await uniswapMock.swap(
+        token1.address,
+        token2.address,
+        AMOUNT_SETUP,
+        owner.address
+      );
+      const token1ToToken2 = await uniswapMock.getAmountOut(
+        token1.address,
+        token2.address,
+        AMOUNT_IN
+      );
+      console.log("SETUP ~ 10 ONE = 12 TWO: ", prettyNum(token1ToToken2));
+      // Make sure that price is 1ONE > 0.06 ETH
+      expect(token1ToToken2.sub(feeInToken2), "Make sure setup is correct")
+        .to.gte(AMOUNT_OUT_MIN)
+        .and.lte(AMOUNT_OUT_MAX);
+
+      // 3. Get all estimation needed
+      const signature = sign(ethers, user2.address, witnessPrvKey);
+      const estimateGas = await core
+        .connect(user2)
+        .estimateGas.executeOrder(
+          entryOrderModule.address,
+          token1.address,
+          user1.address,
+          AMOUNT_IN,
+          moduleData,
+          signature,
+          abiEncoder.encode(
+            ["address", "address", "uint256"],
+            [handlerUniswap.address, user2.address, AVG_ESTIMATE_EXECUTE_COST]
+          )
+        );
+      console.log(
+        `Estimate Gas Execution: ${estimateGas} gas -> ${prettyNum(
+          STANDARD_GAS_PRICE.mul(estimateGas)
+        )} ETH `
+      );
+
+      // ** VERIFY EXECUTION
+      const relayerPrvBalance = await provider.getBalance(user2.address);
+      const user1PrvBalanceOne = await token2.balanceOf(user1.address);
+      const executeData = abiEncoder.encode(
+        ["address", "address", "uint256"],
+        [
+          handlerUniswap.address,
+          user2.address,
+          STANDARD_GAS_PRICE.mul(estimateGas),
+        ]
+      );
+      expect(
+        await core.connect(user2).canExecuteOrder(...orderData, executeData),
+        "Order should be executed"
+      ).to.eq(true);
+      await expect(
+        core
+          .connect(user2)
+          .executeOrder(
+            entryOrderModule.address,
+            token1.address,
+            user1.address,
+            AMOUNT_IN,
+            moduleData,
+            signature,
+            executeData,
+            {
+              gasPrice: STANDARD_GAS_PRICE,
+            }
+          )
+      ).to.emit(core, "OrderExecuted");
+
+      // Verify that user's order is matched
+      const bought = (await token2.balanceOf(user1.address)).sub(
+        user1PrvBalanceOne
+      );
+      console.log(
+        "log ~ file: Protocol.test.js ~ line 600 ~ bought",
+        prettyNum(bought)
+      );
+      expect(bought, "Users must received an amount they requested for")
+        .to.be.gte(AMOUNT_OUT_MIN)
+        .and.lte(AMOUNT_OUT_MAX);
       console.log(`Order matched and bought ${prettyNum(bought)} TWO for user`);
 
       // Verify that executor's balance is secured (may gains more than spent but not in loss!)

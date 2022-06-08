@@ -79,7 +79,7 @@ contract LimitOrders is IModule {
         bytes calldata _data,
         bytes calldata _auxData
     ) external override view returns (bool) {
-         (
+        (
             IERC20 outputToken,
             uint256 minReturn
         ) = abi.decode(
@@ -91,13 +91,14 @@ contract LimitOrders is IModule {
         );
         (IHandler handler) = abi.decode(_auxData, (IHandler));
 
-        return handler.canHandle(
+        (bool success, uint256 bought) = handler.simulate(
             _inputToken,
             outputToken,
             _inputAmount,
-            minReturn,
             _auxData
         );
+
+        return (success && bought >= minReturn);
     }
 
     /**

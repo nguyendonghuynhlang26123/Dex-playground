@@ -1,7 +1,7 @@
 {
   "name": "@dex/relayers",
   "version": "1.0.0",
-  "description": "Relayer node for Limit order protocol",
+  "description": "Relayer node for Entry order protocol",
   "main": "index.js",
   "author": "Nguyen Dang Huynh Long",
   "license": "UNLICENSED",
