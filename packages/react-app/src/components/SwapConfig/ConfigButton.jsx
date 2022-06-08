@@ -27,7 +27,7 @@ export const ConfigButton = () => {
       </button>
       <Modal isOpen={open} closeModal={() => setOpen(false)} title="Transaction setting">
         <div className="w-64">
-          <p className="my-2">
+          <div className="my-2">
             <p className="py-1 text-sm text-gray-600">Slippage tolerance:</p>
             <div className="flex flex-row items-center">
               <RadioGroup value={slippage.toString()} onChange={onSelectSlippage} className="flex flex-row items-center gap-1 pb-1">
@@ -62,7 +62,7 @@ export const ConfigButton = () => {
                 />
                 <select
                   value={type}
-                  className="inline w-20 rounded-full ml-4 py-1 px-2 cursor-pointer hover:bg-gray-300 btn-primary"
+                  className="inline w-28 rounded-full ml-2 py-1 px-2 cursor-pointer hover:bg-gray-300 btn-primary"
                   onChange={onChangeTimeType}
                 >
                   <option value="sec">seconds</option>
@@ -73,7 +73,7 @@ export const ConfigButton = () => {
                 </select>
               </div>
             </div>
-          </p>
+          </div>
         </div>
       </Modal>
     </>

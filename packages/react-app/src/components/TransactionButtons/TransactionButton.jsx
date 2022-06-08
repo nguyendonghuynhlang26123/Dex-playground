@@ -23,6 +23,7 @@ export const TransactionButton = ({ onClick, label, className, state, disabled =
 
   const handleClick = (ev) => {
     ev.preventDefault();
+    ev.stopPropagation();
     onClick();
   };
 

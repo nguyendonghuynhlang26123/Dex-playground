@@ -22,7 +22,7 @@ const DisplayState = (value = null, error = null, props = null) => ({
 });
 
 const ValueFieldHolder = ({ value, error, ...props }) => {
-  return error ? <p className="text-red-500">{error}</p> : <>{value ? <p {...props}>{value}</p> : <LoadingPlaceHolder />}</>;
+  return error ? <p className="text-red-500">{error}</p> : <>{value ? <span {...props}>{value}</span> : <LoadingPlaceHolder />}</>;
 };
 
 const identifyOrderType = (inputAddress, outputAddress) => {
@@ -35,13 +35,6 @@ const prettyTokenDisplay = (amount, token) => {
   if (compareAddress(token.address, addresses[4].weth) || compareAddress(token.address, ETH_ADDRESS)) return `${prettyNum(amount)} ETH`;
   if (amount.gte(ethers.constants.MaxInt256)) return `∞ ${token.symbol}`;
   return `${prettyNum(amount, token.decimals)} ${token.symbol}`;
-};
-
-const validateDiffInMinAndMax = (min, max, fee) => {
-  if (min.gte(max)) return new DisplayState(null, 'Invalid min & max');
-  const diff = max.sub(min);
-  if (diff.lte(fee)) return new DisplayState(null, 'Invalid min & max');
-  return null;
 };
 
 export const OrderSummaryModal = ({ inputAddress, outputAddress, inputAmount, outputAmount, maxOutputAmount, factoryAddress }) => {
