@@ -22,6 +22,6 @@ export default {
     weth: '0xc778417E063141139Fce010982780140Aa0cD5Ab',
 
     coreProtocol: '0xB8Cd8281512174DB05707ffe7Bd310f83Ec5cC56',
-    entryOrderModule: '0x677DBF4f615d7C21407F8594aC5b65c20Cb681a7',
+    entryOrderModule: '0x982eF160530CEE015543e89b224966827e62A4c2',
   },
 };
