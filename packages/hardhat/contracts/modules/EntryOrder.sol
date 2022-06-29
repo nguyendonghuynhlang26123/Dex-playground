@@ -34,15 +34,16 @@ contract EntryOrders is IModule {
     ) external override returns (uint256 bought) {
         (
             IERC20 outputToken,
-            uint256 minReturn
+            uint256 minReturn,
+            uint256 maxReturn
         ) = abi.decode(
             _data,
             (
                 IERC20,
+                uint256,
                 uint256
             )
         );
-
         (IHandler handler) = abi.decode(_auxData, (IHandler));
 
         // Do not trust on _inputToken, it can mismatch the real balance
@@ -58,7 +59,7 @@ contract EntryOrders is IModule {
         );
 
         bought = ProtocolUtils.balanceOf(outputToken, address(this));
-        require(bought >= minReturn, "EntryOrders#execute: ISSUFICIENT_BOUGHT_TOKENS");
+        require(bought >= minReturn && bought <= maxReturn, "EntryOrders#execute: ISSUFICIENT_BOUGHT_TOKENS");
 
         _transferAmount(outputToken, _owner, bought);
 
