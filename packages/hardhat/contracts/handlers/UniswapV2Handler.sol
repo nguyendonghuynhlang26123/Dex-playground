@@ -62,6 +62,8 @@ contract UniswapV2Handler is IHandler {
 
         if (inputToken == weth || inputToken == ProtocolUtils.ETH_ADDRESS) {
             // Swap WETH -> outputToken
+            console.log(amount);
+            console.log(fee);
             amount = amount.sub(fee);
 
             // Convert from ETH to WETH if necessary
