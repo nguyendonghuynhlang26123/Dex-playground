@@ -39,11 +39,25 @@ export class TokenUtils {
 
     const contract = getContract(abis.erc20, tokenAddress, provider);
     return {
+      name: await contract.name(),
       symbol: await contract.symbol(),
       decimals: await contract.decimals(),
-      imageUrl: mapTokenImage[tokenAddress.toLowerCase()],
+      imageUrl: mapTokenImage[tokenAddress.toLowerCase()]
+        ? mapTokenImage[tokenAddress.toLowerCase()]
+        : 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/' + tokenAddress + '/logo.png',
       balance: account ? await contract.balanceOf(account) : null,
       address: tokenAddress,
     };
+  };
+
+  static isERC20Token = async (provider, tokenAddress) => {
+    if (tokenAddress === ETH_ADDRESS) return false;
+    const contract = getContract(abis.erc20, tokenAddress, provider);
+    try {
+      const symbol = await contract.symbol();
+      return symbol !== null && symbol !== undefined;
+    } catch (e) {
+      return false;
+    }
   };
 }
