@@ -83,7 +83,13 @@ module.exports = {
     currency: "VND",
     showTimeSpent: true,
     coinmarketcap: process.env.COINMARKETCAP_API_KEY,
-    excludeContracts: ["mocks/uniswapV1", "mocks/uniswapV2", "Token"],
+    excludeContracts: [
+      "mocks/uniswapV1",
+      "mocks/uniswapV2",
+      "Token",
+      "FakeVault",
+      "WETH9",
+    ],
   },
   etherscan: {
     apiKey: process.env.ETHERSCAN_API_KEY,

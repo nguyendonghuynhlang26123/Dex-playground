@@ -45,7 +45,7 @@ export const Protocol = () => {
     }
   }, [range, price1]);
   const marketPriceCompare = useMemo(() => {
-    if (currentRate && marketRate) {
+    if (currentRate && marketRate && !marketRate?.isZero()) {
       const fOneHundred = FixedNumber.from(100);
       const diff = currentRate.mulUnsafe(fOneHundred).divUnsafe(marketRate).subUnsafe(fOneHundred);
       const displayValue = diff.round(2).toString();

@@ -90,7 +90,8 @@ export const useSwap = (factoryAddress) => {
         const pairContract = getContract(abis.pair, pairAddress, provider);
         const [_r0, _r1, timestamp] = await pairContract.getReserves();
         if (cleanUp) return;
-        if (isTokenReversed) setReserves([_r1, _r0]);
+        if (r0 === null || r1 === null || r0.isZero() || r1.isZero()) setError('Not enough liquidity for this pair of token');
+        else if (isTokenReversed) setReserves([_r1, _r0]);
         else setReserves([_r0, _r1]);
       }
     };

@@ -1,11 +1,14 @@
 import { addresses } from '@dex/contracts';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { TokenUtils } from '../../common/TokenUtils';
 import { Modal } from '../Modal';
 import TokenIcon from '../../assets/images/token.png';
 import { prettyNum } from '../../common/utils';
 import { BiChevronDown } from 'react-icons/bi';
-import { useBlockNumber } from '@usedapp/core';
+import { useBlockNumber, useDebounce } from '@usedapp/core';
+import { LoadingPlaceHolder } from '../LoadingPlaceHolder';
+import { ethers } from 'ethers';
+import { TokenImage } from '../TokenImage';
 
 const supportsTokens = [
   {
@@ -31,6 +34,12 @@ export const CurrencyInput = ({ provider, account, label, tokenAddress, onAddres
   const [token, setTokenInfo] = useState(null);
   const [focusState, setFocusState] = useState(false);
   const [selectModal, showModal] = useState(false);
+  const [customInput, setCustomInput] = useState('');
+  const debounceInput = useDebounce(customInput, 500);
+  const [loadingToken, setLoading] = useState(false);
+  const [loadingSelectedToken, setLoadingSelectedToken] = useState(false);
+  const [error, setError] = useState(null);
+  const [customToken, setCustomToken] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -42,6 +51,38 @@ export const CurrencyInput = ({ provider, account, label, tokenAddress, onAddres
       }
     })();
   }, [tokenAddress, provider, account, blockNumber]);
+
+  useEffect(() => {
+    let cleanUp = false;
+    const loadingCustomInput = async () => {
+      setLoading(true);
+      if (debounceInput !== '') {
+        if (!ethers.utils.isAddress(debounceInput) && !cleanUp) {
+          setLoading(false);
+          setError('Input must be an address');
+          setCustomToken(null);
+        } else if (!(await TokenUtils.isERC20Token(provider, debounceInput)) && !cleanUp) {
+          setLoading(false);
+          setError('Please input ERC20 token contract only');
+          setCustomToken(null);
+        } else {
+          const tokenInfo = await TokenUtils.getTokenInfo(provider, debounceInput);
+          console.log('log ~ file: index.jsx ~ line 69 ~ loadingCustomInput ~ tokenInfo', tokenInfo);
+          if (cleanUp) return;
+          setLoading(false);
+          setError(null);
+          setCustomToken(tokenInfo);
+        }
+
+        return;
+      }
+      setLoading(false);
+      setCustomToken(null);
+    };
+
+    loadingCustomInput();
+    return () => (cleanUp = true);
+  }, [debounceInput]);
 
   const onTokenSelect = (selectToken) => {
     if (onAddressChange && selectToken.address !== tokenAddress) onAddressChange(selectToken.address);
@@ -103,7 +144,7 @@ export const CurrencyInput = ({ provider, account, label, tokenAddress, onAddres
 
       <Modal isOpen={selectModal} closeModal={() => showModal(false)} title="Select token">
         <div className="mt-4">
-          <p className="text-sm text-gray-500">Token support: </p>
+          <p className="text-sm text-gray-500">Supporting token: </p>
         </div>
 
         <div className="mt-2 flex flex-row flex-wrap gap-2">
@@ -120,6 +161,33 @@ export const CurrencyInput = ({ provider, account, label, tokenAddress, onAddres
               <span>{token.symbol}</span>
             </button>
           ))}
+        </div>
+
+        <div className="mt-4">
+          <p className="text-sm text-gray-500">Custom token: </p>
+        </div>
+        <input
+          className={`flex px-4 py-2 my-2 rounded-lg ${error ? 'border border-red-500' : ''}`}
+          placeholder="Input token address"
+          value={customInput}
+          onChange={(ev) => setCustomInput(ev.target.value)}
+        />
+        {error && <p className="text-sm text-red-500">{error}</p>}
+        <div className="mt-3 flex flex-row flex-wrap gap-2 ">
+          {loadingToken ? (
+            <LoadingPlaceHolder className="mx-auto col-span-4" />
+          ) : customToken ? (
+            <button
+              className="flex flex-row items-center rounded-lg py-4 px-3 bg-gray-50 border border-gray-200 hover:bg-gray-100 hover:border-gray-300 cursor-pointer w-full"
+              onClick={() => onTokenSelect(customToken)}
+            >
+              <TokenImage image={customToken.imageUrl} className="w-6 h-6 mr-2" />
+              <span className="">{customToken.name}</span>
+              <span className="text-gray-600 mx-2 text-sm">{customToken.symbol}</span>
+            </button>
+          ) : (
+            customInput !== '' && <p className="text-gray-500 text-center text-sm">No result found</p>
+          )}
         </div>
       </Modal>
     </>
