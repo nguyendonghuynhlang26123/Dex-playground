@@ -7,10 +7,13 @@ import "./interfaces/IModule.sol";
 import "./interfaces/IERC20.sol"; 
 import "./Vault.sol";
 import "./access/ProtocolAccessControl.sol"; 
+import "./libs/SafeERC20.sol";  
 
 /// @notice Core contract used to create, cancel and execute orders.
-contract OrderProtocol is Vault, ProtocolAccessControl { 
+contract OrderProtocol { 
     using SafeMath for uint256;
+
+    mapping(bytes32 => uint256) _amounts;
 
     // Events
     event OrderCreated(
@@ -61,17 +64,20 @@ contract OrderProtocol is Vault, ProtocolAccessControl {
         uint256 _amount,
         bytes calldata _data,
         bytes32 _secret
-    ) external payable {
+    ) external {
+        IERC20 inputToken = IERC20(_inputToken);
         bytes32 key = keyOf(
             IModule(_module),
-            IERC20(_inputToken),
+            IERC20(inputToken),
             _owner,
             _witness,
             _amount,
             _data
         );
+        
+        require(_amounts[key] == 0, "OrderProtocol#cancelOrder: ORDER_EXISTS");
+        _amounts[key] = _amount;
 
-        _depositVault(key, _inputToken, _owner, _amount);
         emit OrderCreated(
             key,
             _module,
@@ -112,7 +118,8 @@ contract OrderProtocol is Vault, ProtocolAccessControl {
             _data
         );
 
-        uint256 amount = _pullVault(key, msg.sender);
+        require(_amounts[key] == 0, "OrderProtocol#cancelOrder: ORDER_DOES_NOT_EXISTS");
+        delete _amounts[key];
 
         emit OrderCancelled(
             key,
@@ -120,7 +127,7 @@ contract OrderProtocol is Vault, ProtocolAccessControl {
             _owner,
             _witness,
             _data,
-            amount
+            _amount
         );
     }
 
@@ -143,7 +150,7 @@ contract OrderProtocol is Vault, ProtocolAccessControl {
         bytes calldata _data,
         bytes calldata _signature,
         bytes calldata _auxData
-    ) external onlyRelayers {
+    ) external {
         // Calculate witness using signature
         address witness = _recoverSigner(_signature);
 
@@ -157,8 +164,10 @@ contract OrderProtocol is Vault, ProtocolAccessControl {
         );
 
         // Pull amount
-        uint256 amount = _pullVault(key, address(_module));
-        require(amount > 0, "OrderProtocol#executeOrder: INVALID_ORDER");
+        uint256 amount = _amounts[key];
+        require(amount > 0, "OrderProtocol#executeOrder: ORDER_NOT_EXISTS");
+        require(_inputToken.balanceOf(_owner) >= amount, "OrderProtocol#executeOrder: INSUFFICIENT_FUND");
+        require(SafeERC20.transferFrom(_inputToken, _owner, address(_module), amount), "OrderProtocol#executeOrder: Failed to perform transferFrom");
 
         uint256 bought = _module.execute(
             _inputToken,
@@ -207,7 +216,7 @@ contract OrderProtocol is Vault, ProtocolAccessControl {
             _data
         );
 
-        return getDeposits(key) != 0;
+        return _amounts[key] != 0;
     }
 
     /**
@@ -240,7 +249,7 @@ contract OrderProtocol is Vault, ProtocolAccessControl {
         );
 
         // Mock Pull amount
-        uint256 amount = getDeposits(key);
+        uint256 amount = _amounts[key];
 
         return _module.canExecute(
             _inputToken,
