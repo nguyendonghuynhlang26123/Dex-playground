@@ -20,9 +20,9 @@ async function main() {
   const core = await Core.deploy();
   await core.deployed();
 
-  for (const relayer of RELAYERS) {
-    await core.grantRelayerRole(relayer);
-  }
+  // for (const relayer of RELAYERS) {
+  //   await core.grantRelayerRole(relayer);
+  // }
 
   const entryOrderModule = await EntryOrder.deploy();
   await entryOrderModule.deployed();
