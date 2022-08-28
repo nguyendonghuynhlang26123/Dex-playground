@@ -105,6 +105,7 @@ export const Protocol = () => {
           if (address0 && address1 && !compareAddress(address0, wethAddress) && !compareAddress(address1, wethAddress)) {
             const outputToWethAddress = await factoryContract.getPair(address1, wethAddress);
             if (outputToWethAddress === NULL_ADDRESS) setError('Cannot extract fee from the output token!');
+            else setError(null);
           } else setError(null);
         }
       }
@@ -130,6 +131,11 @@ export const Protocol = () => {
       const value = ev.target.value?.trim();
       if (isNaN(+value)) return;
       setToRate(value);
+
+      if (FixedNumber.from(value).subUnsafe(currentRate).isNegative()) {
+        setError("'To Price' should not < 'From Price'");
+        return;
+      }
 
       const inTokenOutput = calculateTokenOutputByRate(value);
       setRangeInTokenOutput(inTokenOutput);

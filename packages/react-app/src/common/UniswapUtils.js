@@ -39,7 +39,6 @@ export class UniswapUtils {
     const amountInWithFee = amountIn.mul(_997);
     const numerator = amountInWithFee.mul(rOut);
     const denominator = rIn.mul(_1000).add(amountInWithFee);
-    console.log(numerator.div(denominator).toString());
     return numerator.div(denominator).toString();
   }
 
