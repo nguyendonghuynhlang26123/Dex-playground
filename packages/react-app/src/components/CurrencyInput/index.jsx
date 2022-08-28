@@ -1,3 +1,4 @@
+import { useBlockNumber } from '@usedapp/core';
 import React, { useEffect, useState } from 'react';
 import { TokenUtils } from '../../common/TokenUtils';
 import { prettyNum } from '../../common/utils';
@@ -8,6 +9,7 @@ export const CurrencyInput = ({ provider, account, label, tokenAddress, onAddres
   const [token, setTokenInfo] = useState(null);
   const [displayingTokenBalance, setTokenBalance] = useState(null);
   const [focusState, setFocusState] = useState(false);
+  const blockNumber = useBlockNumber();
 
   const handleTokenSelect = (token) => {
     if (token?.address !== null && token.address !== tokenAddress) {
@@ -29,7 +31,7 @@ export const CurrencyInput = ({ provider, account, label, tokenAddress, onAddres
 
     fetchTokenBalance();
     return () => (cleanUp = true);
-  }, [account, provider, tokenAddress]);
+  }, [account, provider, tokenAddress, blockNumber]);
 
   return (
     <div className={`rounded-3xl bg-white mx-2 shadow group border-2 ${focusState ? ' border-sky-300' : 'border-transparent'}`}>
