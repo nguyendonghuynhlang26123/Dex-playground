@@ -13,10 +13,6 @@ export const Liquidity = ({ token0Address, token1Address, pairAddress }) => {
   // Add/Remove mode
   const [mode, setMode] = useState('add');
 
-  //Liquidity
-  const { active, r0, r1 } = useLiquidityReserve(pairAddress, token0Address, token1Address);
-  const exchangeRate = useExchangeRate({ r0, r1 });
-
   //Liquidity token
   const mintedLiquidity = useTokenBalance(pairAddress, account);
   const { totalSupply } = useToken(pairAddress) ?? {};
@@ -31,17 +27,21 @@ export const Liquidity = ({ token0Address, token1Address, pairAddress }) => {
   const token0Balance = useTokenBalance(token0Address, account);
   const token1Balance = useTokenBalance(token1Address, account);
 
+  //Liquidity
+  const { active, r0, r1 } = useLiquidityReserve(pairAddress, token0Address, token1Address);
+  const exchangeRate = useExchangeRate({ r0, r1, inputDecimal: token0?.decimals });
+
   return active && token0 && token1 && mintedLiquidity ? (
-    <div className="flex flex-col mt-2">
+    <div className="flex flex-col mt-2 px-2">
       <div className="flex flex-row w-full divide-x space-x-2">
         <p className="flex-1 p-2 text-center">
           <b>Pool {token0.symbol}</b>
           <br />
-          {prettyNum(r0, 18)}
+          {prettyNum(r0, token0.decimals)}
         </p>
         <p className="flex-1 p-2 text-center">
           <b>Pool {token1.symbol}</b>
-          <br /> {prettyNum(r1, 18)}
+          <br /> {prettyNum(r1, token1.decimals)}
         </p>
       </div>
       <p className="italic text-gray-600 text-center">
@@ -68,11 +68,11 @@ export const Liquidity = ({ token0Address, token1Address, pairAddress }) => {
           </p>
           <p className="flex flex-row justify-between">
             <b>{token0.symbol}: </b>
-            <span>{prettyNum(calculateShare(r0, share))}</span>
+            <span>{prettyNum(calculateShare(r0, share), token0.decimals)}</span>
           </p>
           <p className="flex flex-row justify-between">
             <b>{token1.symbol}: </b>
-            <span>{prettyNum(calculateShare(r1, share))}</span>
+            <span>{prettyNum(calculateShare(r1, share), token1.decimals)}</span>
           </p>
         </div>
       )}
@@ -108,10 +108,11 @@ export const Liquidity = ({ token0Address, token1Address, pairAddress }) => {
           r1={r1}
           totalLPToken={totalSupply}
           lpAmount={mintedLiquidity}
+          poolAddress={pairAddress}
         />
       )}
     </div>
   ) : (
-    <>Loading...</>
+    <p className="px-2">Loading...</p>
   );
 };

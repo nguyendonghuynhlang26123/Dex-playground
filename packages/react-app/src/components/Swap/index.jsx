@@ -13,17 +13,25 @@ import { CurrencyInput } from '../CurrencyInput';
 import { CollapsePanel } from '../CollapsePanel';
 import { BiDownArrowAlt, BiInfoCircle } from 'react-icons/bi';
 import { ApprovalWrapper, ErrorWrapper, TransactionButton } from '../TransactionButtons';
+import { tokens } from '../../common/supportTokens.json';
 const FEE_PERCENT = 3; // 0.3
 export const Swap = () => {
   const { library, account } = useEthers();
 
   // Contract
-  const routerContract = getContract(abis.router, addresses[4].router, library);
+  const routerContract = getContract(abis.router, addresses[137].router, library);
+
+  // Supporting tokens
 
   // Manage all address mapping && liquidity
   const [[address0, address1], setTokenAddresses] = useState([null, null]);
-  const [[token0, setAddress0], [token1, setAddress1], [r0, r1], swapError] = useSwap(addresses[4].factory);
-  const { price0, price1, token0InputProps, token1InputProps, exchangePrice, swapBy, reset } = useSwapInputHandle({ r0: r0, r1: r1 });
+  const [[token0, setAddress0], [token1, setAddress1], [r0, r1], swapError] = useSwap(addresses[137].factory);
+  const { price0, price1, token0InputProps, token1InputProps, exchangePrice, swapBy, reset } = useSwapInputHandle({
+    r0: r0,
+    r1: r1,
+    inputToken: token0,
+    outputToken: token1,
+  });
 
   //Swap functions
   const useSwapHook = (method) => useContractFunction(routerContract, method, { transactionName: 'Swap successfully' });
@@ -84,7 +92,7 @@ export const Swap = () => {
     return UniswapUtils.calculatePriceImpact(value0, value1, reserve0, reserve1).round(2).toString();
   };
 
-  const calculatePriceSlippage = (swapByInput, price, slippage) => {
+  const calculatePriceSlippage = (swapByInput, price, slippage, decimals) => {
     let result;
     if (swapByInput)
       result = BigNumber.from(price) // (100 - X)% desired output
@@ -94,7 +102,7 @@ export const Swap = () => {
       result = BigNumber.from(price)
         .mul(10000 + slippage * 100)
         .div(10000);
-    return prettyNum(result);
+    return prettyNum(result, decimals);
   };
 
   const performSwap = useCallback(() => {
@@ -124,6 +132,7 @@ export const Swap = () => {
           <CurrencyInput
             label="From:"
             provider={library}
+            tokenLists={tokens}
             account={account}
             tokenAddress={address0}
             onAddressChange={(address) => handleAddressChange(address, true)}
@@ -137,6 +146,7 @@ export const Swap = () => {
           </span>
           <CurrencyInput
             label="To:"
+            tokenLists={tokens}
             provider={library}
             account={account}
             tokenAddress={address1}
@@ -161,13 +171,13 @@ export const Swap = () => {
                 <div className="flex flex-row justify-between">
                   <p>Uniswap fee</p>
                   <span>
-                    {prettyNum(calculateFee(price0))} {token0.symbol}
+                    {prettyNum(calculateFee(price0), token0.decimals)} {token0.symbol}
                   </span>
                 </div>
                 <div className="flex flex-row justify-between">
                   <p>Expected received</p>
                   <span>
-                    {prettyNum(price1)} {token1.symbol}
+                    {prettyNum(price1, token1.decimals)} {token1.symbol}
                   </span>
                 </div>
                 <div className="flex flex-row justify-between">
@@ -178,14 +188,14 @@ export const Swap = () => {
                   <div className="flex flex-row justify-between border-t border-gray-500 mt-1">
                     <p className="italic ">Minimum received after slippage ({slippage}%)</p>
                     <span>
-                      {calculatePriceSlippage(swapBy === 0, price1, slippage)} {token1.symbol}
+                      {calculatePriceSlippage(swapBy === 0, price1, slippage, token1.decimals)} {token1.symbol}
                     </span>
                   </div>
                 ) : (
                   <div className="flex flex-row justify-between border-t border-gray-500 mt-1">
                     <p className="italic ">Maximum sent after slippage ({slippage}%)</p>
                     <span>
-                      {calculatePriceSlippage(swapBy === 1, price0, slippage)} {token0.symbol}
+                      {calculatePriceSlippage(swapBy === 1, price0, slippage, token0.decimals)} {token0.symbol}
                     </span>
                   </div>
                 )}
@@ -196,7 +206,7 @@ export const Swap = () => {
 
         <ErrorWrapper error={error}>
           {token0 && (
-            <ApprovalWrapper tokenAddress={token0.address} target={addresses[4].router}>
+            <ApprovalWrapper tokenAddress={token0.address} target={addresses[137].router}>
               <TransactionButton className="my-2 mx-2.5 !py-3 !rounded-[1rem]" label="Swap" onClick={performSwap} state={swapState} />
             </ApprovalWrapper>
           )}

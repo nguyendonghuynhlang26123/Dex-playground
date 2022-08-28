@@ -21,7 +21,7 @@ export const OpenOrderCard = ({ provider, order, handleClick }) => {
   const [outputToken, setOutputToken] = useState();
 
   // Canceling order:
-  const coreContract = getContract(abis.coreProtocol, addresses[4].coreProtocol, provider);
+  const coreContract = getContract(abis.coreProtocol, addresses[137].coreProtocol, provider);
   const { state: cancelingState, send: cancelOrderTx } = useContractFunction(coreContract, 'cancelOrder', {
     transactionName: 'Successfully cancel order',
   });
@@ -57,9 +57,9 @@ export const OpenOrderCard = ({ provider, order, handleClick }) => {
     <li className="p-4 hover:shadow cursor-pointer hover:bg-sky-100 grid grid-cols-4 gap-2 " onClick={onClickHandler}>
       {inputToken && outputToken ? (
         <>
-          <Tag img={inputToken.imageUrl} symbol={inputToken.symbol} amount={prettyNum(inputAmount)} />
+          <Tag img={inputToken.imageUrl} symbol={inputToken.symbol} amount={prettyNum(inputAmount, inputToken.decimals)} />
           {/* <HiOutlineArrowNarrowRight /> */}
-          <Tag img={outputToken.imageUrl} symbol={outputToken.symbol} amount={prettyNum(outputAmount)} />
+          <Tag img={outputToken.imageUrl} symbol={outputToken.symbol} amount={prettyNum(outputAmount, outputToken.decimals)} />
           <p className="text-sm text-gray-500 justify-center flex items-center ">{createdAt}</p>
           <div className="flex justify-center items-center">
             <TransactionButton

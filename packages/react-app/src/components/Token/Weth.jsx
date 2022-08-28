@@ -1,6 +1,6 @@
 import { useEthers, useToken, useTokenBalance, useContractFunction, useEtherBalance } from '@usedapp/core';
 import React, { useEffect, useState } from 'react';
-import { _18Digits, getContract, prettyNum } from '../../common/utils';
+import { parseInput, getContract, prettyNum } from '../../common/utils';
 import { abis, addresses } from '@dex/contracts';
 import { TransactionButton } from '../TransactionButtons';
 
@@ -20,7 +20,7 @@ export const Weth = ({ address }) => {
 
   const depositEth = (input) => {
     if (input && !isNaN(input)) {
-      const actualInput = _18Digits(input);
+      const actualInput = parseInput(input, 18);
       send({
         value: actualInput,
       });
@@ -31,7 +31,7 @@ export const Weth = ({ address }) => {
 
   return weth ? (
     <div className="flex flex-col my-2">
-      <h1 className="text-[32px] text-center mt-4 mb-2 font-bold">Weth</h1>
+      <h1 className="text-[32px] text-center mt-4 mb-2 font-bold">WMatic</h1>
       <p>
         <b>Token name</b>: {weth?.name}
       </p>
@@ -46,7 +46,7 @@ export const Weth = ({ address }) => {
       </p>
       <hr className="w-32 mx-auto my-2 border-gray-500" />
       <p>
-        Your balance: {wethBalance ? prettyNum(wethBalance, 18) : ''} WETH / {ethBalance ? prettyNum(ethBalance) : ''} ETH
+        Your balance: {wethBalance ? prettyNum(wethBalance, weth?.decimals) : ''} WMatic / {ethBalance ? prettyNum(ethBalance) : ''} Matic
       </p>
       <div className="flex flex-row w-full space-x-2 items-center">
         <p>Deposit ETH</p>

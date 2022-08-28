@@ -32,6 +32,9 @@
   },
   "scripts": {
     "deploy:rinkeby": "npx hardhat run scripts/deploy-rinkeby.js --network rinkeby --emoji",
+    "deploy:matic": "npx hardhat run scripts/deploy-matic.js --network matic --emoji",
+    "deploy-token:rinkeby": "npx hardhat run scripts/deploy-token.js --network rinkeby --emoji",
+    "deploy-token:matic": "npx hardhat run scripts/deploy-token.js --network matic --emoji",
     "compile": "npx hardhat clean && npx hardhat --emoji compile",
     "test": "npx hardhat test --network local",
     "chain": "npx hardhat node --fork https://eth-mainnet.alchemyapi.io/v2/TI0Hp-KalL7vhgdsmEqOFO1NarhM15si --verbose "

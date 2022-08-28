@@ -75,7 +75,7 @@ contract OrderProtocol {
             _data
         );
         
-        require(_amounts[key] == 0, "OrderProtocol#cancelOrder: ORDER_EXISTS");
+        require(_amounts[key] == 0, "OrderProtocol#createOrder: ORDER_EXISTS");
         _amounts[key] = _amount;
 
         emit OrderCreated(
@@ -118,7 +118,7 @@ contract OrderProtocol {
             _data
         );
 
-        require(_amounts[key] == 0, "OrderProtocol#cancelOrder: ORDER_DOES_NOT_EXISTS");
+        require(_amounts[key] != 0, "OrderProtocol#cancelOrder: ORDER_DOES_NOT_EXISTS");
         delete _amounts[key];
 
         emit OrderCancelled(

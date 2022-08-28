@@ -53,7 +53,7 @@ export const Header = ({ paths }) => {
         {/* <div className="text-sky-200">Rinkeby</div> */}
         {rendered && balance && (
           <div className="flex items-center gap-2 border rounded-[0.5rem] pl-2 h-8 bg-sky-100 border-sky-200">
-            <span>{prettyNum(balance, null, 0) + ' ETH'}</span>
+            <span>{prettyNum(balance, null, 0) + ' Matic'}</span>
             <button className="px-2 py-0.5   btn-primary-light">{rendered}</button>
           </div>
         )}

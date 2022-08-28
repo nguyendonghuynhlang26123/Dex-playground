@@ -1,6 +1,5 @@
 import { useQuery } from '@apollo/client';
 import { addresses } from '@dex/contracts';
-import { parseEther } from '@ethersproject/units';
 import { Tab } from '@headlessui/react';
 import { useCall, useEthers, useLocalStorage } from '@usedapp/core';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -36,7 +35,7 @@ export const OrderContainer = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
 
   const { loading, error, data } = useQuery(GET_ORDERS_BY_USER_AND_MODULE, {
-    variables: { account: account ? account.toLowerCase() : '', module: addresses[4].entryOrderModule?.toLowerCase() },
+    variables: { account: account ? account.toLowerCase() : '', module: addresses[137].entryOrderModule?.toLowerCase() },
     pollInterval: 5000,
   });
 
@@ -160,7 +159,7 @@ export const OrderContainer = () => {
       </Tab.Panels>
 
       <Modal isOpen={selectedOrder !== null} closeModal={closeOrderSummary} title="Order summary">
-        <OrderSummaryModal {...selectedOrder} provider={library} account={account} factoryAddress={addresses[4].factory} />
+        <OrderSummaryModal {...selectedOrder} provider={library} account={account} factoryAddress={addresses[137].factory} />
       </Modal>
     </Tab.Group>
   );

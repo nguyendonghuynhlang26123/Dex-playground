@@ -7,7 +7,7 @@ import { UniswapUtils } from '../../common/UniswapUtils';
 import { TooltipWrap } from '../Tooltip';
 import { BigNumber, ethers, FixedNumber } from 'ethers';
 import { compareAddress, getContract } from '../../common/utils';
-import { parseEther, parseUnits } from '@ethersproject/units';
+import { parseUnits } from '@ethersproject/units';
 import { prettyNum } from '../../common/utils';
 import { envConfig } from '../../common/config';
 import { useMarketPrice } from '../../hooks/useMarketPrice';
@@ -26,13 +26,13 @@ const ValueFieldHolder = ({ value, error, ...props }) => {
 };
 
 const identifyOrderType = (inputAddress, outputAddress) => {
-  if (compareAddress(inputAddress, addresses[4].weth) || compareAddress(inputAddress, ETH_ADDRESS)) return 'ETH_TO_TOKEN';
-  else if (compareAddress(outputAddress, addresses[4].weth) || compareAddress(outputAddress, ETH_ADDRESS)) return 'TOKEN_TO_ETH';
+  if (compareAddress(inputAddress, addresses[137].weth) || compareAddress(inputAddress, ETH_ADDRESS)) return 'ETH_TO_TOKEN';
+  else if (compareAddress(outputAddress, addresses[137].weth) || compareAddress(outputAddress, ETH_ADDRESS)) return 'TOKEN_TO_ETH';
   return 'TOKEN_TO_TOKEN';
 };
 
 const prettyTokenDisplay = (amount, token) => {
-  if (compareAddress(token.address, addresses[4].weth) || compareAddress(token.address, ETH_ADDRESS)) return `${prettyNum(amount)} ETH`;
+  if (compareAddress(token.address, addresses[137].weth) || compareAddress(token.address, ETH_ADDRESS)) return `${prettyNum(amount)} ETH`;
   if (amount.gte(ethers.constants.MaxInt256)) return `∞ ${token.symbol}`;
   return `${prettyNum(amount, token.decimals)} ${token.symbol}`;
 };
@@ -51,9 +51,9 @@ export const OrderSummaryModal = ({ inputAddress, outputAddress, inputAmount, ou
   }, [inputToken, outputToken]);
 
   // Liquidity values
-  const [, convertInputToOutput] = useMarketPrice(addresses[4].factory, inputAddress, outputAddress);
-  const [ethToInputRate, convertEthToInputPrice] = useMarketPrice(addresses[4].factory, addresses[4].weth, inputAddress);
-  const [ethToOutputRate, convertEthToOutputPrice] = useMarketPrice(addresses[4].factory, addresses[4].weth, outputAddress);
+  const [, convertInputToOutput] = useMarketPrice(addresses[137].factory, inputAddress, outputAddress);
+  const [ethToInputRate, convertEthToInputPrice] = useMarketPrice(addresses[137].factory, addresses[137].weth, inputAddress);
+  const [ethToOutputRate, convertEthToOutputPrice] = useMarketPrice(addresses[137].factory, addresses[137].weth, outputAddress);
   const orderRate = useMemo(() => {
     if (inputAmount && outputAmount && inputToken && !inputAmount?.isZero()) {
       return UniswapUtils.getPriceRate(inputAmount, outputAmount, inputToken.decimals);
@@ -67,7 +67,7 @@ export const OrderSummaryModal = ({ inputAddress, outputAddress, inputAmount, ou
   }, [inputAmount, inputToken, convertInputToOutput]);
   const estimateGasInEth = useMemo(() => {
     if (gasPrice) {
-      return gasPrice.add(envConfig.protocolTips).mul(envConfig.protocolAvgGas);
+      return gasPrice.mul(envConfig.protocolAvgGas);
     }
   }, [gasPrice]);
   const estimateGasInInputToken = useMemo(() => {
@@ -166,14 +166,14 @@ export const OrderSummaryModal = ({ inputAddress, outputAddress, inputAmount, ou
           return new DisplayState(
             (
               <>
-                {prettyNum(estimateGasInEth)} ETH
+                {prettyNum(estimateGasInEth)} Matic
                 <br /> ({prettyNum(estimateCost)} {estimateSymbol})
               </>
             )
           );
         }
       }
-      return new DisplayState(`${prettyNum(estimateGasInEth)} ETH `);
+      return new DisplayState(`${prettyNum(estimateGasInEth)} Matic `);
     }
   }, [estimateGasInEth, inputToken, outputToken, estimateGasInInputToken, estimateGasInOutputToken]);
 
@@ -185,13 +185,13 @@ export const OrderSummaryModal = ({ inputAddress, outputAddress, inputAmount, ou
         if (estimateGasInEth.gte(inputAmount)) return new DisplayState(null, 'Order is too small to pay fee');
         const realInput = inputAmount.sub(estimateGasInEth);
         return new DisplayState(
-          `${prettyTokenDisplay(outputAmount, outputToken)} < ${prettyNum(realInput)} ETH < ${prettyTokenDisplay(maxOutputAmount, outputToken)}`
+          `${prettyTokenDisplay(outputAmount, outputToken)} < ${prettyNum(realInput)} WMatic < ${prettyTokenDisplay(maxOutputAmount, outputToken)}`
         );
       } else if (type === 'TOKEN_TO_ETH') {
         if (estimateGasInEth.gte(outputAmount)) return new DisplayState(null, 'User will receive less than paying for execution cost!');
         const realOutputMin = estimateGasInEth.add(outputAmount);
         const realOutputMax = estimateGasInEth.add(maxOutputAmount);
-        return new DisplayState(`${prettyNum(realOutputMin)} ETH  < ${prettyTokenDisplay(inputAmount, inputToken)} < ${prettyNum(realOutputMax)} ETH `);
+        return new DisplayState(`${prettyNum(realOutputMin)} WMatic  < ${prettyTokenDisplay(inputAmount, inputToken)} < ${prettyNum(realOutputMax)} ETH `);
       } else {
         let displayText = '';
         if (estimateGasInInputToken && estimateGasInOutputToken) {

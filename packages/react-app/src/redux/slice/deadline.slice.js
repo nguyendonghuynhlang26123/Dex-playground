@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { envConfig } from '../common/config';
+import { envConfig } from '../../common/config';
 
 const typeToSecMapper = {
   sec: 1,

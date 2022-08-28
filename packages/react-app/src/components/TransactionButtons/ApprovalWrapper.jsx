@@ -6,7 +6,7 @@ import { useApprove } from '../../hooks';
 import { RiLoader4Fill } from 'react-icons/ri';
 
 const MAX_APPROVE = constants.MaxUint256;
-export const ApprovalWrapper = ({ tokenAddress, target, amountToApprove = constants.MaxInt256, children }) => {
+export const ApprovalWrapper = ({ tokenAddress, target, amountToApprove = constants.MaxInt256, children, className }) => {
   const { account } = useEthers();
 
   const token = useToken(tokenAddress);
@@ -21,7 +21,7 @@ export const ApprovalWrapper = ({ tokenAddress, target, amountToApprove = consta
           label={`Approve ${token.symbol}`}
           onClick={approveToken}
           state={approvalState}
-          className={`mt-2 mx-2.5 !py-3 !btn-success !rounded-[1rem]`}
+          className={`mt-2 w-full !py-3 !btn-success !rounded-[1rem] ${className}`}
         />
       ) : (
         <>{children}</>
@@ -29,7 +29,7 @@ export const ApprovalWrapper = ({ tokenAddress, target, amountToApprove = consta
     </>
   ) : (
     <button
-      className=" flex justify-center items-center mt-2 mx-2.5 gap-1 py-3 bg-white border border-blue-500 opacity-80 text-blue-500 rounded-[1rem]"
+      className={`flex justify-center items-center mt-2 mx-2.5 gap-1 py-3 bg-white border border-blue-500 opacity-80 text-blue-500 rounded-[1rem] ${className}`}
       disabled
     >
       <RiLoader4Fill className="animate-spin spin-low" />

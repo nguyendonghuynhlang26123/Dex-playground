@@ -82,7 +82,7 @@ const start = async () => {
       abiEncoder.encode(
         ['address', 'address', 'uint256'],
         [
-          envConfig.LIMIT_ORDER_UNISWAP_HANDLER,
+          envConfig.ENTRY_ORDER_UNISWAP_HANDLER,
           account.address,
           avgFee.toString(),
         ]
@@ -119,7 +119,7 @@ const start = async () => {
       abiEncoder.encode(
         ['address', 'address', 'uint256'],
         [
-          envConfig.LIMIT_ORDER_UNISWAP_HANDLER,
+          envConfig.ENTRY_ORDER_UNISWAP_HANDLER,
           account.address,
           fee.toString(), // Update fee for this order
         ]
@@ -159,9 +159,7 @@ const start = async () => {
           order.owner
         }, inputToken = ${order.inputToken}, amount = ${order.amount}, data=${
           order.data
-        }. Order on ethscan = https://rinkeby.etherscan.io/tx/${
-          order.createdTxHash
-        }`
+        }. Order on ethscan = https://polygonscan/tx/${order.createdTxHash}`
       );
       return tx.hash;
     } catch (e: any) {

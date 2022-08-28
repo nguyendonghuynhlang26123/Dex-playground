@@ -1,12 +1,15 @@
 import { abis, addresses } from '@dex/contracts';
-import { getContract } from './utils';
+import { getContract, prettyNum } from './utils';
 import { ETH_ADDRESS } from './constants';
+import { tokens } from './supportTokens.json';
+import { isAddress } from '@ethersproject/address';
+
 const mapTokenImage = {
-  [addresses[4].weth.toLowerCase()]:
+  [addresses[137].weth.toLowerCase()]:
     'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png',
-  [addresses[4].one.toLowerCase()]:
+  [addresses[137].one.toLowerCase()]:
     'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Eo_circle_red_number-1.svg/1200px-Eo_circle_red_number-1.svg.png',
-  [addresses[4].two.toLowerCase()]:
+  [addresses[137].two.toLowerCase()]:
     'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Eo_circle_blue_number-2.svg/1200px-Eo_circle_blue_number-2.svg.png',
 };
 export class TokenUtils {
@@ -28,25 +31,37 @@ export class TokenUtils {
   // Get token info, in production, this should call api below to get the token icon, however, for this time I will hard code the images
   // https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/${tokenAddress}/logo.png
   static getTokenInfo = async (provider, tokenAddress, account = undefined) => {
-    if (tokenAddress === ETH_ADDRESS)
+    let balance;
+    if (tokenAddress === ETH_ADDRESS) {
+      balance = isAddress(account) ? await provider.getBalance(account) : null;
       return {
         symbol: 'ETH',
         imageUrl: `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png`,
         balance: account ? await provider.getBalance(account) : null,
         decimals: 18,
         address: tokenAddress,
+        readable: balance ? prettyNum(balance, 18) : '0',
       };
+    }
 
     const contract = getContract(abis.erc20, tokenAddress, provider);
+    balance = isAddress(account) ? await contract.balanceOf(account) : null;
+    const token = tokens.find((token) => tokenAddress.toLowerCase() === token.address.toLowerCase());
+    if (token) {
+      return {
+        ...token,
+        balance: balance,
+        readable: balance ? prettyNum(balance, 18) : '0',
+      };
+    }
     return {
       name: await contract.name(),
       symbol: await contract.symbol(),
       decimals: await contract.decimals(),
-      imageUrl: mapTokenImage[tokenAddress.toLowerCase()]
-        ? mapTokenImage[tokenAddress.toLowerCase()]
-        : 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/' + tokenAddress + '/logo.png',
-      balance: account ? await contract.balanceOf(account) : null,
+      imageUrl: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/polygon/assets/' + tokenAddress + '/logo.png',
+      balance: balance,
       address: tokenAddress,
+      readable: balance ? prettyNum(balance, 18) : '0',
     };
   };
 
