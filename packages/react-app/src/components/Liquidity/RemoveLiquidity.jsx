@@ -7,10 +7,9 @@ import { calculateShare, getContract, prettyNum } from '../../common/utils';
 import { useApprove } from '../../hooks';
 import { TransactionButton } from '../TransactionButtons';
 
-export const RemoveLiquidity = ({ token0, token1, token0Address, token1Address, r0, r1, totalLPToken, lpAmount }) => {
+export const RemoveLiquidity = ({ token0, token1, poolAddress, token0Address, token1Address, r0, r1, totalLPToken, lpAmount }) => {
   const { account, library } = useEthers();
-  const routerAddress = addresses[4].router;
-  const poolAddress = addresses[4].pair;
+  const routerAddress = addresses[137].router;
 
   // User must approve the contract first to deposit lp token
   const lpTokenAllowance = useTokenAllowance(poolAddress, account, routerAddress);
@@ -71,7 +70,7 @@ export const RemoveLiquidity = ({ token0, token1, token0Address, token1Address, 
         <span className="flex flex-row justify-between">
           <p className="font-bold">Received:</p>
           <p>
-            {`${prettyNum(balance0Received)} ${token0.symbol}`} / {`${prettyNum(balance1Received)} ${token1.symbol}`}
+            {`${prettyNum(balance0Received, token0.decimals)} ${token0.symbol}`} / {`${prettyNum(balance1Received, token1.decimals)} ${token1.symbol}`}
           </p>
         </span>
       </div>

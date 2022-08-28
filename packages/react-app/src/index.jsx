@@ -15,7 +15,7 @@ import store from './store';
 // See all subgraphs: https://thegraph.com/explorer/
 const client = new ApolloClient({
   cache: new InMemoryCache(),
-  uri: 'https://api.thegraph.com/subgraphs/name/nguyendonghuynhlang26123/limit-order-rinkeby',
+  uri: 'https://api.thegraph.com/subgraphs/name/nguyendonghuynhlang26123/limit-order-matic',
 });
 console.log(networkConfig);
 ReactDOM.render(

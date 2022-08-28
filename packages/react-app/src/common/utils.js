@@ -1,4 +1,4 @@
-import { formatUnits, parseEther } from '@ethersproject/units';
+import { formatUnits, parseUnits } from '@ethersproject/units';
 import { Contract } from '@ethersproject/contracts';
 
 import { FixedNumber, utils, ethers } from 'ethers';
@@ -16,8 +16,8 @@ export const getContract = (abi, address, provider = undefined) => {
   return new Contract(address, contractInterface, provider);
 };
 
-export const _18Digits = (value) => {
-  return parseEther(value);
+export const parseInput = (value, decimals) => {
+  return parseUnits(value, decimals);
 };
 
 export const toInteger = (floatNumber) => {

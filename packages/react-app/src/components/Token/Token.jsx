@@ -1,6 +1,6 @@
 import { useEthers, useToken, useTokenBalance, useContractFunction } from '@usedapp/core';
-import React, { useEffect, useState } from 'react';
-import { _18Digits, getContract, prettyNum } from '../../common/utils';
+import React, { useCallback, useEffect, useState } from 'react';
+import { parseInput, getContract, prettyNum } from '../../common/utils';
 import { abis, addresses } from '@dex/contracts';
 import { TransactionButton } from '../TransactionButtons';
 
@@ -16,14 +16,17 @@ export const Token = ({ title, address }) => {
     setInput(ev.target.value);
   };
 
-  const mintTokenTxSubmit = (input) => {
-    if (input) {
-      const actualInput = _18Digits(input);
-      send(actualInput);
-    } else {
-      alert('Invalid input');
-    }
-  };
+  const mintTokenTxSubmit = useCallback(
+    (input) => {
+      if (input && token) {
+        const actualInput = parseInput(input, token.decimals);
+        send(actualInput);
+      } else {
+        alert('Invalid input');
+      }
+    },
+    [token]
+  );
 
   return token ? (
     <div className="flex flex-col my-2">
@@ -42,7 +45,7 @@ export const Token = ({ title, address }) => {
       </p>
       <hr className="w-32 mx-auto my-2 border-gray-500" />
       <p>
-        Your balance: {tokenBalance ? prettyNum(tokenBalance, 18) : ''} {token?.symbol}
+        Your balance: {tokenBalance ? prettyNum(tokenBalance, token?.decimals) : ''} {token?.symbol}
       </p>
       <div className="flex flex-row w-full space-x-2 items-center">
         <p>Faucet</p>

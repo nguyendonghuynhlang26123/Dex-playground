@@ -9,6 +9,7 @@
     "codegen": "graph codegen",
     "build": "graph build",
     "deploy": "graph deploy --node https://api.thegraph.com/deploy/ nguyendonghuynhlang26123/limit-order-rinkeby --access-token 2b83f4bebe314b77a5116f2648966b64 --product hosted-service",
+    "deploy-matic": "graph deploy --node https://api.thegraph.com/deploy/ nguyendonghuynhlang26123/limit-order-matic --access-token 2b83f4bebe314b77a5116f2648966b64 --product hosted-service",
     "create-local": "graph create --node http://localhost:8020/ thesis/limit-order",
     "remove-local": "graph remove --node http://localhost:8020/ thesis/limit-order",
     "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 thesis/limit-order"

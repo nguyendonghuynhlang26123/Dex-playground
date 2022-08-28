@@ -2,7 +2,7 @@ import { abis, addresses } from '@dex/contracts';
 import { useContractFunction, useEthers } from '@usedapp/core';
 import { BigNumber, FixedNumber } from 'ethers';
 import React, { useMemo, useCallback, useState, useEffect } from 'react';
-import { generateSecret, getContract, prettyNum } from '../../common/utils';
+import { compareAddress, generateSecret, getContract, prettyNum } from '../../common/utils';
 import { useSwap } from '../../hooks/useSwap';
 import { FiHelpCircle } from 'react-icons/fi';
 import { TooltipWrap } from '../Tooltip';
@@ -15,47 +15,74 @@ import { OrderContainer } from '../Order/OrderContainer';
 import { ethers } from 'ethers';
 import { Modal } from '../Modal';
 import { OrderSummaryModal } from '../Order/OrderSummaryModal';
+import { UniswapUtils } from '../../common/UniswapUtils';
+import { envConfig } from '../../common/config';
+import { parseUnits } from '@ethersproject/units';
+
+const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 export const Protocol = () => {
   const { library, account } = useEthers();
 
   // Contract
-  const coreContract = getContract(abis.coreProtocol, addresses[4].coreProtocol, library);
+  const wethAddress = addresses[137].weth;
+  const factoryContract = getContract(abis.factory, addresses[137].factory, library);
+  const coreContract = getContract(abis.coreProtocol, addresses[137].coreProtocol, library);
   const { state: placeOrderState, send: submitLimitOrderTx } = useContractFunction(coreContract, 'createOrder', {
     transactionName: 'Successfully place order',
   });
 
   // Manage all address mapping && liquidity
   const [[address0, address1], setTokenAddresses] = useState([null, null]);
-  const [[token0, setAddress0], [token1, setAddress1], [r0, r1], swapError] = useSwap(addresses[4].factory);
+  const [[token0, setAddress0], [token1, setAddress1], [r0, r1], swapError] = useSwap(addresses[137].factory);
   const { price0, price1, tokenInputProps, tokenOutputProps, rateInputProps, currentRate, marketRate, reset } = useLimitInputHandler({
     r0: r0,
     r1: r1,
+    tokenInput: token0,
+    tokenOutput: token1,
   });
 
   // Price
-  const [range, setRange] = useState(20);
-  const rangeInTokenOutput = useMemo(() => {
-    if (price1) {
-      if (!range) return BigNumber.from(0);
-      const rangeInBN = BigNumber.from(range);
-      const ONE_HUNDRED = BigNumber.from(100);
-      const maxReturn = price1.mul(rangeInBN.add(ONE_HUNDRED)).div(ONE_HUNDRED);
-      return maxReturn;
-    }
-  }, [range, price1]);
-  const marketPriceCompare = useMemo(() => {
+  const [toRate, setToRate] = useState('');
+  const [rangeInTokenOutput, setRangeInTokenOutput] = useState();
+
+  const calculateTokenOutputByRate = useCallback(
+    (rate) => {
+      if (price0 && token0) {
+        const parsedRate = parseUnits(rate, token0.decimals);
+        const unit = parseUnits('1', token0.decimals);
+        return price0.mul(parsedRate).div(unit);
+      }
+    },
+    [price0, token0]
+  );
+
+  const marketPriceCompareFrom = useMemo(() => {
     if (currentRate && marketRate && !marketRate?.isZero()) {
       const fOneHundred = FixedNumber.from(100);
       const diff = currentRate.mulUnsafe(fOneHundred).divUnsafe(marketRate).subUnsafe(fOneHundred);
       const displayValue = diff.round(2).toString();
       return {
         value: displayValue,
-        message: `${displayValue}% ${diff.isNegative() ? 'below' : 'above'} market`,
+        message: `${diff.isZero() ? '' : diff.isNegative() ? '' : '+'}${displayValue}%`,
         style: diff.isZero() ? '' : diff.isNegative() ? 'text-red-500' : 'text-green-500',
       };
     }
   }, [currentRate, marketRate]);
+
+  const marketPriceCompareTo = useMemo(() => {
+    if (toRate && marketRate && !marketRate?.isZero()) {
+      const fOneHundred = FixedNumber.from(100);
+      const toRateInFN = FixedNumber.from(toRate);
+      const diff = toRateInFN.mulUnsafe(fOneHundred).divUnsafe(marketRate).subUnsafe(fOneHundred);
+      const displayValue = diff.round(2).toString();
+      return {
+        value: displayValue,
+        message: `${diff.isZero() ? '' : diff.isNegative() ? '' : '+'}${displayValue}%`,
+        style: diff.isZero() ? '' : diff.isNegative() ? 'text-red-500' : 'text-green-500',
+      };
+    }
+  }, [toRate, marketRate]);
 
   // Pool state management
   const [error, setError] = useState('Enter amount');
@@ -67,23 +94,48 @@ export const Protocol = () => {
   const abiEncoder = new ethers.utils.AbiCoder();
 
   useEffect(() => {
-    if (swapError) {
-      setError(swapError);
-    } else if (price0 && price1 && token0 && r1) {
-      console.log('log ~ file: index.jsx ~ line 68 ~ useEffect ~ price0', price0);
-      if (price0.isZero() || price1.isZero()) setError('Input invalid ');
-      else if (price0.gt(token0.balance)) setError("Insufficient user's balance");
-      else if (price1.gt(r1)) setError('Insufficient liquidity');
-      else setError(null);
-    }
-  }, [price0, price1, r1, token0, swapError]);
+    const handleCheckError = async () => {
+      if (swapError) {
+        setError(swapError);
+      } else if (price0 && price1 && token0 && r1) {
+        if (price0.isZero() || price1.isZero()) setError('Input invalid ');
+        else if (price0.gt(token0.balance)) setError("Insufficient user's balance");
+        else if (price1.gt(r1)) setError('Insufficient liquidity');
+        else {
+          if (address0 && address1 && !compareAddress(address0, wethAddress) && !compareAddress(address1, wethAddress)) {
+            const outputToWethAddress = await factoryContract.getPair(address1, wethAddress);
+            if (outputToWethAddress === NULL_ADDRESS) setError('Cannot extract fee from the output token!');
+          } else setError(null);
+        }
+      }
+    };
 
-  const handleInputRange = (ev) => {
-    const value = ev.target.value?.trim();
-    console.log('log ~ file: index.jsx ~ line 85 ~ handleInputRange ~ value', value);
-    if (isNaN(+value)) return;
-    setRange(value);
-  };
+    handleCheckError();
+  }, [address0, address1, price0, price1, r1, token0, swapError]);
+
+  useEffect(() => {
+    if (currentRate) {
+      // const currentRateInFN = FixedNumber.from(currentRate.round(4).toString());
+      const toRate = currentRate.mulUnsafe(FixedNumber.from(100 + envConfig.defaultRangePercent)).divUnsafe(FixedNumber.from(100));
+      setToRate(toRate.round(4).toString());
+
+      const inTokenOutput = calculateTokenOutputByRate(toRate.round(4).toString());
+      setRangeInTokenOutput(inTokenOutput);
+    }
+  }, [currentRate]);
+
+  const handleInputToRate = useCallback(
+    (ev) => {
+      if (!currentRate) return;
+      const value = ev.target.value?.trim();
+      if (isNaN(+value)) return;
+      setToRate(value);
+
+      const inTokenOutput = calculateTokenOutputByRate(value);
+      setRangeInTokenOutput(inTokenOutput);
+    },
+    [price1, currentRate]
+  );
 
   const reverseInput = useCallback(() => {
     setAddress0(address1);
@@ -118,7 +170,7 @@ export const Protocol = () => {
       if (price0 && price1 && rangeInTokenOutput && address0 && address1 && account) {
         const [witnessSecret, witness] = generateSecret();
         const orderParams = [
-          addresses[4].entryOrderModule,
+          addresses[137].entryOrderModule,
           address0,
           account,
           witness,
@@ -161,12 +213,12 @@ export const Protocol = () => {
             inputProps={tokenOutputProps}
           />
           <div className="flex mt-1 mx-2 gap-1">
-            <div className={` grow rounded-l-[1.2rem] bg-white shadow group border-2 ${rateFocused ? ' border-sky-300' : 'border-transparent'}`}>
+            <div className={` w-1/2 rounded-l-[1.2rem] bg-white shadow group border-2 ${rateFocused ? ' border-sky-300' : 'border-transparent'}`}>
               <div className="flex flex-row justify-between py-3 px-4 ">
-                <label className={` text-sm font-semibold ${rateFocused ? ' text-sky-500' : 'text-gray-400'}`}>With price:</label>
+                <label className={` text-sm font-semibold ${rateFocused ? ' text-sky-500' : 'text-gray-400'}`}>From price:</label>
 
                 <a className="text-sm text text-gray-400 hover:text-gray-500 cursor-pointer">
-                  {marketPriceCompare ? <span className={marketPriceCompare.style}>{marketPriceCompare.message}</span> : ''}
+                  {marketPriceCompareFrom ? <span className={marketPriceCompareFrom.style}>{marketPriceCompareFrom.message}</span> : ''}
                 </a>
               </div>
               <div className="flex flex-row items-center whitespace-nowrap px-4 pb-3">
@@ -180,10 +232,10 @@ export const Protocol = () => {
                 {token1 ? <p className="text-xl capitalize tracking-tighter font-semibold px-2 text-gray-400">{token1.symbol}</p> : <></>}
               </div>
             </div>
-            <div className={` flex-none w-40 rounded-r-[1.2rem] bg-white shadow group border-2 ${rangeFocused ? ' border-sky-300' : 'border-transparent'}`}>
+            <div className={` flex-none w-1/2 rounded-r-[1.2rem] bg-white shadow group border-2 ${rangeFocused ? ' border-sky-300' : 'border-transparent'}`}>
               <div className="flex flex-row justify-between py-3 px-4 ">
-                <label className={` text-sm font-semibold ${rangeFocused ? ' text-sky-500' : 'text-gray-400'}`}>In Range:</label>
-                <TooltipWrap
+                <label className={` text-sm font-semibold ${rangeFocused ? ' text-sky-500' : 'text-gray-400'}`}>To Price:</label>
+                {/* <TooltipWrap
                   tip={
                     <p className="w-96">
                       Your order is filled when <b>current price is in range [order_price, order_price * (1 + X%)]</b>. If it is too low, your order will be
@@ -192,7 +244,10 @@ export const Protocol = () => {
                   }
                 >
                   <FiHelpCircle className="inline text-xl cursor-pointer hover:text-sky-500 text-gray-400" />
-                </TooltipWrap>
+                </TooltipWrap> */}
+                <a className="text-sm text text-gray-400 hover:text-gray-500 cursor-pointer">
+                  {marketPriceCompareTo ? <span className={marketPriceCompareTo.style}>{marketPriceCompareTo.message}</span> : ''}
+                </a>
               </div>
               <div className="flex flex-row items-center whitespace-nowrap px-4 pb-3">
                 <input
@@ -201,10 +256,10 @@ export const Protocol = () => {
                   onBlur={() => setRangeFocused(false)}
                   placeholder="0.0"
                   type="number"
-                  value={range}
-                  onChange={handleInputRange}
+                  value={toRate}
+                  onChange={handleInputToRate}
                 />
-                <p className="text-xl capitalize tracking-tighter font-semibold px-2 text-gray-400">%</p>
+                {token1 ? <p className="text-xl capitalize tracking-tighter font-semibold px-2 text-gray-400">{token1.symbol}</p> : <></>}
               </div>
             </div>
           </div>
@@ -212,7 +267,7 @@ export const Protocol = () => {
 
         <ErrorWrapper error={error}>
           {token0 && (
-            <ApprovalWrapper tokenAddress={address0} target={addresses[4].coreProtocol}>
+            <ApprovalWrapper tokenAddress={address0} target={addresses[137].coreProtocol} className=" ">
               <TransactionButton
                 className="my-2 mx-2.5 !py-3 !rounded-[1rem]"
                 label="Place"
@@ -231,7 +286,7 @@ export const Protocol = () => {
             provider={library}
             account={account}
             maxOutputAmount={rangeInTokenOutput}
-            factoryAddress={addresses[4].factory}
+            factoryAddress={addresses[137].factory}
           />
           <button className={`btn-primary px-2 py-2 w-full my-2 `} onClick={placeLimitOrder}>
             Submit order

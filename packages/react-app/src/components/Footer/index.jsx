@@ -9,7 +9,7 @@ export const Footer = () => {
       <a href="https://github.com/nguyendonghuynhlang26123/Dex-playground" className="cursor-pointer hover:text-sky-200">
         Code
       </a>
-      <a href="https://rinkeby.etherscan.io/address/0xa9cd06edf421373f7dd86fb26268c7995a872327" className="cursor-pointer hover:text-sky-200">
+      <a href="https://polygonscan.com/address/0x0Ea72B2D4B07c06b372296f9C1cb8E0231d06703#code" className="cursor-pointer hover:text-sky-200">
         Contract
       </a>
       <a href="https://t.me/+qGlRvvFup9AzMWFl" className="cursor-pointer hover:text-sky-200">

@@ -27,10 +27,10 @@ export const CanceledOrderCard = ({ provider, order }) => {
     <li className="px-2 py-4 grid grid-cols-3 gap-2 ">
       {inputToken && outputToken ? (
         <>
-          <Tag img={inputToken.imageUrl} symbol={inputToken.symbol} amount={prettyNum(inputAmount)} />
-          <Tag img={outputToken.imageUrl} symbol={outputToken.symbol} amount={prettyNum(outputAmount)} />
+          <Tag img={inputToken.imageUrl} symbol={inputToken.symbol} amount={prettyNum(inputAmount, inputToken.decimals)} />
+          <Tag img={outputToken.imageUrl} symbol={outputToken.symbol} amount={prettyNum(outputAmount, outputToken.decimals)} />
           <p className="text-sm text-gray-500 text-right">
-            <a href={'https://rinkeby.etherscan.io/tx/' + order.cancelledTxHash} className="underline cursor-pointer hover:text-sky-500">
+            <a href={'https://polygonscan.com/tx/' + order.cancelledTxHash} className="underline cursor-pointer hover:text-sky-500">
               View tx
             </a>
             <br />

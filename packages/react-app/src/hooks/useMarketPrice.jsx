@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { BigNumber } from 'ethers';
 import { getContract } from '../common/utils';
 import { UniswapUtils } from '../common/UniswapUtils';
-import { parseEther, parseUnits } from '@ethersproject/units';
+import { parseUnits } from '@ethersproject/units';
 import { useTokenInfo } from './useTokenInfo';
 
 export const useMarketPrice = (factoryAddress, address0, address1) => {

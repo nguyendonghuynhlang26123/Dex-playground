@@ -11,10 +11,10 @@ import { TransactionButton } from '../TransactionButtons';
 
 export const AddLiquidity = ({ token0, token1, token0Address, token1Address, token0Balance, token1Balance, r0, r1, totalLPToken }) => {
   const { account, library } = useEthers();
-  const routerAddress = addresses[4].router;
+  const routerAddress = addresses[137].router;
 
   //Input handle
-  const { price0, price1, token0InputProps, token1InputProps } = useLiquidityInputHandle({ r0, r1 });
+  const { price0, price1, token0InputProps, token1InputProps } = useLiquidityInputHandle({ r0, r1, token0, token1 });
 
   //Token Approval:
   const token0Allowance = useTokenAllowance(token0Address, account, routerAddress);
@@ -67,10 +67,10 @@ export const AddLiquidity = ({ token0, token1, token0Address, token1Address, tok
     <div className="w-full">
       <div className="grid gap-x-4 grid-cols-2 w-full  items-center mt-2">
         <p>
-          {token0.symbol} (Max: {prettyNum(token0Balance)})
+          {token0.symbol} (Balance: {prettyNum(token0Balance, token0.decimals)})
         </p>
         <p>
-          {token1.symbol} (Max: {prettyNum(token1Balance)})
+          {token1.symbol} (Balance: {prettyNum(token1Balance, token1.decimals)})
         </p>
         <input {...token0InputProps} id="0" className="ml-0 border border-gray-300 rounded px-2 py-1 my-0.5" />
         <input {...token1InputProps} id="1" className="border border-gray-300 rounded px-2 py-1 my-0.5" />

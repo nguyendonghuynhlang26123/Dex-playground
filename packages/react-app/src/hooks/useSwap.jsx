@@ -72,7 +72,7 @@ export const useSwap = (factoryAddress) => {
           setPairAddress(pairAddress);
           setIsTokenReverse(BigNumber.from(address0).gt(BigNumber.from(address1)));
         } else {
-          setError('Not found exchange for this pair of token');
+          setError('Not found liquidity pool for this pair of token');
           resetState();
         }
       }

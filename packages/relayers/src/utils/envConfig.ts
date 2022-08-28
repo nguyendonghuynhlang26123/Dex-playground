@@ -8,7 +8,7 @@ export const getEnvConfig = () => {
 
   const CORE_CONTRACT = process.env.CORE_CONTRACT;
 
-  const LIMIT_ORDER_UNISWAP_HANDLER = process.env.LIMIT_ORDER_UNISWAP_HANDLER;
+  const ENTRY_ORDER_UNISWAP_HANDLER = process.env.ENTRY_ORDER_UNISWAP_HANDLER;
 
   let SENDER_PRIVKEY = process.env.SENDER_PRIVATE_KEY;
 
@@ -49,7 +49,7 @@ export const getEnvConfig = () => {
     checkInterval: orderCheckInterval,
     CORE_CONTRACT,
     SENDER_PRIVKEY,
-    LIMIT_ORDER_UNISWAP_HANDLER,
+    ENTRY_ORDER_UNISWAP_HANDLER,
     MAX_GAS_PRICE,
   };
 };
