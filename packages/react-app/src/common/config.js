@@ -17,6 +17,7 @@ export const networkConfig = {
     [Polygon.chainId]: 'https://polygon-mainnet.g.alchemy.com/v2/TI0Hp-KalL7vhgdsmEqOFO1NarhM15si',
   },
   networks: [Polygon],
+  refresh: 'everyBlock',
 };
 
 export const networkNames = {
